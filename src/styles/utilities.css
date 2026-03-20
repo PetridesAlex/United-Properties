@@ -90,14 +90,54 @@
 }
 
 .page-hero {
-  background: linear-gradient(150deg, #1b1b1b, #101010);
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 16% 20%, rgba(196, 156, 92, 0.2), transparent 42%),
+    linear-gradient(145deg, #191510 0%, #12100d 55%, #1d1811 100%);
   color: var(--color-white);
-  padding: 8rem 0 4rem;
+  padding: clamp(7.4rem, 10vw, 9.2rem) 0 clamp(2.8rem, 4vw, 3.9rem);
+}
+
+.page-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, rgba(255, 255, 255, 0.06), transparent 35%),
+    linear-gradient(to top, rgba(0, 0, 0, 0.28), transparent 44%);
+  pointer-events: none;
+}
+
+.page-hero .container {
+  position: relative;
+  z-index: 1;
+}
+
+.page-hero h1 {
+  font-size: clamp(2rem, 4.8vw, 3.38rem);
+  letter-spacing: -0.028em;
+  line-height: 1.03;
+  margin-bottom: 0.8rem;
+  text-wrap: balance;
 }
 
 .page-hero p {
   color: rgba(248, 246, 241, 0.8);
   max-width: 50rem;
+}
+
+.page-hero .breadcrumb {
+  margin-bottom: 1rem;
+  color: rgba(248, 246, 241, 0.82);
+}
+
+.page-hero .breadcrumb a {
+  color: rgba(248, 246, 241, 0.78);
+}
+
+.page-hero .breadcrumb a:hover {
+  color: var(--color-accent-light);
 }
 
 .sr-only {
@@ -126,6 +166,11 @@
   }
 
   .page-hero {
-    padding-top: 7rem;
+    padding-top: 7.1rem;
+    padding-bottom: 2.35rem;
+  }
+
+  .page-hero h1 {
+    font-size: clamp(1.58rem, 7.3vw, 2.15rem);
   }
 }

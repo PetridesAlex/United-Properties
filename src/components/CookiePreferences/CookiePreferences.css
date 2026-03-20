@@ -36,6 +36,8 @@
   width: min(760px, 100%);
   max-height: min(84vh, 920px);
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   border-radius: 14px;
   background: #f7f7f7;
   border: 1px solid #dedede;
@@ -185,6 +187,11 @@
 }
 
 @media (max-width: 700px) {
+  .cookie-preferences__backdrop {
+    align-items: flex-end;
+    padding: 0.6rem;
+  }
+
   .cookie-preferences__launcher {
     width: 40px;
     height: 40px;
@@ -192,16 +199,27 @@
     bottom: calc(env(safe-area-inset-bottom, 0px) + 0.72rem);
   }
 
+  .cookie-preferences__modal {
+    width: 100%;
+    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 1.2rem);
+    border-radius: 14px 14px 0 0;
+    padding: 0.85rem;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.85rem);
+  }
+
   .cookie-preferences__actions {
     grid-template-columns: 1fr;
+    position: sticky;
+    bottom: calc(env(safe-area-inset-bottom, 0px) * -1);
+    margin-inline: -0.85rem;
+    margin-bottom: calc(env(safe-area-inset-bottom, 0px) * -1);
+    padding: 0.72rem 0.85rem calc(env(safe-area-inset-bottom, 0px) + 0.72rem);
+    background: rgba(247, 247, 247, 0.98);
+    border-top: 1px solid #dfdfdf;
+    backdrop-filter: blur(8px);
   }
 
   .cookie-preferences__item {
     align-items: start;
-  }
-
-  .cookie-preferences__modal {
-    max-height: 90vh;
-    padding: 0.85rem;
   }
 }

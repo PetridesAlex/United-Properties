@@ -33,7 +33,7 @@ function PropertyDetails() {
         <title>{property.title} | AURA CYPRUS</title>
       </Helmet>
 
-      <section className="page-hero">
+      <section className="page-hero page-hero--property">
         <div className="container">
           <Breadcrumb
             items={[
