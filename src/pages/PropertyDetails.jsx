@@ -42,8 +42,8 @@ function PropertyDetails() {
               { label: property.title },
             ]}
           />
-          <h1>{property.title}</h1>
-          <p>
+          <h1 className="property-details__hero-title">{property.title}</h1>
+          <p className="property-details__hero-location">
             <MapPin size={16} /> {property.location}
           </p>
         </div>
@@ -56,8 +56,8 @@ function PropertyDetails() {
           <div className="property-details__head card-luxury">
             <div>
               <p className="property-details__status">{property.status}</p>
-              <h2>EUR {property.price.toLocaleString()}</h2>
-              <p>{property.description}</p>
+              <h2 className="property-details__price">EUR {property.price.toLocaleString()}</h2>
+              <p className="property-details__summary">{property.description}</p>
             </div>
             <a className="btn btn-gold" href="https://wa.me/35700000000" target="_blank" rel="noreferrer">
               <MessageCircle size={16} /> WhatsApp Inquiry

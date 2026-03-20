@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { gsap } from 'gsap'
+import { X } from 'lucide-react'
 import './StaggeredMenu.css'
 
 function isExternal(link = '') {
@@ -269,6 +270,15 @@ function StaggeredMenu({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [closeOnClickAway, open, closeMenu])
 
+  useEffect(() => {
+    if (!open) return undefined
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') closeMenu()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [open, closeMenu])
+
   const preLayerColors = (colors?.length ? colors.slice(0, 4) : ['#1e1e22', '#35353c']).filter(Boolean)
 
   return (
@@ -310,6 +320,9 @@ function StaggeredMenu({
 
       <aside id="staggered-menu-panel" ref={panelRef} className="staggered-menu-panel" aria-hidden={!open}>
         <div className="smenu-panel-inner">
+          <button type="button" className="smenu-close-btn" onClick={closeMenu} aria-label="Close menu">
+            <X size={18} />
+          </button>
           <ul className="smenu-panel-list" role="list" data-numbering={displayItemNumbering || undefined}>
             {items.map((item, idx) => (
               <li className="smenu-panel-itemWrap" key={`${item.label}-${idx}`}>
@@ -342,6 +355,8 @@ function StaggeredMenu({
           )}
         </div>
       </aside>
+
+      {open && <button type="button" className="smenu-backdrop" aria-label="Close menu" onClick={closeMenu} />}
     </div>
   )
 }
