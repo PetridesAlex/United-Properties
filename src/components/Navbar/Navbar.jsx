@@ -106,8 +106,8 @@ function Navbar() {
             menuButtonColor="#ffffff"
             openMenuButtonColor="#ffffff"
             changeMenuColorOnOpen
-            colors={['#B19EEF', '#5227FF']}
-            accentColor="#5227FF"
+            colors={['#2b2926', '#141312']}
+            accentColor="#a98348"
           />
         </div>
       </div>

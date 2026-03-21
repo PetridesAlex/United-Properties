@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -5,17 +6,49 @@ import SearchBar from '../SearchBar/SearchBar'
 import './Hero.css'
 
 function Hero() {
+  const sectionRef = useRef(null)
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    if (mediaQuery.matches) return undefined
+
+    const section = sectionRef.current
+    if (!section) return undefined
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return
+        setShouldLoadVideo(true)
+        observer.disconnect()
+      },
+      { threshold: 0.12, rootMargin: '200px 0px' },
+    )
+
+    observer.observe(section)
+    return () => observer.disconnect()
+  }, [])
+
   return (
-    <section className="hero-section">
-      <div className="hero-section__media" aria-hidden="true">
+    <section className="hero-section" ref={sectionRef}>
+      <div
+        className="hero-section__media"
+        aria-hidden="true"
+        style={{
+          backgroundImage:
+            'url("https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=2000&q=80")',
+        }}
+      >
         <video
           className="hero-section__video"
-          src="/video/real-estate-hero.mp4"
-          autoPlay
+          src={shouldLoadVideo ? '/video/real-estate-hero.mp4' : undefined}
+          autoPlay={shouldLoadVideo}
           muted
           loop
           playsInline
-          preload="auto"
+          preload="metadata"
+          disablePictureInPicture
           poster="https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=2000&q=80"
         />
       </div>

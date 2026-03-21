@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
@@ -17,12 +18,95 @@ import { services } from '../data/services'
 import { agents } from '../data/agents'
 import { developments } from '../data/developments'
 import { testimonials } from '../data/testimonials'
+import { sanityClient, urlForImage } from '../lib/sanityClient'
+import { ALL_PROPERTIES_QUERY } from '../lib/sanityQueries'
 import './Home.css'
 
+const STATUS_LABELS = {
+  'for-sale': 'For Sale',
+  'for-rent': 'For Rent',
+  sold: 'Sold',
+  reserved: 'Reserved',
+}
+
+function toNumber(value, fallback = 0) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+}
+
+function mapSanityProperty(item, index) {
+  const mainImageBuilder = item.mainImage ? urlForImage(item.mainImage) : null
+  const mainImage = mainImageBuilder
+    ? mainImageBuilder.width(1600).height(1060).fit('crop').url()
+    : null
+  const gallery = Array.isArray(item.gallery)
+    ? item.gallery
+        .map((image) => {
+          const builder = image ? urlForImage(image) : null
+          return builder ? builder.width(1600).height(1060).fit('crop').url() : null
+        })
+        .filter(Boolean)
+    : []
+
+  return {
+    id: item._id || `sanity-property-${index}`,
+    slug: item.slug?.current || `property-${index}`,
+    title: item.title || 'Untitled Property',
+    location: item.location || 'Cyprus',
+    price: toNumber(item.price),
+    type: item.propertyType || 'Property',
+    status: STATUS_LABELS[item.status] || 'For Sale',
+    bedrooms: toNumber(item.bedrooms),
+    bathrooms: toNumber(item.bathrooms),
+    sqm: toNumber(item.internalArea),
+    description: item.description || 'Discover this premium listing in Cyprus.',
+    features: Array.isArray(item.amenities) ? item.amenities : [],
+    image:
+      mainImage ||
+      'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1600&q=80',
+    gallery: gallery.length ? gallery : mainImage ? [mainImage] : [],
+    featured: Boolean(item.featured),
+    category: item.propertyType || 'Property',
+    yearBuilt: toNumber(item.yearBuilt),
+    parking: toNumber(item.parkingSpaces),
+    plotSize: toNumber(item.plotSize),
+    agentId: null,
+  }
+}
+
 function Home() {
-  const featuredProperties = properties.filter((property) => property.featured).slice(0, 3)
+  const [sanityProperties, setSanityProperties] = useState([])
+  const fallbackFeaturedProperties = useMemo(
+    () => properties.filter((property) => property.featured).slice(0, 3),
+    [],
+  )
+  const featuredProperties = useMemo(() => {
+    if (!sanityProperties.length) return fallbackFeaturedProperties
+    const featured = sanityProperties.filter((property) => property.featured)
+    const source = featured.length ? featured : sanityProperties
+    return source.slice(0, 3)
+  }, [sanityProperties, fallbackFeaturedProperties])
   const featuredAgents = agents.slice(0, 3)
   const homeServices = services.slice(0, 8)
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadProperties() {
+      try {
+        const result = await sanityClient.fetch(ALL_PROPERTIES_QUERY)
+        if (!isMounted || !Array.isArray(result)) return
+        setSanityProperties(result.map(mapSanityProperty))
+      } catch {
+        if (isMounted) setSanityProperties([])
+      }
+    }
+
+    loadProperties()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   return (
     <>
@@ -31,6 +115,22 @@ function Home() {
       </Helmet>
 
       <Hero />
+
+      <section className="section section--alt">
+        <div className="container">
+          <SectionHeader
+            eyebrow="Explore by Location"
+            title="Prime Cyprus Regions"
+            description="Discover opportunities in coastal and city markets shaped by lifestyle and long-term value."
+          />
+          <div className="grid-3 home-region-grid">
+            {regions.map((region) => (
+              <RegionCard key={region.name} region={region} />
+            ))}
+          </div>
+        </div>
+      </section>
+
       <StatsStrip />
 
       <section className="section section--light" id="featured-properties">
@@ -88,21 +188,6 @@ function Home() {
               </ScrollStackItem>
             ))}
           </ScrollStack>
-        </div>
-      </section>
-
-      <section className="section section--alt">
-        <div className="container">
-          <SectionHeader
-            eyebrow="Explore by Location"
-            title="Prime Cyprus Regions"
-            description="Discover opportunities in coastal and city markets shaped by lifestyle and long-term value."
-          />
-          <div className="grid-3 home-region-grid">
-            {regions.map((region) => (
-              <RegionCard key={region.name} region={region} />
-            ))}
-          </div>
         </div>
       </section>
 
@@ -186,13 +271,14 @@ function Home() {
         </div>
       </section>
 
-      <section className="section section--alt">
-        <div className="container">
+      <section className="section section--alt home-testimonials">
+        <div className="container home-testimonials__container">
           <SectionHeader
             eyebrow="Client Testimonials"
             title="Trusted by Local and International Clients"
+            className="home-testimonials__header"
           />
-          <div className="grid-3">
+          <div className="grid-3 home-testimonials__grid">
             {testimonials.map((testimonial) => (
               <TestimonialCard key={testimonial.id} testimonial={testimonial} />
             ))}

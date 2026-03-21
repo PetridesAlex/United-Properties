@@ -1,11 +1,19 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { gsap } from 'gsap'
-import { X } from 'lucide-react'
+import { Instagram, Linkedin, MessageCircle, X } from 'lucide-react'
 import './StaggeredMenu.css'
 
 function isExternal(link = '') {
   return /^https?:\/\//.test(link)
+}
+
+function getSocialIcon(label = '') {
+  const key = label.trim().toLowerCase()
+  if (key.includes('instagram')) return Instagram
+  if (key.includes('linkedin')) return Linkedin
+  if (key.includes('whatsapp')) return MessageCircle
+  return MessageCircle
 }
 
 function StaggeredMenu({
@@ -343,13 +351,19 @@ function StaggeredMenu({
             <div className="smenu-socials" aria-label="Social links">
               <h3 className="smenu-socials-title">Socials</h3>
               <ul className="smenu-socials-list" role="list">
-                {socialItems.map((s, i) => (
-                  <li key={`${s.label}-${i}`} className="smenu-socials-item">
-                    <a href={s.link} target="_blank" rel="noreferrer" className="smenu-socials-link">
-                      {s.label}
-                    </a>
-                  </li>
-                ))}
+                {socialItems.map((s, i) => {
+                  const Icon = getSocialIcon(s.label)
+                  return (
+                    <li key={`${s.label}-${i}`} className="smenu-socials-item">
+                      <a href={s.link} target="_blank" rel="noreferrer" className="smenu-socials-link">
+                        <span className="smenu-socials-icon" aria-hidden="true">
+                          <Icon size={16} />
+                        </span>
+                        <span>{s.label}</span>
+                      </a>
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           )}
