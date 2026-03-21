@@ -49,7 +49,7 @@ function Footer() {
           <ul>
             <li>18 Marina Avenue, Limassol, Cyprus</li>
             <li>
-              <a href="mailto:info@auracyprus.com">info@auracyprus.com</a>
+              <a href="mailto:info@unitedproperties.eu">info@unitedproperties.eu</a>
             </li>
             <li>
               <a href="tel:+35725123456">+357 25 123 456</a>
@@ -86,7 +86,7 @@ function Footer() {
       </div>
 
       <div className="container footer__bottom">
-        <p>Copyright {new Date().getFullYear()} AURA CYPRUS. All rights reserved.</p>
+        <p>Copyright {new Date().getFullYear()} UNITED PROPERTIES. All rights reserved.</p>
       </div>
     </footer>
   )

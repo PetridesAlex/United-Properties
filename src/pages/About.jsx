@@ -10,12 +10,12 @@ function About() {
   return (
     <>
       <Helmet>
-        <title>About Us | AURA CYPRUS</title>
+        <title>About Us | UNITED PROPERTIES</title>
       </Helmet>
 
       <section className="page-hero">
         <div className="container">
-          <p>About AURA CYPRUS</p>
+          <p>About UNITED PROPERTIES</p>
           <h1>Trusted Cyprus Real Estate Advisory</h1>
           <p>
             We combine local expertise, international perspective, and private-client
@@ -28,7 +28,7 @@ function About() {
         <div className="container about-grid">
           <img
             src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1500&q=80"
-            alt="AURA CYPRUS office lounge"
+            alt="UNITED PROPERTIES office lounge"
           />
           <div>
             <SectionHeader eyebrow="Brand Story" title="Precision, Trust, and Market Insight" />

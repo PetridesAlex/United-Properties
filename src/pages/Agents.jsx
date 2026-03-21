@@ -19,7 +19,7 @@ function Agents() {
   return (
     <>
       <Helmet>
-        <title>Agents | AURA CYPRUS</title>
+        <title>Agents | UNITED PROPERTIES</title>
       </Helmet>
 
       <section className="page-hero">

@@ -8,7 +8,7 @@ function Services() {
   return (
     <>
       <Helmet>
-        <title>Services | AURA CYPRUS</title>
+        <title>Services | UNITED PROPERTIES</title>
       </Helmet>
 
       <section className="page-hero">

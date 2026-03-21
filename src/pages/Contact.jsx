@@ -7,7 +7,7 @@ function Contact() {
   return (
     <>
       <Helmet>
-        <title>Contact | AURA CYPRUS</title>
+        <title>Contact | UNITED PROPERTIES</title>
       </Helmet>
 
       <section className="page-hero">
@@ -33,7 +33,7 @@ function Contact() {
                 <Phone size={16} /> <a href="tel:+35725123456">+357 25 123 456</a>
               </p>
               <p>
-                <Mail size={16} /> <a href="mailto:info@auracyprus.com">info@auracyprus.com</a>
+                <Mail size={16} /> <a href="mailto:info@unitedproperties.eu">info@unitedproperties.eu</a>
               </p>
               <p>
                 <Clock4 size={16} /> Mon - Fri: 9:00 - 18:00

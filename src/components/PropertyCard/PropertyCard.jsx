@@ -27,7 +27,7 @@ function PropertyCard({
       <div className="property-card__media">
         <img src={property.image} alt={`${property.title} in ${property.location}`} />
         <span className="property-card__badge">{property.status}</span>
-        {isSignature && <span className="property-card__signature">AURA CYPRUS. Signature</span>}
+        {isSignature && <span className="property-card__signature">UNITED PROPERTIES. Signature</span>}
       </div>
       <div className="property-card__content">
         <p className="property-card__price">{formatPrice(property.price, property.status)}</p>

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ShieldCheck, Cookie, X } from 'lucide-react'
 import './CookiePreferences.css'
 
-const STORAGE_KEY = 'aura-cookie-preferences-v1'
+const STORAGE_KEY = 'united-properties-cookie-preferences-v1'
 
 const defaultPreferences = {
   necessary: true,

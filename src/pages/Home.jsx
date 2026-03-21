@@ -110,7 +110,7 @@ function Home() {
   return (
     <>
       <Helmet>
-        <title>AURA CYPRUS | Luxury Real Estate in Cyprus</title>
+        <title>UNITED PROPERTIES | Luxury Real Estate in Cyprus</title>
       </Helmet>
 
       <Hero />

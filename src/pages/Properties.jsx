@@ -79,7 +79,7 @@ function Properties() {
   return (
     <>
       <Helmet>
-        <title>Properties | AURA CYPRUS</title>
+        <title>Properties | UNITED PROPERTIES</title>
       </Helmet>
 
       <section className="page-hero">
