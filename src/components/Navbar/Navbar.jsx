@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { MapPin, MessageCircle, Search } from 'lucide-react'
+import { ChevronDown, MapPin, MessageCircle, Search } from 'lucide-react'
 import StaggeredMenu from '../StaggeredMenu/StaggeredMenu'
 import './Navbar.css'
 
 const navTabs = [
+  { key: 'properties', label: 'Properties', to: '/properties', hasDropdownIcon: true },
+  { key: 'development', label: 'New Development', to: '/new-developments' },
+  { key: 'agents', label: 'Agents', to: '/agents' },
+]
+
+const propertySubItems = [
   { key: 'buy', label: 'Buy', to: '/buy' },
   { key: 'rent', label: 'Rent', to: '/rent' },
   { key: 'sell', label: 'Sell', to: '/contact' },
-  { key: 'development', label: 'New Development', to: '/new-developments' },
-  { key: 'agents', label: 'Agents', to: '/agents' },
 ]
 
 function WhatsAppIcon(props) {
@@ -52,6 +56,10 @@ function Navbar() {
   }, [])
 
   const navClass = `navbar ${isScrolled || !isHome ? 'navbar--solid' : 'navbar--transparent'}`
+  const isPropertiesActive =
+    location.pathname === '/properties' ||
+    location.pathname === '/buy' ||
+    location.pathname === '/rent'
 
   function openGlobalSearch() {
     if (isHome) {
@@ -85,15 +93,42 @@ function Navbar() {
         </Link>
 
         <nav className="navbar__desktop">
-          {navTabs.map((tab) => (
-            <NavLink
-              key={tab.key}
-              to={tab.to}
-              className={({ isActive }) => `navbar__nav-trigger ${isActive ? 'active' : ''}`.trim()}
-            >
-              {tab.label}
-            </NavLink>
-          ))}
+          {navTabs.map((tab) => {
+            if (tab.key === 'properties') {
+              return (
+                <div className="navbar__nav-dropdown" key={tab.key}>
+                  <button
+                    type="button"
+                    className={`navbar__nav-trigger navbar__nav-trigger--button ${
+                      isPropertiesActive ? 'active' : ''
+                    }`.trim()}
+                    aria-haspopup="true"
+                  >
+                    <span>{tab.label}</span>
+                    <ChevronDown size={13} aria-hidden="true" />
+                  </button>
+                  <div className="navbar__dropdown-menu" role="menu" aria-label="Properties menu">
+                    {propertySubItems.map((item) => (
+                      <Link key={item.key} to={item.to} className="navbar__dropdown-item" role="menuitem">
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )
+            }
+
+            return (
+              <NavLink
+                key={tab.key}
+                to={tab.to}
+                className={({ isActive }) => `navbar__nav-trigger ${isActive ? 'active' : ''}`.trim()}
+              >
+                <span>{tab.label}</span>
+                {tab.hasDropdownIcon && <ChevronDown size={13} aria-hidden="true" />}
+              </NavLink>
+            )
+          })}
         </nav>
 
         <button

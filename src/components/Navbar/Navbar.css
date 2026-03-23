@@ -171,8 +171,10 @@
   text-transform: uppercase;
   color: #ffffff;
   line-height: 1;
-  padding-right: 0.7rem;
-  border-right: 1px solid rgba(255, 255, 255, 0.14);
+  padding-right: 0;
+  border-right: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .navbar__logo img {
@@ -202,10 +204,78 @@
   line-height: 1;
   cursor: pointer;
   padding: 0.14rem 0.12rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.24rem;
 }
 
 .navbar__nav-trigger.active {
   color: var(--color-accent-light);
+}
+
+.navbar__nav-dropdown {
+  position: relative;
+  padding-bottom: 0.35rem;
+  margin-bottom: -0.35rem;
+}
+
+.navbar__nav-dropdown .navbar__nav-trigger svg {
+  transition: transform var(--transition-fast);
+}
+
+.navbar__nav-dropdown:hover .navbar__nav-trigger svg,
+.navbar__nav-dropdown:focus-within .navbar__nav-trigger svg {
+  transform: rotate(180deg);
+}
+
+.navbar__dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.18rem);
+  left: 0;
+  min-width: 132px;
+  padding: 0.4rem;
+  border-radius: 10px;
+  border: 1px solid rgba(214, 178, 126, 0.32);
+  background: linear-gradient(155deg, rgba(19, 17, 15, 0.98), rgba(34, 29, 24, 0.96));
+  box-shadow: 0 16px 28px rgba(4, 4, 4, 0.34);
+  display: grid;
+  gap: 0.25rem;
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  z-index: 20;
+}
+
+.navbar__nav-trigger--button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+}
+
+.navbar__nav-dropdown:hover .navbar__dropdown-menu,
+.navbar__nav-dropdown:focus-within .navbar__dropdown-menu {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.navbar__dropdown-item {
+  min-height: 34px;
+  border-radius: 8px;
+  padding: 0.42rem 0.58rem;
+  color: rgba(249, 242, 231, 0.92);
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.navbar__dropdown-item:hover {
+  background: rgba(219, 182, 125, 0.14);
+  color: #fff4e2;
 }
 
 .navbar__ctas {
@@ -291,6 +361,10 @@
 
   .navbar__nav-trigger {
     font-size: 0.78rem;
+  }
+
+  .navbar__dropdown-menu {
+    min-width: 118px;
   }
 
   .navbar__search-pill {

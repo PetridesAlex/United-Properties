@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Optional crawler budget protection for query-heavy URLs
+Disallow: /*?*mode=
+Disallow: /*?*featured=
+Disallow: /*?*keyword=
+Disallow: /*?*location=
+
+Sitemap: https://unitedproperties.eu/sitemap.xml
