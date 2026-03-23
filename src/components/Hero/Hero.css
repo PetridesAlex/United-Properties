@@ -9,7 +9,7 @@
 
 .hero-section__media {
   position: absolute;
-  top: 0.2rem;
+  top: 2.55rem;
   bottom: 0.2rem;
   left: 50%;
   width: calc(100% - 30px);
@@ -45,7 +45,7 @@
 
 .hero-section__overlay {
   position: absolute;
-  top: 0.2rem;
+  top: 2.55rem;
   bottom: 0.2rem;
   left: 50%;
   width: calc(100% - 30px);
@@ -396,7 +396,7 @@
 
   .hero-section__media,
   .hero-section__overlay {
-    top: 0.55rem;
+    top: 2.2rem;
     bottom: 0.55rem;
     width: calc(100% - 30px);
     border-radius: 14px;

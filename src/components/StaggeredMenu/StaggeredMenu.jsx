@@ -57,6 +57,15 @@ function StaggeredMenu({
     setOpen(false)
   }, [location.pathname])
 
+  useEffect(() => {
+    if (!open) return undefined
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [open])
+
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       const panel = panelRef.current

@@ -8,6 +8,7 @@
   position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
   background: linear-gradient(145deg, rgba(20, 19, 18, 0.72), rgba(45, 34, 24, 0.58));
   border: 1px solid rgba(217, 182, 128, 0.42);
@@ -20,6 +21,7 @@
   backdrop-filter: blur(7px);
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
   transition: transform var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+  will-change: transform;
 }
 
 .smenu-toggle:hover {
@@ -73,6 +75,11 @@
   transform: translate(-50%, -50%);
 }
 
+.smenu-icon-line-v {
+  width: 2px;
+  height: 100%;
+}
+
 .smenu-prelayers {
   position: fixed;
   top: 0;
@@ -110,6 +117,10 @@
   padding: 7rem 2rem 2rem;
   z-index: 88;
   overflow-y: auto;
+  visibility: hidden;
+  pointer-events: none;
+  will-change: transform;
+  transition: visibility 0s linear 0.28s;
 }
 
 .smenu-backdrop {
@@ -119,6 +130,12 @@
   background: rgba(0, 0, 0, 0.46);
   backdrop-filter: blur(2px);
   z-index: 86;
+}
+
+[data-open='true'] .staggered-menu-panel {
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
 }
 
 [data-position='left'] .staggered-menu-panel {
@@ -274,7 +291,7 @@
 
   .smenu-prelayers,
   .staggered-menu-panel {
-    width: min(560px, 68vw);
+    width: min(560px, 72vw);
   }
 
   .smenu-panel-item {
@@ -285,6 +302,18 @@
 @media (max-width: 640px) {
   .smenu-prelayers,
   .staggered-menu-panel {
-    width: min(420px, 88vw);
+    width: min(420px, 90vw);
+  }
+
+  .staggered-menu-panel {
+    padding: 6.2rem 1.25rem 1.2rem;
+  }
+
+  .smenu-panel-item {
+    font-size: clamp(1.35rem, 8.2vw, 2.1rem);
+  }
+
+  .smenu-close-btn {
+    top: -4.2rem;
   }
 }

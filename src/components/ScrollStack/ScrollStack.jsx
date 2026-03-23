@@ -180,6 +180,16 @@ const ScrollStack = ({
   }, [updateCardTransforms])
 
   const setupLenis = useCallback(() => {
+    const isTouchViewport =
+      typeof window !== 'undefined' &&
+      (window.matchMedia('(hover: none), (pointer: coarse)').matches || window.innerWidth <= 1024)
+
+    // Keep native scrolling on touch/mobile for natural speed and inertia.
+    if (isTouchViewport) {
+      lenisRef.current = null
+      return false
+    }
+
     const baseOptions = {
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - 2 ** (-10 * t)),
@@ -211,6 +221,7 @@ const ScrollStack = ({
 
     animationFrameRef.current = requestAnimationFrame(raf)
     lenisRef.current = lenis
+    return true
   }, [handleScroll, useWindowScroll])
 
   useLayoutEffect(() => {
@@ -235,10 +246,25 @@ const ScrollStack = ({
       card.style.webkitPerspective = '1000px'
     })
 
-    setupLenis()
+    const didInitLenis = setupLenis()
+    let removeNativeListeners = null
+
+    if (!didInitLenis) {
+      const target = useWindowScroll ? window : scroller
+      const onNativeScroll = () => handleScroll()
+      const onNativeResize = () => handleScroll()
+      target.addEventListener('scroll', onNativeScroll, { passive: true })
+      window.addEventListener('resize', onNativeResize, { passive: true })
+      removeNativeListeners = () => {
+        target.removeEventListener('scroll', onNativeScroll)
+        window.removeEventListener('resize', onNativeResize)
+      }
+    }
+
     updateCardTransforms()
 
     return () => {
+      if (removeNativeListeners) removeNativeListeners()
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current)
       if (lenisRef.current) lenisRef.current.destroy()
       stackCompletedRef.current = false
