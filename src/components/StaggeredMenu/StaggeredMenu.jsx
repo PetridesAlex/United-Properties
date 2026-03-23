@@ -38,8 +38,6 @@ function StaggeredMenu({
   const panelRef = useRef(null)
   const preLayersRef = useRef(null)
   const preLayerElsRef = useRef([])
-  const plusHRef = useRef(null)
-  const plusVRef = useRef(null)
   const iconRef = useRef(null)
   const textInnerRef = useRef(null)
   const [textLines, setTextLines] = useState(['Menu', 'Close'])
@@ -70,19 +68,15 @@ function StaggeredMenu({
     const ctx = gsap.context(() => {
       const panel = panelRef.current
       const preContainer = preLayersRef.current
-      const plusH = plusHRef.current
-      const plusV = plusVRef.current
       const icon = iconRef.current
       const textInner = textInnerRef.current
-      if (!panel || !plusH || !plusV || !icon || !textInner) return
+      if (!panel || !icon || !textInner) return
 
       const preLayers = preContainer ? Array.from(preContainer.querySelectorAll('.smenu-prelayer')) : []
       preLayerElsRef.current = preLayers
 
       const offscreen = position === 'left' ? -100 : 100
       gsap.set([panel, ...preLayers], { xPercent: offscreen })
-      gsap.set(plusH, { transformOrigin: '50% 50%', rotate: 0 })
-      gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 90 })
       gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' })
       gsap.set(textInner, { yPercent: 0 })
       if (toggleBtnRef.current) gsap.set(toggleBtnRef.current, { color: menuButtonColor })
@@ -198,9 +192,9 @@ function StaggeredMenu({
     if (!icon) return
     spinTweenRef.current?.kill()
     spinTweenRef.current = gsap.to(icon, {
-      rotate: opening ? 225 : 0,
-      duration: opening ? 0.8 : 0.35,
-      ease: opening ? 'power4.out' : 'power3.inOut',
+      rotate: 0,
+      duration: opening ? 0.2 : 0.18,
+      ease: 'power2.out',
       overwrite: 'auto',
     })
   }, [])
@@ -330,8 +324,10 @@ function StaggeredMenu({
           </span>
         </span>
         <span ref={iconRef} className="smenu-icon" aria-hidden="true">
-          <span ref={plusHRef} className="smenu-icon-line" />
-          <span ref={plusVRef} className="smenu-icon-line smenu-icon-line-v" />
+          <span className="smenu-icon-line smenu-icon-line-top" />
+          <span className="smenu-icon-line smenu-icon-line-mid" />
+          <span className="smenu-icon-line smenu-icon-line-bottom" />
+          <span className="smenu-icon-dot" />
         </span>
       </button>
 

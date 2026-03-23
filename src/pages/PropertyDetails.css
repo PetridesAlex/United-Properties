@@ -22,19 +22,6 @@
   z-index: 1;
 }
 
-.page-hero--property .breadcrumb {
-  margin-bottom: 1rem;
-  color: rgba(248, 246, 241, 0.82);
-}
-
-.page-hero--property .breadcrumb a {
-  color: rgba(248, 246, 241, 0.78);
-}
-
-.page-hero--property .breadcrumb a:hover {
-  color: var(--color-accent-light);
-}
-
 .property-details {
   display: grid;
   gap: 1.4rem;
@@ -313,11 +300,6 @@
   .page-hero--property {
     padding-top: 7.1rem;
     padding-bottom: 2.35rem;
-  }
-
-  .page-hero--property .breadcrumb {
-    font-size: 0.82rem;
-    margin-bottom: 0.8rem;
   }
 
   .property-details__hero-title {

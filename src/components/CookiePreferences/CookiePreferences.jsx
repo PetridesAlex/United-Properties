@@ -13,7 +13,7 @@ const defaultPreferences = {
 
 function CookieToggle({ id, label, description, checked, disabled, onChange }) {
   return (
-    <div className="cookie-preferences__item">
+    <div className={`cookie-preferences__item ${checked ? 'is-active' : ''}`.trim()}>
       <div>
         <h4>{label}</h4>
         <p>{description}</p>
@@ -27,6 +27,9 @@ function CookieToggle({ id, label, description, checked, disabled, onChange }) {
           onChange={(event) => onChange?.(event.target.checked)}
         />
         <span className="cookie-toggle__track" aria-hidden="true" />
+        <span className="cookie-toggle__label" aria-hidden="true">
+          {checked ? 'On' : 'Off'}
+        </span>
       </label>
     </div>
   )

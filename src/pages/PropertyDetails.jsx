@@ -10,7 +10,6 @@ import {
   MessageCircle,
   MapPin,
 } from 'lucide-react'
-import Breadcrumb from '../components/Breadcrumb/Breadcrumb'
 import Gallery from '../components/Gallery/Gallery'
 import InquiryForm from '../components/InquiryForm/InquiryForm'
 import SectionHeader from '../components/SectionHeader/SectionHeader'
@@ -35,13 +34,6 @@ function PropertyDetails() {
 
       <section className="page-hero page-hero--property">
         <div className="container">
-          <Breadcrumb
-            items={[
-              { label: 'Home', to: '/' },
-              { label: 'Properties', to: '/properties' },
-              { label: property.title },
-            ]}
-          />
           <h1 className="property-details__hero-title">{property.title}</h1>
           <p className="property-details__hero-location">
             <MapPin size={16} /> {property.location}

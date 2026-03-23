@@ -136,14 +136,73 @@
   box-shadow: none;
 }
 
+.property-card--cover {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.property-card--cover .property-card__media {
+  border-radius: 14px;
+}
+
+.property-card--cover .property-card__media img {
+  height: clamp(250px, 31vw, 360px);
+}
+
+.property-card__cover-overlay {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 2;
+  padding: 0.88rem 0.95rem;
+  background: linear-gradient(to top, rgba(7, 12, 20, 0.94), rgba(7, 12, 20, 0.2));
+  color: rgba(247, 244, 238, 0.96);
+  display: grid;
+  gap: 0.22rem;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  pointer-events: none;
+}
+
+.property-card__cover-overlay p {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.property-card__cover-overlay strong {
+  color: #f5deb8;
+  font-weight: 700;
+}
+
+.property-card--cover:hover .property-card__cover-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.property-card--cover.is-revealed .property-card__cover-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.property-card__cover-link {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+}
+
 .property-card--signature .property-card__content {
-  margin-top: -8.6rem;
+  margin-top: -7.4rem;
   padding: 1rem 0.95rem 0.9rem;
   background: linear-gradient(to top, rgba(9, 11, 15, 0.92), rgba(9, 11, 15, 0.08));
   border-top: 0;
   border-radius: 0 0 10px 10px;
   position: relative;
   z-index: 1;
+  display: grid;
+  gap: 0.45rem;
+  align-content: end;
 }
 
 @media (max-width: 1180px) {
@@ -161,23 +220,33 @@
   color: #f7e9d6;
   font-size: 1.22rem;
   text-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  margin: 0;
 }
 
 .property-card--signature h3 {
   color: #fff;
+  margin: 0;
 }
 
 .property-card--signature .property-card__location {
   color: rgba(248, 246, 241, 0.9);
+  margin: 0;
+  display: flex;
+  align-items: center;
 }
 
 .property-card--signature .property-card__meta {
   color: rgba(248, 246, 241, 0.92);
+  margin: 0.15rem 0 0;
+  gap: 0.32rem;
 }
 
 .property-card--signature .property-card__meta span {
   border-color: rgba(248, 246, 241, 0.22);
   background: rgba(17, 21, 28, 0.66);
+  white-space: nowrap;
+  font-size: 0.62rem;
+  line-height: 1;
 }
 
 @media (max-width: 720px) {
@@ -185,9 +254,14 @@
     height: 220px;
   }
 
+  .property-card--cover .property-card__media img {
+    height: 240px;
+  }
+
   .property-card--signature .property-card__content {
-    margin-top: -5.8rem;
+    margin-top: -4.9rem;
     padding: 0.74rem 0.72rem 0.72rem;
+    gap: 0.36rem;
   }
 
   .property-card--signature .property-card__price {

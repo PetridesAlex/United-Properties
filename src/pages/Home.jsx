@@ -61,7 +61,7 @@ function mapSanityProperty(item, index) {
     features: Array.isArray(item.amenities) ? item.amenities : [],
     image:
       mainImage ||
-      'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1600&q=80',
+      'https://images.unsplash.com/photo-1613977257360-707ba9348227?auto=format&fit=crop&w=1600&q=80',
     gallery: gallery.length ? gallery : mainImage ? [mainImage] : [],
     featured: Boolean(item.featured),
     category: item.propertyType || 'Property',
