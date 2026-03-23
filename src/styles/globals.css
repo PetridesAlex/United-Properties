@@ -1,4 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700;800&display=swap');
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/fonts/Montserrat-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 *,
 *::before,
@@ -13,7 +19,7 @@ html {
 
 body {
   margin: 0;
-  font-family: var(--font-sans);
+  font-family: 'Montserrat', sans-serif;
   background: var(--color-bg-dark);
   color: var(--color-ink);
   line-height: 1.58;
@@ -39,10 +45,15 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-sans);
-  font-weight: 800;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
   line-height: 1.1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.5px;
+}
+
+.hero-title {
+  font-weight: 600;
+  letter-spacing: -1px;
 }
 
 p {

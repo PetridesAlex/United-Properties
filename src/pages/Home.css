@@ -62,11 +62,11 @@
 }
 
 .section-header--featured h2 {
-  font-family: var(--font-sans);
+  font-family: 'Montserrat', sans-serif;
   font-size: clamp(2.2rem, 4.1vw, 3.6rem);
-  font-weight: 800;
+  font-weight: 500;
   color: #f8efe2;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.5px;
   text-shadow: 0 8px 18px rgba(0, 0, 0, 0.24);
 }
 
