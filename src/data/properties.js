@@ -1,3 +1,5 @@
+const PROPERTY_IMAGE_PLACEHOLDER = '/images/placeholders/property-image-placeholder.svg'
+
 export const properties = [
   {
     id: 1,
@@ -19,12 +21,11 @@ export const properties = [
       'Two covered parking spaces',
       'Private concierge access',
     ],
-    image:
-      'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1600&q=80',
+    image: PROPERTY_IMAGE_PLACEHOLDER,
     gallery: [
-      'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1613977257360-707ba9348227?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80',
+      PROPERTY_IMAGE_PLACEHOLDER,
+      PROPERTY_IMAGE_PLACEHOLDER,
+      PROPERTY_IMAGE_PLACEHOLDER,
     ],
     featured: true,
     category: 'Luxury apartments in Limassol',
@@ -53,12 +54,11 @@ export const properties = [
       'Wine cellar',
       'Staff quarters',
     ],
-    image:
-      'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1600&q=80',
+    image: PROPERTY_IMAGE_PLACEHOLDER,
     gallery: [
-      'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1616594039964-3c2f2a8f1e0e?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1600&q=80',
+      PROPERTY_IMAGE_PLACEHOLDER,
+      PROPERTY_IMAGE_PLACEHOLDER,
+      PROPERTY_IMAGE_PLACEHOLDER,
     ],
     featured: true,
     category: 'Seafront villas in Paphos',
@@ -87,12 +87,11 @@ export const properties = [
       '24/7 building security',
       'Energy class A',
     ],
-    image:
-      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1600&q=80',
+    image: PROPERTY_IMAGE_PLACEHOLDER,
     gallery: [
-      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1560448075-bb485b067938?auto=format&fit=crop&w=1600&q=80',
+      PROPERTY_IMAGE_PLACEHOLDER,
+      PROPERTY_IMAGE_PLACEHOLDER,
+      PROPERTY_IMAGE_PLACEHOLDER,
     ],
     featured: false,
     category: 'Modern city apartments in Nicosia',
@@ -121,12 +120,11 @@ export const properties = [
       'Storage room',
       'Covered parking',
     ],
-    image:
-      'https://images.unsplash.com/photo-1600607687644-aac4c3eac7f4?auto=format&fit=crop&w=1600&q=80',
+    image: PROPERTY_IMAGE_PLACEHOLDER,
     gallery: [
-      'https://images.unsplash.com/photo-1600607687644-aac4c3eac7f4?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=1600&q=80',
+      PROPERTY_IMAGE_PLACEHOLDER,
+      PROPERTY_IMAGE_PLACEHOLDER,
+      PROPERTY_IMAGE_PLACEHOLDER,
     ],
     featured: false,
     category: 'Investment flats in Larnaca',
@@ -155,12 +153,11 @@ export const properties = [
       'Sea-view balcony',
       'Security alarm system',
     ],
-    image:
-      'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1600&q=80',
+    image: PROPERTY_IMAGE_PLACEHOLDER,
     gallery: [
-      'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1572120360610-d971b9d7767c?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1600&q=80',
+      PROPERTY_IMAGE_PLACEHOLDER,
+      PROPERTY_IMAGE_PLACEHOLDER,
+      PROPERTY_IMAGE_PLACEHOLDER,
     ],
     featured: true,
     category: 'Holiday homes in Protaras',
@@ -189,12 +186,11 @@ export const properties = [
       'Fully furnished',
       'Beachfront access',
     ],
-    image:
-      'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1600&q=80',
+    image: PROPERTY_IMAGE_PLACEHOLDER,
     gallery: [
-      'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1493666438817-866a91353ca9?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1616046229478-9901c5536a45?auto=format&fit=crop&w=1600&q=80',
+      PROPERTY_IMAGE_PLACEHOLDER,
+      PROPERTY_IMAGE_PLACEHOLDER,
+      PROPERTY_IMAGE_PLACEHOLDER,
     ],
     featured: false,
     category: 'Luxury apartments in Limassol',

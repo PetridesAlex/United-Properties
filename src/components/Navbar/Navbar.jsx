@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { ChevronDown, MapPin, MessageCircle, Search } from 'lucide-react'
+import { ChevronDown, MapPin, Search } from 'lucide-react'
 import StaggeredMenu from '../StaggeredMenu/StaggeredMenu'
 import './Navbar.css'
 
@@ -145,14 +145,6 @@ function Navbar() {
         </button>
 
         <div className="navbar__ctas">
-          <a
-            className="btn btn-outline-light navbar__wa"
-            href="https://wa.me/35700000000"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <MessageCircle size={16} />
-          </a>
           <StaggeredMenu
             className="navbar__staggered"
             position="right"

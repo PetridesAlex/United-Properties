@@ -1,3 +1,5 @@
+const PROPERTY_IMAGE_PLACEHOLDER = '/images/placeholders/property-image-placeholder.svg'
+
 export const searchDiscoveryProperties = [
   {
     id: 'sd-1',
@@ -7,8 +9,7 @@ export const searchDiscoveryProperties = [
     price: 2130000,
     category: 'Featured Properties',
     type: 'Penthouse',
-    image:
-      'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1600&q=80',
+    image: PROPERTY_IMAGE_PLACEHOLDER,
     isFeatured: true,
     isNewDevelopment: false,
     isSignature: true,
@@ -22,8 +23,7 @@ export const searchDiscoveryProperties = [
     price: 4600000,
     category: 'Signature Listings',
     type: 'Luxury Villa',
-    image:
-      'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1600&q=80',
+    image: PROPERTY_IMAGE_PLACEHOLDER,
     isFeatured: true,
     isNewDevelopment: false,
     isSignature: true,
@@ -37,8 +37,7 @@ export const searchDiscoveryProperties = [
     price: 845000,
     category: 'New Developments',
     type: 'Apartment',
-    image:
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1600&q=80',
+    image: PROPERTY_IMAGE_PLACEHOLDER,
     isFeatured: false,
     isNewDevelopment: true,
     isSignature: false,
@@ -52,8 +51,7 @@ export const searchDiscoveryProperties = [
     price: 520000,
     category: 'Featured Properties',
     type: 'Apartment',
-    image:
-      'https://images.unsplash.com/photo-1493666438817-866a91353ca9?auto=format&fit=crop&w=1600&q=80',
+    image: PROPERTY_IMAGE_PLACEHOLDER,
     isFeatured: true,
     isNewDevelopment: false,
     isSignature: false,
@@ -67,8 +65,7 @@ export const searchDiscoveryProperties = [
     price: 1290000,
     category: 'Signature Listings',
     type: 'Holiday Home',
-    image:
-      'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1600&q=80',
+    image: PROPERTY_IMAGE_PLACEHOLDER,
     isFeatured: false,
     isNewDevelopment: false,
     isSignature: true,
@@ -82,8 +79,7 @@ export const searchDiscoveryProperties = [
     price: 980000,
     category: 'New Developments',
     type: 'Suites',
-    image:
-      'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1600&q=80',
+    image: PROPERTY_IMAGE_PLACEHOLDER,
     isFeatured: false,
     isNewDevelopment: true,
     isSignature: false,
@@ -97,8 +93,7 @@ export const searchDiscoveryProperties = [
     price: 1750000,
     category: 'New Developments',
     type: 'Residence',
-    image:
-      'https://images.unsplash.com/photo-1613977257592-487ecd136cc3?auto=format&fit=crop&w=1600&q=80',
+    image: PROPERTY_IMAGE_PLACEHOLDER,
     isFeatured: false,
     isNewDevelopment: true,
     isSignature: true,
@@ -112,8 +107,7 @@ export const searchDiscoveryProperties = [
     price: 2390000,
     category: 'Featured Properties',
     type: 'Villa',
-    image:
-      'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=1600&q=80',
+    image: PROPERTY_IMAGE_PLACEHOLDER,
     isFeatured: true,
     isNewDevelopment: false,
     isSignature: false,
@@ -127,8 +121,7 @@ export const searchDiscoveryProperties = [
     price: 1160000,
     category: 'Signature Listings',
     type: 'Penthouse',
-    image:
-      'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1600&q=80',
+    image: PROPERTY_IMAGE_PLACEHOLDER,
     isFeatured: false,
     isNewDevelopment: false,
     isSignature: true,

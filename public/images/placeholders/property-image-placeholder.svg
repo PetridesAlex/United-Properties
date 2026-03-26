@@ -1,0 +1,13 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="1000" fill="#EEF2F7"/>
+  <rect x="80" y="80" width="1440" height="840" rx="28" fill="#F8FAFD" stroke="#C9D4E3" stroke-width="6"/>
+  <rect x="640" y="338" width="320" height="320" rx="20" fill="#E4EBF5"/>
+  <path d="M742 558L810 490L860 540L904 496L958 558" stroke="#8BA0BC" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="900" cy="430" r="34" fill="#9CB1CC"/>
+  <text x="800" y="740" text-anchor="middle" fill="#2B4568" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="700">
+    INSERT PROPERTY IMAGE HERE
+  </text>
+  <text x="800" y="792" text-anchor="middle" fill="#6A7F9B" font-family="Arial, Helvetica, sans-serif" font-size="30">
+    Replace this placeholder with your final listing photo
+  </text>
+</svg>

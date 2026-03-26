@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ChevronDown, Search, Sparkles } from 'lucide-react'
+import { ChevronDown, MapPinned, Search } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { heroSearchSuggestionGroups } from '../../data/heroSearchSuggestions'
 import SearchPanel from '../SearchPanel/SearchPanel'
@@ -84,13 +84,13 @@ function Hero() {
         <div className="container hero-section__inner">
           <div className="hero-section__search-stack">
             <motion.div
-              className="hero-section__trigger-shell"
+              className="hero-section__trigger"
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.75 }}
             >
               <div
-                className="hero-section__trigger"
+                className="hero-section__trigger-inner"
                 role="button"
                 tabIndex={0}
                 onClick={() => openSearchPanel(null)}
@@ -100,26 +100,18 @@ function Hero() {
                     openSearchPanel(null)
                   }
                 }}
-                aria-label="Open smart property search"
+                aria-label="Open property search panel"
               >
                 <button
                   type="button"
                   className="hero-section__trigger-input"
-                  aria-label="Open search panel"
+                  aria-label="Search properties"
                   onClick={(event) => {
                     event.stopPropagation()
                     openSearchPanel(null)
                   }}
                 >
-                  <span className="hero-section__trigger-ai-orb" aria-hidden="true">
-                    <Sparkles size={18} strokeWidth={2.2} />
-                  </span>
-                  <span className="hero-section__trigger-copy">
-                    <span className="hero-section__trigger-eyebrow">Smart search</span>
-                    <span className="hero-section__trigger-placeholder">
-                      Ask anything — villas, areas, rentals, new developments…
-                    </span>
-                  </span>
+                  <span className="hero-section__trigger-text">Search properties, locations, agents...</span>
                 </button>
                 <button
                   type="button"
@@ -128,11 +120,10 @@ function Hero() {
                     event.stopPropagation()
                     openSearchPanel({ category: 'Featured Properties' })
                   }}
-                  aria-label="Open featured property picks"
-                  title="Featured listings"
+                  aria-label="Open featured property map suggestions"
+                  title="Featured map suggestions"
                 >
-                  <Sparkles size={14} strokeWidth={2} aria-hidden />
-                  <span>Featured</span>
+                  <MapPinned size={14} strokeWidth={2.1} aria-hidden />
                 </button>
                 <button
                   type="button"
@@ -143,7 +134,7 @@ function Hero() {
                   }}
                   aria-label="Open search"
                 >
-                  <Search size={17} strokeWidth={2.2} />
+                  <Search size={18} strokeWidth={2.2} />
                 </button>
               </div>
             </motion.div>
