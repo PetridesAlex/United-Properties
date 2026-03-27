@@ -89,7 +89,7 @@ function Navbar() {
 
       <div className="container navbar__inner navbar__inner--wide">
         <Link to="/" className="navbar__logo">
-          <img src="/images/logo/987%20(1).svg" alt="United Properties" />
+          <img src="/images/logo/united-properties-logo.svg" alt="United Properties" />
         </Link>
 
         <nav className="navbar__desktop">

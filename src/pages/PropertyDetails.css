@@ -4,7 +4,7 @@
   background:
     radial-gradient(circle at 16% 20%, rgba(196, 156, 92, 0.2), transparent 42%),
     linear-gradient(145deg, #191510 0%, #12100d 55%, #1d1811 100%);
-  padding: clamp(7.4rem, 10vw, 9.2rem) 0 clamp(2.8rem, 4vw, 3.9rem);
+  padding: clamp(9.2rem, 12vw, 11.2rem) 0 clamp(2.8rem, 4vw, 3.9rem);
 }
 
 .page-hero--property::before {
@@ -298,7 +298,7 @@
 
 @media (max-width: 680px) {
   .page-hero--property {
-    padding-top: 7.1rem;
+    padding-top: 8.8rem;
     padding-bottom: 2.35rem;
   }
 

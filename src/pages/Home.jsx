@@ -32,6 +32,21 @@ function toNumber(value, fallback = 0) {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback
 }
 
+function isSignatureProperty(property) {
+  if (!property) return false
+  if (property.isSignature === true) return true
+
+  const category = typeof property.category === 'string' ? property.category.toLowerCase() : ''
+  const tags = Array.isArray(property.badges) ? property.badges.map((tag) => String(tag).toLowerCase()) : []
+  const type = typeof property.type === 'string' ? property.type.toLowerCase() : ''
+
+  return (
+    category.includes('signature') ||
+    tags.some((tag) => tag.includes('signature')) ||
+    type.includes('signature')
+  )
+}
+
 function mapSanityProperty(item, index) {
   const mainImageBuilder = item.mainImage ? urlForImage(item.mainImage) : null
   const mainImage = mainImageBuilder
@@ -64,6 +79,7 @@ function mapSanityProperty(item, index) {
       'https://images.unsplash.com/photo-1613977257360-707ba9348227?auto=format&fit=crop&w=1600&q=80',
     gallery: gallery.length ? gallery : mainImage ? [mainImage] : [],
     featured: Boolean(item.featured),
+    isSignature: Boolean(item.signature),
     category: item.propertyType || 'Property',
     yearBuilt: toNumber(item.yearBuilt),
     parking: toNumber(item.parkingSpaces),
@@ -84,6 +100,16 @@ function Home() {
     const source = featured.length ? featured : sanityProperties
     return source.slice(0, 3)
   }, [sanityProperties, fallbackFeaturedProperties])
+  const signatureCollectionProperties = useMemo(() => {
+    const source = sanityProperties.length ? sanityProperties : properties
+    const signatureOnly = source.filter(isSignatureProperty)
+
+    // Keep the stack alive even before signature flags are set in CMS/data.
+    if (signatureOnly.length) return signatureOnly
+
+    const featuredFallback = source.filter((property) => property.featured)
+    return featuredFallback.length ? featuredFallback : source
+  }, [sanityProperties])
   const featuredAgents = agents.slice(0, 3)
   const homeServices = services.slice(0, 8)
 
@@ -170,7 +196,7 @@ function Home() {
             baseScale={0.82}
             rotationAmount={0}
           >
-            {featuredProperties.map((property) => (
+            {signatureCollectionProperties.map((property) => (
               <ScrollStackItem key={`stack-${property.id}`} itemClassName="home-scroll-stack-card">
                 <img src={property.image} alt={property.title} />
                 <div className="home-scroll-stack-card__overlay" />

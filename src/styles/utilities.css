@@ -101,7 +101,7 @@
       rgba(12, 22, 38, 0.9)
     );
   color: var(--color-white);
-  padding: clamp(7.4rem, 10vw, 9.2rem) 0 clamp(2.8rem, 4vw, 3.9rem);
+  padding: clamp(9.2rem, 12vw, 11.2rem) 0 clamp(2.8rem, 4vw, 3.9rem);
 }
 
 .page-hero::before {
@@ -171,7 +171,7 @@
   }
 
   .page-hero {
-    padding-top: 7.1rem;
+    padding-top: 8.8rem;
     padding-bottom: 2.35rem;
   }
 

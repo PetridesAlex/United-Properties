@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import SectionHeader from '../components/SectionHeader/SectionHeader'
 import AgentCard from '../components/AgentCard/AgentCard'
 import { agents } from '../data/agents'
+import './Agents.css'
 
 function Agents() {
   const [specialty, setSpecialty] = useState('')
@@ -36,9 +37,10 @@ function Agents() {
       <section className="section section--light">
         <div className="container">
           <SectionHeader title="Advisors by Specialization" />
-          <label htmlFor="specialty-filter" style={{ display: 'grid', gap: '0.4rem', maxWidth: '320px' }}>
-            Filter by specialty
+          <label htmlFor="specialty-filter" className="agents-filter">
+            <span className="agents-filter__label">Filter by specialty</span>
             <select
+              className="agents-filter__select"
               id="specialty-filter"
               value={specialty}
               onChange={(event) => setSpecialty(event.target.value)}
@@ -52,7 +54,7 @@ function Agents() {
             </select>
           </label>
 
-          <div className="grid-3" style={{ marginTop: '1rem' }}>
+          <div className="grid-3 agents-grid">
             {visibleAgents.map((agent) => (
               <AgentCard key={agent.id} agent={agent} />
             ))}

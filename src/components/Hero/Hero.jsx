@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronDown, MapPinned, Search } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { heroSearchSuggestionGroups } from '../../data/heroSearchSuggestions'
 import SearchPanel from '../SearchPanel/SearchPanel'
 import './Hero.css'
 
@@ -139,26 +138,6 @@ function Hero() {
               </div>
             </motion.div>
 
-            <div className="hero-section__smart-groups" aria-label="Suggested searches">
-              {heroSearchSuggestionGroups.map((group) => (
-                <div key={group.id} className="hero-section__smart-group">
-                  <span className="hero-section__smart-group-label">{group.label}</span>
-                  <div className="hero-section__chips" role="list">
-                    {group.items.map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        role="listitem"
-                        className={`hero-section__chip hero-section__chip--${item.variant}`.trim()}
-                        onClick={() => openSearchPanel(item.seed)}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
 
