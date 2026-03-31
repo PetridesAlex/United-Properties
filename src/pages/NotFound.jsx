@@ -7,7 +7,7 @@ function NotFound() {
       <Helmet>
         <title>Page Not Found | United Properties</title>
       </Helmet>
-      <section className="section section--light" style={{ paddingTop: '9rem' }}>
+      <section className="page-hero page-hero--404">
         <div className="container" style={{ textAlign: 'center' }}>
           <p>404</p>
           <h1>Page Not Found</h1>

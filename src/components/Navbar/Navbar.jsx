@@ -44,6 +44,7 @@ function InstagramIcon(props) {
 
 function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
+  const [propertiesDropdownDismissed, setPropertiesDropdownDismissed] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
   const isHome = location.pathname === '/'
@@ -100,7 +101,11 @@ function Navbar() {
           {navTabs.map((tab) => {
             if (tab.key === 'properties') {
               return (
-                <div className="navbar__nav-dropdown" key={tab.key}>
+                <div
+                  className={`navbar__nav-dropdown${propertiesDropdownDismissed ? ' navbar__nav-dropdown--dismissed' : ''}`.trim()}
+                  key={tab.key}
+                  onMouseLeave={() => setPropertiesDropdownDismissed(false)}
+                >
                   <button
                     type="button"
                     className={`navbar__nav-trigger navbar__nav-trigger--button ${
@@ -113,7 +118,13 @@ function Navbar() {
                   </button>
                   <div className="navbar__dropdown-menu" role="menu" aria-label="Properties menu">
                     {propertySubItems.map((item) => (
-                      <Link key={item.key} to={item.to} className="navbar__dropdown-item" role="menuitem">
+                      <Link
+                        key={item.key}
+                        to={item.to}
+                        className="navbar__dropdown-item"
+                        role="menuitem"
+                        onClick={() => setPropertiesDropdownDismissed(true)}
+                      >
                         {item.label}
                       </Link>
                     ))}

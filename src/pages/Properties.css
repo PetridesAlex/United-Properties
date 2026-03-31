@@ -165,6 +165,13 @@
   align-items: end;
 }
 
+/* Lighter overlay than default .page-hero::before so the building photo reads clearly */
+.page-hero.properties-hero::before {
+  background:
+    linear-gradient(to right, rgba(5, 12, 26, 0.35), transparent 58%),
+    linear-gradient(to top, rgba(0, 0, 0, 0.2), transparent 52%);
+}
+
 .properties-hero .container {
   position: relative;
   z-index: 1;
@@ -225,13 +232,17 @@
   color: #fff;
   font-size: clamp(2rem, 5.2vw, 4rem);
   line-height: 1.03;
+  text-shadow:
+    0 2px 28px rgba(0, 0, 0, 0.5),
+    0 1px 4px rgba(0, 0, 0, 0.55);
 }
 
 .properties-hero__description {
   margin: 0.85rem auto 0;
   margin-inline: auto;
   max-width: 50rem;
-  color: rgba(248, 246, 241, 0.8);
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.4);
 }
 
 .properties-hero__jump {
@@ -240,23 +251,20 @@
 
 .properties-hero--buy {
   background:
-    linear-gradient(to bottom, rgba(8, 17, 30, 0.58), rgba(8, 17, 30, 0.84)),
-    url('https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=2000&q=80')
-      center / cover no-repeat;
+    linear-gradient(to bottom, rgba(8, 17, 30, 0.28), rgba(8, 17, 30, 0.58)),
+    var(--page-hero-image) center bottom / cover no-repeat;
 }
 
 .properties-hero--rent {
   background:
-    linear-gradient(to bottom, rgba(8, 17, 30, 0.56), rgba(8, 17, 30, 0.84)),
-    url('https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?auto=format&fit=crop&w=2000&q=80')
-      center / cover no-repeat;
+    linear-gradient(to bottom, rgba(8, 17, 30, 0.26), rgba(8, 17, 30, 0.56)),
+    var(--page-hero-image) center bottom / cover no-repeat;
 }
 
 .properties-hero--development {
   background:
-    linear-gradient(to bottom, rgba(8, 17, 30, 0.58), rgba(8, 17, 30, 0.86)),
-    url('https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=2000&q=80')
-      center / cover no-repeat;
+    linear-gradient(to bottom, rgba(8, 17, 30, 0.28), rgba(8, 17, 30, 0.58)),
+    var(--page-hero-image) center bottom / cover no-repeat;
 }
 
 .properties__loadmore {

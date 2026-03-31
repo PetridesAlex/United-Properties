@@ -24,4 +24,7 @@
   --transition-fast: 180ms ease;
   --transition-normal: 280ms ease;
   --transition-slow: 450ms ease;
+
+  /* Shared inner-page hero (Home uses its own layout, not .page-hero) */
+  --page-hero-image: url('/images/hero-backgrounds/high-building.webp');
 }

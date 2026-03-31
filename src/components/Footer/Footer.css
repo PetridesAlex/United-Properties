@@ -1,10 +1,33 @@
 .footer {
   position: relative;
+  overflow: hidden;
   padding-top: 4.4rem;
-  background: #ffffff;
-  color: #153251;
+  min-height: min(42vh, 520px);
+  background-color: #0a1422;
+  background-image:
+    radial-gradient(ellipse 95% 75% at 50% 100%, rgba(0, 0, 0, 0.28), transparent 60%),
+    linear-gradient(to bottom, rgba(6, 14, 26, 0.35), rgba(4, 10, 20, 0.62)),
+    url('/images/hero-backgrounds/footer-building.webp');
+  background-position: center, center, center bottom;
+  background-size: auto, auto, cover;
+  background-repeat: no-repeat;
+  color: rgba(255, 255, 255, 0.95);
   font-family: var(--font-sans);
-  border-top: 1px solid rgba(18, 46, 77, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.18), transparent 48%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.footer > .container {
+  position: relative;
+  z-index: 1;
 }
 
 .footer__grid {
@@ -33,30 +56,32 @@
   width: auto;
   object-fit: contain;
   max-width: min(360px, 78vw);
-  filter: contrast(1.34) saturate(1.16) brightness(1.02) drop-shadow(0 5px 10px rgba(6, 20, 38, 0.22));
+  filter: contrast(1.22) saturate(1.1) brightness(1.08) drop-shadow(0 6px 18px rgba(0, 0, 0, 0.45));
 }
 
 .footer p {
   margin: 0.3rem 0 0;
-  color: #2e4f74;
+  color: rgba(248, 246, 241, 0.92);
   line-height: 1.72;
   font-size: 1rem;
   max-width: 42ch;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.4);
 }
 
 .footer__grid > div:first-child p {
-  color: #1f4268;
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 600;
 }
 
 .footer h4 {
   margin: 0 0 0.85rem;
-  color: #0f2f52;
+  color: rgba(255, 255, 255, 0.98);
   font-family: var(--font-sans);
   font-size: 0.82rem;
   font-weight: 800;
   letter-spacing: 0.11em;
   text-transform: uppercase;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.45);
 }
 
 .footer ul {
@@ -67,10 +92,12 @@
   gap: 0.56rem;
   font-size: 0.93rem;
   line-height: 1.5;
+  color: rgba(248, 246, 241, 0.9);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.35);
 }
 
 .footer a {
-  color: #153251;
+  color: rgba(255, 255, 255, 0.95);
   text-decoration: none;
   transition: color var(--transition-fast), transform var(--transition-fast);
   display: inline-block;
@@ -78,10 +105,11 @@
   font-size: 0.95rem;
   font-weight: 800;
   letter-spacing: 0.01em;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.38);
 }
 
 .footer a:hover {
-  color: #0f4f8b;
+  color: var(--color-accent-light);
   transform: translateX(2px);
 }
 
@@ -95,24 +123,29 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid rgba(15, 46, 82, 0.2);
-  background: #f3f7fc;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.95);
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
 .footer__socials a:hover {
-  border-color: rgba(15, 79, 139, 0.45);
-  background: #e8f1fb;
+  border-color: rgba(191, 152, 117, 0.55);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
 }
 
 .footer__newsletter {
   margin-top: 0.3rem;
   padding: 1.15rem 1.2rem;
-  border: 1px solid rgba(15, 41, 69, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 16px;
-  background: #f6f9fd;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(191, 152, 117, 0.1), transparent 42%),
+    rgba(8, 16, 28, 0.55);
+  backdrop-filter: blur(10px);
 }
 
 .footer__newsletter h4 {
@@ -129,7 +162,7 @@
   flex: 1;
   min-height: 45px;
   min-width: 220px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.96);
   border: 1px solid rgba(121, 152, 186, 0.35);
   border-radius: var(--radius-sm);
   padding: 0.68rem;
@@ -143,7 +176,7 @@
 
 .footer__bottom {
   padding: 1.4rem 0 2rem;
-  color: rgba(60, 88, 120, 0.75);
+  color: rgba(248, 246, 241, 0.65);
   font-size: 0.85rem;
   letter-spacing: 0.04em;
   text-align: center;

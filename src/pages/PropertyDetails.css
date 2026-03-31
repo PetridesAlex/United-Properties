@@ -1,9 +1,15 @@
 .page-hero--property {
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 16% 20%, rgba(196, 156, 92, 0.2), transparent 42%),
-    linear-gradient(145deg, #191510 0%, #12100d 55%, #1d1811 100%);
+  background-color: #12100d;
+  background-image:
+    radial-gradient(ellipse 90% 75% at 22% 35%, rgba(0, 0, 0, 0.5), transparent 58%),
+    radial-gradient(circle at 16% 20%, rgba(196, 156, 92, 0.18), transparent 42%),
+    linear-gradient(145deg, rgba(25, 21, 16, 0.9) 0%, rgba(18, 16, 13, 0.92) 55%, rgba(29, 24, 17, 0.94) 100%),
+    var(--page-hero-image);
+  background-position: center, center, center, center;
+  background-size: auto, auto, auto, cover;
+  background-repeat: no-repeat;
   padding: clamp(9.2rem, 12vw, 11.2rem) 0 clamp(2.8rem, 4vw, 3.9rem);
 }
 
@@ -11,9 +17,10 @@
   content: '';
   position: absolute;
   inset: 0;
+  z-index: 0;
   background:
-    linear-gradient(to right, rgba(255, 255, 255, 0.06), transparent 35%),
-    linear-gradient(to top, rgba(0, 0, 0, 0.28), transparent 44%);
+    linear-gradient(to right, rgba(8, 10, 14, 0.65), transparent 52%),
+    linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent 48%);
   pointer-events: none;
 }
 
@@ -34,6 +41,10 @@
   letter-spacing: -0.028em;
   line-height: 1.03;
   text-wrap: balance;
+  color: #ffffff;
+  text-shadow:
+    0 2px 28px rgba(0, 0, 0, 0.45),
+    0 1px 3px rgba(0, 0, 0, 0.55);
 }
 
 .property-details__hero-location {

@@ -1,8 +1,14 @@
 .page-hero--contact {
-  background:
+  background-color: var(--color-bg-dark);
+  background-image:
+    radial-gradient(ellipse 90% 75% at 22% 35%, rgba(0, 0, 0, 0.48), transparent 58%),
     radial-gradient(circle at 14% 16%, rgba(168, 126, 82, 0.26), transparent 40%),
     radial-gradient(circle at 84% 82%, rgba(171, 178, 188, 0.2), transparent 38%),
-    linear-gradient(160deg, #0e0f12 0%, #1a1d22 52%, #090a0c 100%);
+    linear-gradient(160deg, rgba(14, 15, 18, 0.88) 0%, rgba(26, 29, 34, 0.86) 52%, rgba(9, 10, 12, 0.92) 100%),
+    var(--page-hero-image);
+  background-position: center, center, center, center, center;
+  background-size: auto, auto, auto, auto, cover;
+  background-repeat: no-repeat;
 }
 
 .contact-grid {
