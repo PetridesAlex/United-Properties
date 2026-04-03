@@ -107,6 +107,14 @@ export const propertyType = defineType({
       initialValue: false,
     }),
     defineField({
+      name: 'newDevelopment',
+      title: 'New development listing',
+      description:
+        'Show this property on the New Developments page (/new-developments). Use with status “For sale” for off-plan or newly launched units.',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
       name: 'mainImage',
       title: 'Main Image',
       type: 'image',

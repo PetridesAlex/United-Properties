@@ -1,5 +1,4 @@
-export const ALL_PROPERTIES_QUERY = `
-  *[_type == "property"] | order(featured desc, _createdAt desc) {
+const PROPERTY_PROJECTION = `
     _id,
     title,
     slug,
@@ -16,11 +15,17 @@ export const ALL_PROPERTIES_QUERY = `
     parkingSpaces,
     yearBuilt,
     featured,
+    newDevelopment,
     mainImage,
     gallery,
     description,
     amenities,
     seoTitle,
     seoDescription
+`
+
+export const ALL_PROPERTIES_QUERY = `
+  *[_type == "property"] | order(featured desc, _createdAt desc) {
+    ${PROPERTY_PROJECTION}
   }
 `

@@ -34,6 +34,26 @@
   gap: 1.4rem;
 }
 
+.property-details__loading {
+  margin: 0;
+  padding: 3rem 0;
+  font-size: 1.05rem;
+  color: rgba(18, 16, 13, 0.72);
+}
+
+.property-details--not-found {
+  padding: 3rem 0 4rem;
+}
+
+.property-details--not-found h1 {
+  margin-bottom: 0.75rem;
+}
+
+.property-details--not-found p {
+  margin-bottom: 1.5rem;
+  color: rgba(18, 16, 13, 0.72);
+}
+
 .property-details__hero-title {
   max-width: 18ch;
   margin-bottom: 0.82rem;

@@ -166,39 +166,6 @@ export const properties = [
     plotSize: 640,
     agentId: 4,
   },
-  {
-    id: 6,
-    slug: 'limassol-coastal-luxury-rental',
-    title: 'Limassol Coastal Luxury Rental Suite',
-    location: 'Limassol',
-    price: 8500,
-    type: 'Apartment',
-    status: 'For Rent',
-    bedrooms: 3,
-    bathrooms: 3,
-    sqm: 198,
-    description:
-      'High-floor turnkey rental residence with uninterrupted sea views and hotel-grade resident services.',
-    features: [
-      'Monthly premium rental',
-      'Gym and wellness deck',
-      'Reception and concierge',
-      'Fully furnished',
-      'Beachfront access',
-    ],
-    image: PROPERTY_IMAGE_PLACEHOLDER,
-    gallery: [
-      PROPERTY_IMAGE_PLACEHOLDER,
-      PROPERTY_IMAGE_PLACEHOLDER,
-      PROPERTY_IMAGE_PLACEHOLDER,
-    ],
-    featured: false,
-    category: 'Luxury apartments in Limassol',
-    yearBuilt: 2024,
-    parking: 2,
-    plotSize: 0,
-    agentId: 2,
-  },
 ]
 
 export const propertyTypes = [

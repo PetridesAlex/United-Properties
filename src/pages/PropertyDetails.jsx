@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useParams } from 'react-router-dom'
 import {
@@ -14,17 +15,63 @@ import Gallery from '../components/Gallery/Gallery'
 import InquiryForm from '../components/InquiryForm/InquiryForm'
 import SectionHeader from '../components/SectionHeader/SectionHeader'
 import PropertyCard from '../components/PropertyCard/PropertyCard'
-import { properties } from '../data/properties'
 import { agents } from '../data/agents'
+import { useMergedProperties } from '../hooks/useMergedProperties'
 import './PropertyDetails.css'
 
 function PropertyDetails() {
   const { slug } = useParams()
-  const property = properties.find((item) => item.slug === slug) || properties[0]
-  const agent = agents.find((item) => item.id === property.agentId)
-  const similarProperties = properties
-    .filter((item) => item.id !== property.id && item.location === property.location)
-    .slice(0, 3)
+  const { list: allProperties, loading } = useMergedProperties()
+
+  const property = useMemo(
+    () => allProperties.find((item) => item.slug === slug),
+    [allProperties, slug],
+  )
+
+  const agent = property ? agents.find((item) => item.id === property.agentId) : null
+
+  const similarProperties = useMemo(() => {
+    if (!property) return []
+    return allProperties
+      .filter((item) => item.id !== property.id && item.location === property.location)
+      .slice(0, 3)
+  }, [allProperties, property])
+
+  if (!property) {
+    if (loading) {
+      return (
+        <>
+          <Helmet>
+            <title>Loading… | United Properties</title>
+          </Helmet>
+          <section className="section section--light">
+            <div className="container">
+              <p className="property-details__loading">Loading property…</p>
+            </div>
+          </section>
+        </>
+      )
+    }
+
+    return (
+      <>
+        <Helmet>
+          <title>Property not found | United Properties</title>
+        </Helmet>
+        <section className="section section--light">
+          <div className="container property-details property-details--not-found">
+            <h1>Property not found</h1>
+            <p>This listing may have been removed or the link is incorrect.</p>
+            <Link to="/buy" className="btn btn-gold">
+              Browse properties
+            </Link>
+          </div>
+        </section>
+      </>
+    )
+  }
+
+  const featureList = Array.isArray(property.features) ? property.features : []
 
   return (
     <>
@@ -81,12 +128,16 @@ function PropertyDetails() {
             <article className="card-luxury property-details__description">
               <h3>Description</h3>
               <p>{property.description}</p>
-              <h4>Amenities and Features</h4>
-              <ul>
-                {property.features.map((feature) => (
-                  <li key={feature}>{feature}</li>
-                ))}
-              </ul>
+              {featureList.length > 0 && (
+                <>
+                  <h4>Amenities and Features</h4>
+                  <ul>
+                    {featureList.map((feature) => (
+                      <li key={feature}>{feature}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
 
               <div className="property-details__placeholders">
                 <div>

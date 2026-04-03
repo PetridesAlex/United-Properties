@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
@@ -17,20 +17,8 @@ import { services } from '../data/services'
 import { agents } from '../data/agents'
 import { developments } from '../data/developments'
 import { testimonials } from '../data/testimonials'
-import { sanityClient, urlForImage } from '../lib/sanityClient'
-import { ALL_PROPERTIES_QUERY } from '../lib/sanityQueries'
+import { useMergedProperties } from '../hooks/useMergedProperties'
 import './Home.css'
-
-const STATUS_LABELS = {
-  'for-sale': 'For Sale',
-  'for-rent': 'For Rent',
-  sold: 'Sold',
-  reserved: 'Reserved',
-}
-
-function toNumber(value, fallback = 0) {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
-}
 
 function isSignatureProperty(property) {
   if (!property) return false
@@ -47,61 +35,24 @@ function isSignatureProperty(property) {
   )
 }
 
-function mapSanityProperty(item, index) {
-  const mainImageBuilder = item.mainImage ? urlForImage(item.mainImage) : null
-  const mainImage = mainImageBuilder
-    ? mainImageBuilder.width(1600).height(1060).fit('crop').url()
-    : null
-  const gallery = Array.isArray(item.gallery)
-    ? item.gallery
-        .map((image) => {
-          const builder = image ? urlForImage(image) : null
-          return builder ? builder.width(1600).height(1060).fit('crop').url() : null
-        })
-        .filter(Boolean)
-    : []
-
-  return {
-    id: item._id || `sanity-property-${index}`,
-    slug: item.slug?.current || `property-${index}`,
-    title: item.title || 'Untitled Property',
-    location: item.location || 'Cyprus',
-    price: toNumber(item.price),
-    type: item.propertyType || 'Property',
-    status: STATUS_LABELS[item.status] || 'For Sale',
-    bedrooms: toNumber(item.bedrooms),
-    bathrooms: toNumber(item.bathrooms),
-    sqm: toNumber(item.internalArea),
-    description: item.description || 'Discover this premium listing in Cyprus.',
-    features: Array.isArray(item.amenities) ? item.amenities : [],
-    image:
-      mainImage ||
-      'https://images.unsplash.com/photo-1613977257360-707ba9348227?auto=format&fit=crop&w=1600&q=80',
-    gallery: gallery.length ? gallery : mainImage ? [mainImage] : [],
-    featured: Boolean(item.featured),
-    isSignature: Boolean(item.signature),
-    category: item.propertyType || 'Property',
-    yearBuilt: toNumber(item.yearBuilt),
-    parking: toNumber(item.parkingSpaces),
-    plotSize: toNumber(item.plotSize),
-    agentId: null,
-  }
-}
-
 function Home() {
-  const [sanityProperties, setSanityProperties] = useState([])
+  const { list: mergedProperties } = useMergedProperties()
+  const sanityOnly = useMemo(
+    () => mergedProperties.filter((property) => property.source === 'sanity'),
+    [mergedProperties],
+  )
   const fallbackFeaturedProperties = useMemo(
     () => properties.filter((property) => property.featured).slice(0, 3),
     [],
   )
   const featuredProperties = useMemo(() => {
-    if (!sanityProperties.length) return fallbackFeaturedProperties
-    const featured = sanityProperties.filter((property) => property.featured)
-    const source = featured.length ? featured : sanityProperties
+    if (!sanityOnly.length) return fallbackFeaturedProperties
+    const featured = sanityOnly.filter((property) => property.featured)
+    const source = featured.length ? featured : sanityOnly
     return source.slice(0, 3)
-  }, [sanityProperties, fallbackFeaturedProperties])
+  }, [sanityOnly, fallbackFeaturedProperties])
   const signatureCollectionProperties = useMemo(() => {
-    const source = sanityProperties.length ? sanityProperties : properties
+    const source = sanityOnly.length ? sanityOnly : properties
     const signatureOnly = source.filter(isSignatureProperty)
 
     // Keep the stack alive even before signature flags are set in CMS/data.
@@ -109,29 +60,9 @@ function Home() {
 
     const featuredFallback = source.filter((property) => property.featured)
     return featuredFallback.length ? featuredFallback : source
-  }, [sanityProperties])
+  }, [sanityOnly])
   const featuredAgents = agents.slice(0, 3)
   const homeServices = services.slice(0, 8)
-
-  useEffect(() => {
-    let isMounted = true
-
-    async function loadProperties() {
-      try {
-        const result = await sanityClient.fetch(ALL_PROPERTIES_QUERY)
-        if (!isMounted || !Array.isArray(result)) return
-        setSanityProperties(result.map(mapSanityProperty))
-      } catch {
-        if (isMounted) setSanityProperties([])
-      }
-    }
-
-    loadProperties()
-
-    return () => {
-      isMounted = false
-    }
-  }, [])
 
   return (
     <>

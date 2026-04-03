@@ -3,7 +3,8 @@ import { Helmet } from 'react-helmet-async'
 import { useLocation } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import PropertyCard from '../components/PropertyCard/PropertyCard'
-import { properties } from '../data/properties'
+import { useMergedProperties } from '../hooks/useMergedProperties'
+import { matchesListingLocation } from '../lib/matchesListingLocation'
 import './Properties.css'
 
 const initialFilters = {
@@ -56,8 +57,16 @@ const citySlugToName = {
   'ayia-napa': 'Ayia Napa',
 }
 
+/** Hosts may serve `/rent` or `/rent/` — normalize so route rules always match. */
+function normalizePathname(pathname) {
+  if (!pathname) return '/'
+  const trimmed = pathname.replace(/\/+$/, '') || '/'
+  return trimmed
+}
+
 function getFiltersFromLocation(location) {
-  const { pathname, search } = location
+  const pathname = normalizePathname(location.pathname)
+  const { search } = location
   const params = new URLSearchParams(search)
   const filters = {
     ...initialFilters,
@@ -92,7 +101,7 @@ function getFiltersFromLocation(location) {
 function getModeFromRoute(location) {
   const params = new URLSearchParams(location.search)
   const searchMode = params.get('mode') || ''
-  const { pathname } = location
+  const pathname = normalizePathname(location.pathname)
 
   if (pathname === '/rent') return 'rent'
   if (pathname === '/new-developments') return 'new-development'
@@ -140,6 +149,8 @@ function getHeroContent(mode, status) {
 
 function Properties() {
   const routeLocation = useLocation()
+  const { list: allProperties, loading: propertiesLoading, error: propertiesError } =
+    useMergedProperties()
   const [filters, setFilters] = useState(() => getFiltersFromLocation(routeLocation))
   const [visibleCount, setVisibleCount] = useState(6)
   const mode = useMemo(() => getModeFromRoute(routeLocation), [routeLocation])
@@ -147,7 +158,11 @@ function Properties() {
     () => getHeroContent(mode, filters.status),
     [mode, filters.status],
   )
-  const isBuyMode = mode === 'buy' || filters.status === 'For Sale'
+  /** Buy-style region grid: buy, featured, signature, default browse — not rent or new-development. */
+  const showBuyRegions = mode === 'buy'
+  const showRentDiscovery = mode === 'rent'
+  const showNewDevelopmentDiscovery = mode === 'new-development'
+  const showLocationImageCards = mode === 'rent' || mode === 'new-development'
 
   useEffect(() => {
     setFilters(getFiltersFromLocation(routeLocation))
@@ -156,12 +171,15 @@ function Properties() {
 
   const filtered = useMemo(() => {
     const keyword = filters.keyword.toLowerCase()
-    const result = properties.filter((property) => {
-      const matchesLocation = !filters.location || property.location === filters.location
+    const result = allProperties.filter((property) => {
+      const matchesLocation =
+        !filters.location || matchesListingLocation(property.location, filters.location)
       const matchesType = !filters.type || property.type === filters.type
       const matchesStatus = !filters.status || property.status === filters.status
       const matchesFeatured =
         !filters.featured || (filters.featured === 'true' ? Boolean(property.featured) : true)
+      const matchesNewDevelopment =
+        mode !== 'new-development' || property.isNewDevelopment === true
       const matchesBeds = !filters.bedrooms || property.bedrooms >= Number(filters.bedrooms)
       const matchesBaths = !filters.bathrooms || property.bathrooms >= Number(filters.bathrooms)
       const matchesMin = !filters.minPrice || property.price >= Number(filters.minPrice)
@@ -178,6 +196,7 @@ function Properties() {
         matchesType &&
         matchesStatus &&
         matchesFeatured &&
+        matchesNewDevelopment &&
         matchesBeds &&
         matchesBaths &&
         matchesMin &&
@@ -187,7 +206,7 @@ function Properties() {
     })
 
     return result
-  }, [filters])
+  }, [filters, mode, allProperties])
 
   const visibleProperties = filtered.slice(0, visibleCount)
   const onLocationCardClick = (selectedLocation) => {
@@ -218,7 +237,7 @@ function Properties() {
       <section className="section section--light" id="properties-discovery">
         <div className="container">
           <header className="properties-discovery__header">
-            {isBuyMode ? (
+            {showBuyRegions ? (
               <div className="properties-regions">
                 <div className="properties-regions__intro">
                   <h2>Our Regions</h2>
@@ -240,7 +259,15 @@ function Properties() {
                   ))}
                 </div>
               </div>
-            ) : (
+            ) : showRentDiscovery ? (
+              <>
+                <p className="properties-discovery__eyebrow">Locations</p>
+                <h2>Rentals by area</h2>
+                <p className="properties-discovery__description">
+                  Choose a region to filter long-term and seasonal rentals across Cyprus.
+                </p>
+              </>
+            ) : showNewDevelopmentDiscovery ? (
               <>
                 <p className="properties-discovery__eyebrow">The Boldest</p>
                 <h2>New Developments</h2>
@@ -249,10 +276,10 @@ function Properties() {
                   you Move Forward.
                 </p>
               </>
-            )}
+            ) : null}
           </header>
 
-          {!isBuyMode && (
+          {showLocationImageCards && (
             <div className="properties-discovery__locations">
               {discoveryLocations.map((item) => (
                 <button
@@ -272,9 +299,22 @@ function Properties() {
           )}
 
           <div className="properties-results-zone">
-            <p className="properties__result-count">{filtered.length} matching properties</p>
+            {propertiesError && !propertiesLoading ? (
+              <div className="properties__fetch-error card-luxury" role="alert">
+                <h3>Could not load live listings</h3>
+                <p>
+                  Check your connection, then refresh the page. If the problem continues, the Sanity API may be
+                  temporarily unavailable.
+                </p>
+                <p className="properties__fetch-error-detail">{propertiesError}</p>
+              </div>
+            ) : null}
 
-            {visibleProperties.length ? (
+            <p className="properties__result-count">
+              {propertiesLoading ? 'Loading listings…' : `${filtered.length} matching properties`}
+            </p>
+
+            {!propertiesLoading && visibleProperties.length ? (
               <>
                 <div className="grid-3">
                   {visibleProperties.map((property) => (
@@ -289,12 +329,18 @@ function Properties() {
                   </div>
                 )}
               </>
-            ) : (
+            ) : null}
+
+            {!propertiesLoading && !visibleProperties.length ? (
               <div className="properties__empty card-luxury">
-                <h3>No properties match your filters</h3>
-                <p>Adjust your criteria to discover more listings.</p>
+                <h3>{propertiesError ? 'No cached listings to show' : 'No properties match your filters'}</h3>
+                <p>
+                  {propertiesError
+                    ? 'Fix the connection issue above, or adjust filters once listings load.'
+                    : 'Adjust your criteria to discover more listings.'}
+                </p>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </section>

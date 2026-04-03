@@ -273,6 +273,31 @@
   justify-content: center;
 }
 
+.properties__fetch-error {
+  margin-bottom: 1.1rem;
+  padding: 1.25rem 1.35rem;
+  border-left: 4px solid #c49a6c;
+}
+
+.properties__fetch-error h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.properties__fetch-error > p {
+  margin: 0;
+  color: rgba(18, 16, 13, 0.78);
+  font-size: 0.95rem;
+}
+
+.properties__fetch-error-detail {
+  margin-top: 0.75rem !important;
+  font-size: 0.82rem !important;
+  font-family: ui-monospace, monospace;
+  word-break: break-word;
+  color: rgba(18, 16, 13, 0.65) !important;
+}
+
 .properties__empty {
   padding: 1.3rem;
 }
