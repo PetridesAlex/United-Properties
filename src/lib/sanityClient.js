@@ -7,12 +7,10 @@ export const SANITY_API_VERSION = '2026-03-21'
 
 /**
  * Public reads: only published documents are returned (drafts never appear on the site).
- * useCdn: Sanity’s API CDN caches responses; after you Publish in Studio, updates can lag
- * by ~1 minute. Default is off so fresh publishes show immediately. Set
- * VITE_SANITY_USE_CDN=true in .env for faster reads at the cost of slightly stale data.
+ * Debugging: always use Content Lake API (not api.cdn.sanity.io). Restore env toggle after verifying:
+ * `const useCdn = import.meta.env?.VITE_SANITY_USE_CDN === 'true'`
  */
-const useCdn =
-  typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SANITY_USE_CDN === 'true'
+const useCdn = false
 
 /**
  * Same-origin `/sanity-api` in the browser (dev: vite.config.js proxy; production: vercel.json rewrite).

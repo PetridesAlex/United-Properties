@@ -7,9 +7,10 @@ import {
 } from 'react'
 import { properties } from '../data/properties'
 import { sanityClient } from '../lib/sanityClient'
+import { logSanityFetchError } from '../lib/logSanityFetchError'
 import { mapSanityProperty, mergeSanityAndStaticProperties } from '../lib/mapSanityProperty'
 import { fetchSanityQueryOverHttp } from '../lib/sanityPublicFetch'
-import { ALL_PROPERTIES_QUERY } from '../lib/sanityQueries'
+import { getActivePropertiesQuery, getActiveQueryLabel } from '../lib/sanityQueries'
 import { MergedPropertiesContext } from './mergedPropertiesContext'
 
 const initialMerged = () => mergeSanityAndStaticProperties(properties, [])
@@ -17,13 +18,19 @@ const initialMerged = () => mergeSanityAndStaticProperties(properties, [])
 const REFETCH_AFTER_MS = 45_000
 
 async function fetchAllPropertiesRaw() {
+  const query = getActivePropertiesQuery()
+  const label = getActiveQueryLabel()
   try {
-    return await sanityClient.fetch(ALL_PROPERTIES_QUERY, {}, {})
+    const rows = await sanityClient.fetch(query, {}, {})
+    console.debug('[United Properties] Sanity loaded via @sanity/client', {
+      query: label,
+      count: Array.isArray(rows) ? rows.length : null,
+    })
+    return rows
   } catch (clientErr) {
-    if (import.meta.env.DEV) {
-      console.warn('[United Properties] sanity client fetch failed, using HTTP API', clientErr)
-    }
-    return fetchSanityQueryOverHttp(ALL_PROPERTIES_QUERY)
+    logSanityFetchError('@sanity/client.fetch', clientErr, { queryLabel: label, fallback: 'HTTP GET' })
+    console.warn('[United Properties] Retrying Sanity query over HTTP GET…')
+    return fetchSanityQueryOverHttp(query)
   }
 }
 
@@ -49,9 +56,7 @@ export function MergedPropertiesProvider({ children }) {
             try {
               return mapSanityProperty(doc, index)
             } catch (err) {
-              if (import.meta.env.DEV) {
-                console.error('[MergedProperties] Skipped document', doc?._id, err)
-              }
+              console.error('[MergedProperties] Skipped document', doc?._id, err)
               return null
             }
           })
@@ -63,11 +68,11 @@ export function MergedPropertiesProvider({ children }) {
       }
     } catch (err) {
       if (id !== requestIdRef.current) return
+      logSanityFetchError('merged load (client + HTTP failed)', err, {
+        queryLabel: getActiveQueryLabel(),
+      })
       setError(err?.message || 'Could not load properties')
       setList(initialMerged())
-      if (import.meta.env.DEV) {
-        console.error('[MergedProperties]', err)
-      }
     } finally {
       if (id === requestIdRef.current && showLoading) {
         setLoading(false)

@@ -32,8 +32,14 @@ function buildImageUrl(image, width, height) {
   }
 }
 
+/** Studio values are `for-rent`; free text or imports may use spaces ("for rent"). */
+function normalizeStatusKey(raw) {
+  if (typeof raw !== 'string') return ''
+  return raw.trim().toLowerCase().replace(/\s+/g, '-')
+}
+
 function mapSanityStatus(raw) {
-  const key = typeof raw === 'string' ? raw.trim().toLowerCase() : ''
+  const key = normalizeStatusKey(raw)
   return STATUS_LABELS[key] || 'For Sale'
 }
 
