@@ -15,39 +15,36 @@ const useCdn =
   typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SANITY_USE_CDN === 'true'
 
 /**
- * In dev, point at Vite’s `/sanity-api` proxy (see vite.config.js) so requests are same-origin
- * and avoid browser "Failed to fetch" from CORS / mixed rules / extensions blocking cross-site APIs.
+ * Same-origin `/sanity-api` in the browser (dev: vite.config.js proxy; production: vercel.json rewrite).
+ * Avoids cross-origin "Failed to fetch" to *.api.sanity.io on live sites.
+ * Falls back to direct API when `window` is missing (e.g. tooling).
  */
-function sanityApiHostForClient() {
-  if (typeof import.meta === 'undefined' || !import.meta.env?.DEV) return undefined
+function sanityProxyHostForBrowser() {
   if (typeof window !== 'undefined' && window.location?.origin) {
     return `${window.location.origin}/sanity-api`
   }
-  return 'http://localhost:5173/sanity-api'
+  return null
 }
 
-const devApiHost = sanityApiHostForClient()
+const browserSanityProxy = sanityProxyHostForBrowser()
 
 export const sanityClient = createClient({
   projectId: SANITY_PROJECT_ID,
   dataset: SANITY_DATASET,
   apiVersion: SANITY_API_VERSION,
   useCdn,
-  ...(devApiHost
+  ...(browserSanityProxy
     ? {
         useProjectHostname: false,
-        apiHost: devApiHost,
+        apiHost: browserSanityProxy,
       }
     : {}),
 })
 
-/** Base origin for `GET .../v{version}/data/query/{dataset}` (matches @sanity/client URL shape). */
+/** Base URL for `GET .../v{version}/data/query/{dataset}` (matches @sanity/client URL shape). */
 export function getSanityDataApiOrigin() {
-  if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
-    if (typeof window !== 'undefined' && window.location?.origin) {
-      return `${window.location.origin}/sanity-api`
-    }
-    return 'http://localhost:5173/sanity-api'
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return `${window.location.origin}/sanity-api`
   }
   return `https://${SANITY_PROJECT_ID}.api.sanity.io`
 }

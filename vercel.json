@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/sanity-api/:path*",
+      "destination": "https://d7j11dpu.api.sanity.io/:path*"
+    },
+    {
       "source": "/((?!api).*)",
       "destination": "/index.html"
     }
