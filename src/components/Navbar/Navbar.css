@@ -30,6 +30,10 @@
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.045),
     0 4px 14px rgba(0, 0, 0, 0.12);
+  font-family: 'Montserrat', var(--font-sans), system-ui, sans-serif;
+  font-feature-settings: 'kern' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .navbar > .navbar__ticker:first-child {
@@ -75,12 +79,15 @@
 
 .navbar__ticker-chip {
   flex-shrink: 0;
-  font-family: var(--font-sans);
-  font-size: 0.7rem;
+  font-family: 'Montserrat', var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(0.62rem, 0.15rem + 0.55vw, 0.76rem);
   font-weight: 600;
-  letter-spacing: 0.035em;
-  text-transform: none;
-  color: rgba(230, 234, 240, 0.92);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(248, 242, 232, 0.94);
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.45),
+    0 0 20px rgba(0, 0, 0, 0.15);
   white-space: nowrap;
 }
 
@@ -88,12 +95,17 @@
   content: '';
   display: inline-block;
   width: 1px;
-  height: 0.7em;
-  margin: 0 1.125rem;
+  height: 0.65em;
+  margin: 0 1.05rem;
   border-radius: 1px;
-  background: rgba(191, 152, 117, 0.32);
-  vertical-align: -0.06em;
-  opacity: 0.9;
+  background: linear-gradient(
+    180deg,
+    rgba(216, 196, 166, 0.15) 0%,
+    rgba(191, 152, 117, 0.55) 50%,
+    rgba(216, 196, 166, 0.15) 100%
+  );
+  vertical-align: -0.08em;
+  opacity: 0.95;
 }
 
 @keyframes navbar-ticker-marquee {
@@ -131,8 +143,8 @@
   .navbar__ticker-chip {
     white-space: normal;
     text-align: center;
-    font-size: 0.62rem;
-    letter-spacing: 0.03em;
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
     font-weight: 600;
     max-width: 16rem;
   }
@@ -158,8 +170,8 @@
 
 @media (max-width: 600px) {
   .navbar__ticker-chip {
-    font-size: 0.6rem;
-    letter-spacing: 0.028em;
+    font-size: clamp(0.58rem, 1.9vw, 0.64rem);
+    letter-spacing: 0.07em;
   }
 
   .navbar__ticker-row {
@@ -308,8 +320,11 @@
   background: rgba(255, 255, 255, 0.14);
 }
 
-.navbar--solid .navbar__ctas {
+.navbar--solid .navbar__actions {
   margin-left: auto;
+}
+
+.navbar--solid .navbar__ctas {
   min-width: 46px;
   justify-content: flex-end;
   padding: 0.08rem;
@@ -577,8 +592,11 @@
   overflow: visible;
 }
 
-.navbar--transparent .navbar__search-pill {
+.navbar--transparent .navbar__actions {
   margin-left: auto;
+}
+
+.navbar--transparent .navbar__search-pill {
   flex-shrink: 0;
   align-self: center;
 }
@@ -864,6 +882,100 @@
   outline-offset: 2px;
 }
 
+.navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.35rem, 1vw, 0.55rem);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 3;
+}
+
+.navbar__socials {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Borderless brand icons — only WhatsApp / Telegram glyphs, no chip */
+.navbar__social-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.35rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform var(--transition-fast),
+    filter var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.navbar__social-btn:hover {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  transform: scale(1.07);
+  opacity: 0.95;
+}
+
+.navbar--transparent .navbar__social-btn {
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.55));
+}
+
+.navbar--transparent .navbar__social-btn:hover {
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
+}
+
+.navbar__social-btn:focus-visible {
+  outline: 2px solid rgba(217, 182, 128, 0.9);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.navbar__social-btn svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.navbar__social-btn--whatsapp {
+  color: #25d366;
+}
+
+.navbar__social-btn--telegram {
+  color: #2aabee;
+}
+
+.navbar--solid .navbar__social-btn {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  filter: none;
+}
+
+.navbar--solid .navbar__social-btn:hover {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.navbar--solid .navbar__social-btn--whatsapp {
+  color: #128c7e;
+}
+
+.navbar--solid .navbar__social-btn--telegram {
+  color: #229ed9;
+}
+
 .navbar__ctas {
   display: flex;
   gap: 0.55rem;
@@ -886,14 +998,39 @@
   padding: 0.38rem 0.48rem 0.38rem 0.78rem;
   cursor: pointer;
   font-weight: 700;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
   transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
+/* Hero over video: stronger capsule so label + icons stay legible on bright footage */
+.navbar--transparent .navbar__search-pill {
+  background: rgba(4, 11, 24, 0.88);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  color: #fffefc;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.navbar--transparent .navbar__search-pill:hover {
+  background: rgba(6, 14, 30, 0.92);
+  border-color: #fff8ef;
+  box-shadow:
+    0 6px 28px rgba(0, 0, 0, 0.58),
+    0 0 0 1px rgba(255, 226, 178, 0.25) inset;
+}
+
 .navbar--solid .navbar__search-pill {
-  border-color: rgba(15, 41, 69, 0.24);
-  background: rgba(255, 255, 255, 0.96);
+  border: 1.5px solid rgba(15, 41, 69, 0.18);
+  background: rgba(255, 255, 255, 0.99);
   color: #0f2945;
+  text-shadow: none;
+  box-shadow:
+    0 2px 12px rgba(8, 20, 36, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 .navbar__search-pill:hover {
@@ -902,8 +1039,17 @@
 }
 
 .navbar--solid .navbar__search-pill:hover {
-  border-color: rgba(23, 79, 134, 0.4);
-  box-shadow: 0 10px 18px rgba(8, 20, 36, 0.12);
+  border-color: rgba(23, 79, 134, 0.45);
+  box-shadow:
+    0 8px 22px rgba(8, 20, 36, 0.14),
+    0 0 0 1px rgba(23, 79, 134, 0.08) inset;
+}
+
+.navbar--solid.navbar--home-scrolled .navbar__search-pill {
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.22),
+    0 2px 6px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 .navbar__search-pill-map {
@@ -914,9 +1060,26 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   color: #e7d2b1;
   border: 1px solid rgba(217, 182, 128, 0.26);
   background: rgba(217, 182, 128, 0.08);
+}
+
+.navbar--transparent .navbar__search-pill-map {
+  color: #ffe8c9;
+  border-color: rgba(255, 226, 178, 0.5);
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.navbar__search-pill-map svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.navbar__search-pill > svg {
+  flex-shrink: 0;
 }
 
 .navbar__icon-btn {
@@ -1149,16 +1312,24 @@
     display: none;
   }
 
+  .navbar__actions {
+    flex: 0 1 auto;
+    min-width: 0;
+    align-items: center;
+    gap: clamp(0.18rem, 1.2vw, 0.38rem);
+  }
+
   .navbar__search-pill {
     display: inline-flex;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     min-width: 0;
     max-width: min(260px, 42vw);
     min-height: 40px;
     padding: 0.32rem 0.4rem 0.32rem 0.55rem;
     font-size: clamp(0.62rem, 2.2vw, 0.78rem);
     gap: 0.3rem;
-    margin-left: 0.35rem;
+    margin-left: 0;
+    align-items: center;
   }
 
   .navbar__search-pill > span:not(.navbar__search-pill-map) {
@@ -1166,6 +1337,16 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     min-width: 0;
+  }
+
+  .navbar__search-pill-map {
+    width: 28px;
+    height: 28px;
+  }
+
+  .navbar__search-pill-map svg {
+    width: 12px;
+    height: 12px;
   }
 
   .navbar {
@@ -1319,7 +1500,6 @@
   }
 
   .navbar__ctas {
-    margin-left: auto;
     min-width: 46px;
     justify-content: flex-end;
     padding: 0.18rem 0.34rem 0.18rem 0.12rem;
@@ -1352,6 +1532,27 @@
   .navbar__search-pill {
     max-width: none;
     flex: 0 0 auto;
-    padding: 0.36rem 0.45rem;
+    min-height: 44px;
+    padding: 0.4rem 0.55rem;
+    gap: 0.5rem;
+    /* Icon + map chip as a tight pair (label hidden) */
+    justify-content: center;
+    align-items: center;
+  }
+
+  .navbar__search-pill-map {
+    margin-left: 0;
+    width: 34px;
+    height: 34px;
+  }
+
+  .navbar__search-pill-map svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .navbar__search-pill > svg {
+    width: 18px;
+    height: 18px;
   }
 }

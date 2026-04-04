@@ -2,7 +2,8 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { Building2, ChevronDown, KeyRound, MapPin, Megaphone, Search } from 'lucide-react'
 import StaggeredMenu from '../StaggeredMenu/StaggeredMenu'
-import { SANITY_STUDIO_URL } from '../../config/externalLinks'
+import { SANITY_STUDIO_URL, TELEGRAM_CHAT_URL, WHATSAPP_CHAT_URL } from '../../config/externalLinks'
+import { TelegramBrandIcon, WhatsAppBrandIcon } from './SocialBrandIcons'
 import './Navbar.css'
 
 const navTabs = [
@@ -246,47 +247,69 @@ function Navbar() {
           Portal
         </a>
 
-        <button
-          type="button"
-          className="navbar__search-pill"
-          aria-label="Search homes and agents"
-          onClick={openGlobalSearch}
-        >
-          <Search size={14} />
-          <span>United Properties. Homes &amp; Agents</span>
-          <span className="navbar__search-pill-map" aria-hidden="true">
-            <MapPin size={13} />
-          </span>
-        </button>
+        <div className="navbar__actions">
+          <div className="navbar__socials" aria-label="WhatsApp and Telegram">
+            <a
+              href={WHATSAPP_CHAT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="navbar__social-btn navbar__social-btn--whatsapp"
+              aria-label="WhatsApp — chat on WhatsApp"
+              title="WhatsApp"
+            >
+              <WhatsAppBrandIcon size={26} />
+            </a>
+            <a
+              href={TELEGRAM_CHAT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="navbar__social-btn navbar__social-btn--telegram"
+              aria-label="Telegram — chat on Telegram"
+              title="Telegram"
+            >
+              <TelegramBrandIcon size={26} />
+            </a>
+          </div>
 
-        <div className="navbar__ctas">
-          <StaggeredMenu
-            className="navbar__staggered"
-            position="right"
-            panelEyebrow="United Properties"
-            panelTitle="Menu"
-            panelTagline="Homes & agents"
-            panelLocation="Limassol"
-            items={[
-              { label: 'Buy', link: '/buy' },
-              { label: 'Rent', link: '/rent' },
-              { label: 'New Development', link: '/new-developments' },
-              { label: 'Agents', link: '/agents' },
-              { label: 'Contact', link: '/contact' },
-            ]}
-            socialItems={[
-              { label: 'Instagram', link: '#' },
-              { label: 'LinkedIn', link: '#' },
-              { label: 'WhatsApp', link: 'https://wa.me/35700000000' },
-            ]}
-            displaySocials
-            displayItemNumbering={false}
-            menuButtonColor="#ffffff"
-            openMenuButtonColor="#ffffff"
-            changeMenuColorOnOpen
-            colors={['#2b2926', '#141312']}
-            accentColor="#a98348"
-          />
+          <button
+            type="button"
+            className="navbar__search-pill"
+            aria-label="Search homes and agents"
+            onClick={openGlobalSearch}
+          >
+            <Search size={14} />
+            <span>United Properties. Homes &amp; Agents</span>
+            <span className="navbar__search-pill-map" aria-hidden="true">
+              <MapPin size={13} />
+            </span>
+          </button>
+
+          <div className="navbar__ctas">
+            <StaggeredMenu
+              className="navbar__staggered"
+              position="right"
+              items={[
+                { label: 'Buy', link: '/buy' },
+                { label: 'Rent', link: '/rent' },
+                { label: 'New Development', link: '/new-developments' },
+                { label: 'Agents', link: '/agents' },
+                { label: 'Contact', link: '/contact' },
+              ]}
+              socialItems={[
+                { label: 'Instagram', link: '#' },
+                { label: 'LinkedIn', link: '#' },
+                { label: 'WhatsApp', link: WHATSAPP_CHAT_URL },
+                { label: 'Telegram', link: TELEGRAM_CHAT_URL },
+              ]}
+              displaySocials
+              displayItemNumbering={false}
+              menuButtonColor="#ffffff"
+              openMenuButtonColor="#ffffff"
+              changeMenuColorOnOpen
+              colors={['rgba(32, 28, 24, 0.5)', 'rgba(16, 14, 12, 0.58)']}
+              accentColor="#a98348"
+            />
+          </div>
         </div>
       </div>
     </header>

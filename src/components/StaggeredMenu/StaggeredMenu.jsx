@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { gsap } from 'gsap'
-import { Instagram, Linkedin, MapPin, MessageCircle, X } from 'lucide-react'
+import { Instagram, Linkedin, MessageCircle, X } from 'lucide-react'
 import './StaggeredMenu.css'
 
 const ICON_SPRITE = `${import.meta.env.BASE_URL}icons.svg`
@@ -33,13 +33,7 @@ function StaggeredMenu({
   closeOnClickAway = true,
   onMenuOpen,
   onMenuClose,
-  panelEyebrow = 'United Properties',
-  panelTitle = 'Menu',
-  panelSubtitle = '',
-  panelTagline,
-  panelLocation,
 }) {
-  const hasStructuredMeta = Boolean(panelTagline && panelLocation)
   const [open, setOpen] = useState(false)
   const location = useLocation()
   const openRef = useRef(false)
@@ -296,57 +290,32 @@ function StaggeredMenu({
         ref={panelRef}
         className="staggered-menu-panel"
         aria-hidden={!open}
-        aria-labelledby="staggered-menu-panel-title"
+        aria-label="Site navigation"
       >
         <div className="smenu-panel-inner">
-          <div className="smenu-panel-head">
-            <div className="smenu-panel-head__top">
-              <h2 id="staggered-menu-panel-title" className="smenu-panel-head__title">
-                {panelTitle}
-              </h2>
-              <button type="button" className="smenu-close-btn" onClick={closeMenu} aria-label="Close menu">
-                <X size={18} />
-              </button>
-            </div>
-            <p className="smenu-panel-head__meta">
-              <span className="smenu-panel-head__brand">{panelEyebrow}</span>
-              {hasStructuredMeta ? (
-                <>
-                  <span className="smenu-panel-head__sep" aria-hidden="true">
-                    ·
-                  </span>
-                  <span className="smenu-panel-head__tagline">{panelTagline}</span>
-                  <span className="smenu-panel-head__location">
-                    <MapPin className="smenu-panel-head__loc-icon" size={12} strokeWidth={2.25} aria-hidden />
-                    {panelLocation}
-                  </span>
-                </>
-              ) : panelSubtitle ? (
-                <>
-                  <span className="smenu-panel-head__sep" aria-hidden="true">
-                    ·
-                  </span>
-                  <span className="smenu-panel-head__sub">{panelSubtitle}</span>
-                </>
-              ) : null}
-            </p>
-            <span className="sr-only">Press Escape to close this menu.</span>
+          <div className="smenu-panel-exit">
+            <button type="button" className="smenu-exit-btn" onClick={closeMenu} aria-label="Close navigation">
+              <X size={18} strokeWidth={2.25} aria-hidden="true" />
+            </button>
           </div>
-          <ul className="smenu-panel-list" role="list" data-numbering={displayItemNumbering || undefined}>
-            {items.map((item, idx) => (
-              <li className="smenu-panel-itemWrap" key={`${item.label}-${idx}`}>
-                {isExternal(item.link) ? (
-                  <a className="smenu-panel-item" href={item.link} target="_blank" rel="noreferrer" data-index={idx + 1}>
-                    <span className="smenu-panel-itemLabel">{item.label}</span>
-                  </a>
-                ) : (
-                  <Link className="smenu-panel-item" to={item.link} data-index={idx + 1} onClick={closeMenu}>
-                    <span className="smenu-panel-itemLabel">{item.label}</span>
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
+          <span className="sr-only">Press Escape to close this menu.</span>
+          <nav className="smenu-panel-nav" aria-label="Pages">
+            <ul className="smenu-panel-list" role="list" data-numbering={displayItemNumbering || undefined}>
+              {items.map((item, idx) => (
+                <li className="smenu-panel-itemWrap" key={`${item.label}-${idx}`}>
+                  {isExternal(item.link) ? (
+                    <a className="smenu-panel-item" href={item.link} target="_blank" rel="noreferrer" data-index={idx + 1}>
+                      <span className="smenu-panel-itemLabel">{item.label}</span>
+                    </a>
+                  ) : (
+                    <Link className="smenu-panel-item" to={item.link} data-index={idx + 1} onClick={closeMenu}>
+                      <span className="smenu-panel-itemLabel">{item.label}</span>
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </nav>
 
           {displaySocials && socialItems?.length > 0 && (
             <div className="smenu-socials" aria-label="Social links">

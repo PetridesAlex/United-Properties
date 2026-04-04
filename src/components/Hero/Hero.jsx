@@ -4,6 +4,8 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import SearchPanel from '../SearchPanel/SearchPanel'
 import './Hero.css'
 
+const HERO_VIDEO_SRC = '/video/united-properties-mp4.mp4'
+
 function Hero() {
   const sectionRef = useRef(null)
   const videoRef = useRef(null)
@@ -88,7 +90,7 @@ function Hero() {
           <video
             ref={videoRef}
             className="hero-section__video"
-            src={shouldLoadVideo ? '/video/cyprus-luxury-real-estate-hero.mp4' : undefined}
+            src={shouldLoadVideo ? HERO_VIDEO_SRC : undefined}
             autoPlay={shouldLoadVideo}
             muted
             loop
