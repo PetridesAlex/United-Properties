@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { Building2, ChevronDown, ChevronRight, KeyRound, MapPin, Megaphone, Search } from 'lucide-react'
+import { Building2, ChevronDown, KeyRound, MapPin, Megaphone, Search } from 'lucide-react'
 import StaggeredMenu from '../StaggeredMenu/StaggeredMenu'
 import './Navbar.css'
 
@@ -156,7 +156,6 @@ function Navbar() {
                             <span className="navbar__dropdown-item-label">{item.label}</span>
                             <span className="navbar__dropdown-item-hint">{item.hint}</span>
                           </span>
-                          <ChevronRight className="navbar__dropdown-item-chevron" size={16} strokeWidth={2.25} aria-hidden />
                         </Link>
                       )
                     })}

@@ -1,5 +1,6 @@
 const PROPERTY_PROJECTION = `
     _id,
+    _updatedAt,
     title,
     slug,
     status,
@@ -15,13 +16,33 @@ const PROPERTY_PROJECTION = `
     parkingSpaces,
     yearBuilt,
     featured,
+    signature,
     newDevelopment,
     mainImage,
     gallery,
     description,
     amenities,
     seoTitle,
-    seoDescription
+    seoDescription,
+    publishToBazaraki,
+    bazarakiExternalId,
+    bazarakiListingStatus,
+    bazarakiRubric,
+    bazarakiDistrict,
+    lastUpdatedForFeed,
+    bazarakiAttrs,
+    geometry,
+    phoneHide,
+    negotiablePrice,
+    exchange,
+    disallowChat,
+    whatsapp,
+    chosenPhone,
+    itemLink,
+    videoLink,
+    videoUploadByUrl,
+    condition,
+    delivery
 `
 
 export const ALL_PROPERTIES_QUERY = `

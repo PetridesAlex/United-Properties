@@ -6,10 +6,6 @@ import './StaggeredMenu.css'
 
 const ICON_SPRITE = `${import.meta.env.BASE_URL}icons.svg`
 
-/** United Properties menu mark — public/images/icon/united-properties-icon-menu.svg */
-const MENU_BRAND_PATH =
-  'M14.041,13.641l-5.449-4.264c-.643-.504-1.54-.504-2.185,0L.96,13.641c-.61,.477-.96,1.194-.96,1.969v8.391H15V15.609c0-.774-.35-1.492-.959-1.969Zm-.041,9.359H1v-7.391c0-.465,.21-.896,.576-1.182l5.447-4.264c.281-.219,.673-.219,.952,0l5.449,4.264c.365,.286,.575,.717,.575,1.182v7.391Zm-9-3h5v-5H5v5Zm1-4h3v3h-3v-3Zm12-3h2v1h-2v-1Zm0,4h2v1h-2v-1ZM14,5h2v1h-2v-1Zm6,1h-2v-1h2v1Zm-6,3h2v1h-2v-1Zm4,0h2v1h-2v-1Zm6-6.5V24h-7v-1h6V2.5c0-.827-.673-1.5-1.5-1.5H12.5c-.827,0-1.5,.673-1.5,1.5v6.5l-1-.783V2.5c0-1.379,1.121-2.5,2.5-2.5h9c1.379,0,2.5,1.121,2.5,2.5Z'
-
 function isExternal(link = '') {
   return /^https?:\/\//.test(link)
 }
@@ -284,7 +280,7 @@ function StaggeredMenu({
         <span className="smenu-icon smenu-icon--toggle" aria-hidden="true">
           <span className={`smenu-icon__state ${!open ? 'smenu-icon__state--active' : ''}`}>
             <svg className="smenu-icon__svg smenu-icon__svg--menu" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path fill="currentColor" d={MENU_BRAND_PATH} />
+              <use href={`${ICON_SPRITE}#menu-toggle-icon`} />
             </svg>
           </span>
           <span className={`smenu-icon__state ${open ? 'smenu-icon__state--active' : ''}`}>
