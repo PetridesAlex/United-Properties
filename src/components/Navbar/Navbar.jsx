@@ -151,14 +151,11 @@ function Navbar() {
 
       <div className="container navbar__inner navbar__inner--wide">
         <Link to="/" className="navbar__logo" aria-label="United Properties — Home">
-          <img src="/images/logo/united-properties-logo.png" alt="" role="presentation" />
-          <span className="navbar__logo-wordmark" aria-hidden="true">
-            <span className="navbar__logo-line navbar__logo-line--top">United</span>
-            <span className="navbar__logo-line navbar__logo-line--bottom">Properties</span>
-          </span>
+          <img src="/images/logo/united-logo.svg" alt="" role="presentation" />
         </Link>
 
-        <nav className="navbar__desktop">
+        <div className="navbar__inner-start">
+          <nav className="navbar__desktop">
           {navTabs.map((tab) => {
             if (tab.key === 'properties') {
               return (
@@ -235,16 +232,17 @@ function Navbar() {
               </NavLink>
             )
           })}
-        </nav>
+          </nav>
 
-        <a
-          href={SANITY_STUDIO_URL}
-          className="navbar__cms-link"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Portal
-        </a>
+          <a
+            href={SANITY_STUDIO_URL}
+            className="navbar__cms-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Portal
+          </a>
+        </div>
 
         <div className="navbar__actions">
           <button

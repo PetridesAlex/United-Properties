@@ -97,7 +97,7 @@ function SitePreloader({ onDone }) {
           <div className="site-preloader__logo-wrap">
             <img
               className="site-preloader__logo"
-              src="/images/logo/united-properties-logo.png"
+              src="/images/logo/united-logo.svg"
               alt=""
               width={220}
               height={82}
@@ -106,8 +106,7 @@ function SitePreloader({ onDone }) {
             />
           </div>
 
-          <p className="site-preloader__wordmark">United Properties</p>
-          <p className="site-preloader__tagline">Luxury real estate · Cyprus</p>
+          <p className="site-preloader__wordmark">UNITED PROPERTIES</p>
         </div>
 
         <div className="site-preloader__track" aria-hidden="true">

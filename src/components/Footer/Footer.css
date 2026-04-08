@@ -3,26 +3,10 @@
   overflow: hidden;
   padding-top: 4.4rem;
   min-height: min(42vh, 520px);
-  background-color: #0a1422;
-  background-image:
-    radial-gradient(ellipse 95% 75% at 50% 100%, rgba(0, 0, 0, 0.28), transparent 60%),
-    linear-gradient(to bottom, rgba(6, 14, 26, 0.35), rgba(4, 10, 20, 0.62)),
-    url('/images/hero-backgrounds/footer-building.webp');
-  background-position: center, center, center bottom;
-  background-size: auto, auto, cover;
-  background-repeat: no-repeat;
+  background-color: var(--color-bg-dark);
   color: rgba(255, 255, 255, 0.95);
   font-family: var(--font-sans);
   border-top: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.footer::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.18), transparent 48%);
-  pointer-events: none;
-  z-index: 0;
 }
 
 .footer > .container {
@@ -37,11 +21,15 @@
   padding-bottom: 2.25rem;
 }
 
+.footer__grid > div:first-child {
+  align-self: start;
+}
+
 .footer__brand {
-  margin: 0 0 0.85rem;
+  margin: -1.35rem 0 0.5rem -1rem;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   padding: 0;
   min-width: 0;
   border-radius: 0;
@@ -52,10 +40,11 @@
 
 .footer__brand img {
   display: block;
-  height: clamp(110px, 12vw, 172px);
+  height: clamp(200px, 24vw, 320px);
   width: auto;
   object-fit: contain;
-  max-width: min(360px, 78vw);
+  max-width: min(560px, 92vw);
+  transform: translate(-0.85rem, -1.15rem);
   filter: contrast(1.22) saturate(1.1) brightness(1.08) drop-shadow(0 6px 18px rgba(0, 0, 0, 0.45));
 }
 
@@ -358,6 +347,11 @@
   .footer__brand {
     min-width: 0;
     padding: 0;
+    margin: -0.85rem 0 0.5rem -0.65rem;
+  }
+
+  .footer__brand img {
+    transform: translate(-0.5rem, -0.85rem);
   }
 }
 
@@ -372,8 +366,14 @@
     padding-bottom: 1.25rem;
   }
 
+  .footer__brand {
+    margin: -0.65rem 0 0.45rem -0.35rem;
+  }
+
   .footer__brand img {
-    height: clamp(96px, 28vw, 138px);
+    height: clamp(160px, 44vw, 260px);
+    max-width: min(92vw, 520px);
+    transform: translate(-0.35rem, -0.65rem);
   }
 
   .footer__newsletter {
