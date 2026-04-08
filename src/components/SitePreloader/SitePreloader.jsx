@@ -79,7 +79,7 @@ function SitePreloader({ onDone }) {
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={phase === 'exit' ? 100 : phase === 'active' ? 50 : 0}
-      aria-label="Loading United Properties"
+      aria-label="Loading site"
     >
       <div className="site-preloader__ambient" aria-hidden="true" />
       <div className="site-preloader__vignette" aria-hidden="true" />
@@ -105,12 +105,13 @@ function SitePreloader({ onDone }) {
               fetchPriority="high"
             />
           </div>
-
-          <p className="site-preloader__wordmark">UNITED PROPERTIES</p>
         </div>
 
         <div className="site-preloader__track" aria-hidden="true">
-          <div className="site-preloader__bar" />
+          <div className="site-preloader__track-groove" />
+          <div className="site-preloader__bar">
+            <span className="site-preloader__bar-sheen" />
+          </div>
           <div className="site-preloader__bar-glow" />
         </div>
       </div>

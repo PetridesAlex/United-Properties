@@ -208,7 +208,7 @@
 }
 
 .navbar .container.navbar__inner--wide {
-  width: min(1760px, calc(100% - 16px));
+  width: min(1760px, calc(100% - 24px));
   max-width: none;
   margin-inline: auto;
   transition: width var(--transition-normal), max-width var(--transition-normal);
@@ -228,18 +228,25 @@
     drop-shadow(0 2px 8px rgba(0, 0, 0, 0.18));
 }
 
-.navbar--solid .navbar__inner {
-  min-height: 68px;
+/* Solid + not scrolled: no glass pill (logo + controls float like hero top) */
+.navbar--solid:not(.navbar--scrolled) .navbar__inner {
+  border-radius: 0;
   border: 0;
   background: transparent;
   box-shadow: none;
   backdrop-filter: none;
-  transform: none;
+  -webkit-backdrop-filter: none;
   padding: 0.14rem 0.38rem 0.14rem 0.52rem;
+  min-height: 68px;
+  isolation: auto;
 }
 
-/* Glass nav — only after scroll on home (no hard stroke; soft rim + depth) */
-.navbar--home-scrolled .navbar__inner {
+.navbar--solid:not(.navbar--scrolled) .navbar__inner::after {
+  display: none;
+}
+
+/* Glass pill — only after scroll (homepage + inner pages) */
+.navbar--solid.navbar--scrolled .navbar__inner {
   position: relative;
   border: none;
   border-radius: 999px;
@@ -263,19 +270,22 @@
   flex-wrap: nowrap;
   min-height: clamp(68px, 5.5vw, 84px);
   isolation: isolate;
+  transform: none;
 }
 
-.navbar--solid .navbar__inner::after {
+.navbar--solid.navbar--scrolled .navbar__inner::after {
   display: none;
 }
 
-.navbar--solid .navbar__staggered {
+/* Staggered menu — desktop inline nav is off */
+.navbar__staggered {
   display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
-/* Transparent hero + scrolled home: hamburger/close = strokes only (no chamfered tile) */
-.navbar--transparent .navbar__staggered .smenu-toggle--icon-only,
-.navbar--home-scrolled .navbar__staggered .smenu-toggle--icon-only {
+/* Minimal hamburger (strokes, no chamfered tile) — same control as homepage on every page */
+.navbar .navbar__staggered .smenu-toggle--icon-only {
   width: auto;
   min-width: 44px;
   min-height: 44px;
@@ -288,27 +298,23 @@
   backdrop-filter: none;
 }
 
-.navbar--transparent .navbar__staggered .smenu-toggle--icon-only::after,
-.navbar--home-scrolled .navbar__staggered .smenu-toggle--icon-only::after {
+.navbar .navbar__staggered .smenu-toggle--icon-only::after {
   display: none;
 }
 
-.navbar--transparent .navbar__staggered .smenu-toggle--icon-only:hover,
-.navbar--home-scrolled .navbar__staggered .smenu-toggle--icon-only:hover {
+.navbar .navbar__staggered .smenu-toggle--icon-only:hover {
   background: rgba(255, 255, 255, 0.1);
   border: none;
   box-shadow: none;
   transform: none;
 }
 
-.navbar--transparent .navbar__staggered .smenu-toggle--icon-only:focus-visible,
-.navbar--home-scrolled .navbar__staggered .smenu-toggle--icon-only:focus-visible {
+.navbar .navbar__staggered .smenu-toggle--icon-only:focus-visible {
   outline: 2px solid rgba(255, 255, 255, 0.55);
   outline-offset: 4px;
 }
 
-.navbar--transparent .navbar__staggered .smenu-toggle--icon-only:active,
-.navbar--home-scrolled .navbar__staggered .smenu-toggle--icon-only:active {
+.navbar .navbar__staggered .smenu-toggle--icon-only:active {
   background: rgba(255, 255, 255, 0.14);
 }
 
@@ -316,13 +322,9 @@
   margin-left: auto;
 }
 
-/* Nav + Portal — fills space between logo and actions on flex layouts */
+/* Inline nav + Portal hidden — navigation is via StaggeredMenu everywhere */
 .navbar__inner-start {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 0;
-  flex: 1 1 auto;
+  display: none;
 }
 
 .navbar__inner-start .navbar__desktop {
@@ -333,17 +335,6 @@
   min-width: 46px;
   justify-content: flex-end;
   padding: 0.08rem;
-}
-
-.navbar--solid .container.navbar__inner--wide,
-.navbar--transparent .container.navbar__inner--wide {
-  width: min(1760px, calc(100% - 16px));
-}
-
-/* Match rounded hero video horizontal inset (15px + 15px) */
-.navbar--transparent .container.navbar__inner--wide {
-  width: min(1760px, calc(100% - 24px));
-  max-width: none;
 }
 
 /* Transparent hero: main row layout */
@@ -449,6 +440,34 @@
   margin-block: auto;
 }
 
+/* Inner pages: compact logo when glass pill shows (scrolled) */
+.navbar--solid.navbar--scrolled:not(.navbar--home-scrolled) .navbar__logo {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  align-self: center;
+  flex-shrink: 0;
+  min-width: 0;
+  padding: 0.06rem 0.28rem 0.06rem 0.15rem;
+  max-width: min(220px, 48vw);
+  overflow: visible;
+  z-index: 2;
+  line-height: 0;
+  font-size: 0;
+  margin-block: auto;
+}
+
+.navbar--solid.navbar--scrolled:not(.navbar--home-scrolled) .navbar__logo img {
+  height: clamp(40px, 3.8vw, 52px);
+  width: auto;
+  max-width: min(200px, 44vw);
+  transform: translate3d(0, 0, 0) scale(1);
+  transform-origin: center center;
+  filter: drop-shadow(0 3px 14px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.12));
+}
+
 /* Scrolled glass bar: optical vertical center */
 .navbar--solid.navbar--home-scrolled .navbar__logo img {
   transform: translate3d(0, 0, 0) scale(1);
@@ -486,7 +505,6 @@
   align-items: center;
 }
 
-/* Desktop-wide only: staggered menu hidden; team link lives here (≤1200px uses hamburger item). */
 .navbar__cms-link {
   flex-shrink: 0;
   font-size: 0.72rem;
@@ -820,25 +838,32 @@
   outline-offset: 3px;
 }
 
-.navbar--solid .navbar__search-pill {
-  border: 1.5px solid rgba(15, 41, 69, 0.18);
-  background: rgba(255, 255, 255, 0.99);
-  color: #0f2945;
-  box-shadow:
-    0 2px 12px rgba(8, 20, 36, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 1);
+/* Inner pages (solid, not home scrolled): same floating icon as hero — no white pill */
+.navbar--solid:not(.navbar--home-scrolled) .navbar__search-pill {
+  flex-shrink: 0;
+  align-self: center;
+  border: none;
+  background: transparent;
+  color: #fffefc;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.navbar--solid:not(.navbar--home-scrolled) .navbar__search-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  box-shadow: none;
+}
+
+.navbar--solid:not(.navbar--home-scrolled) .navbar__search-pill:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.55);
+  outline-offset: 3px;
 }
 
 .navbar__search-pill:hover {
   border-color: rgba(255, 226, 178, 0.92);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
-
-.navbar--solid .navbar__search-pill:hover {
-  border-color: rgba(23, 79, 134, 0.45);
-  box-shadow:
-    0 8px 22px rgba(8, 20, 36, 0.14),
-    0 0 0 1px rgba(23, 79, 134, 0.08) inset;
 }
 
 /* Scrolled home glass bar: icon-only search — no white rim / pill fill */
@@ -937,7 +962,7 @@
     min-height: 70px;
   }
 
-  .navbar--solid .navbar__inner {
+  .navbar--solid.navbar--scrolled .navbar__inner {
     min-height: 78px;
   }
 
@@ -1067,17 +1092,8 @@
   display: none;
 }
 
-.navbar__staggered {
-  display: none;
-}
-
-/* Match tablet / small laptop: show logo + staggered menu (desktop nav + search hide above this width) */
+/* Match tablet / small laptop: layout tweaks (hamburger + search on all widths) */
 @media (max-width: 1200px) {
-  .navbar__cms-link {
-    display: none;
-  }
-
-  .navbar__desktop,
   .navbar__icon-btn,
   .navbar__wa,
   .navbar__menu-pill {
@@ -1113,8 +1129,8 @@
     align-items: center;
   }
 
-  /* Scrolled home: glass pill (matches desktop — no hard border) */
-  .navbar--solid.navbar--home-scrolled .navbar__inner {
+  /* Solid + scrolled: glass pill only */
+  .navbar--solid.navbar--scrolled .navbar__inner {
     border-radius: 999px;
     border: none;
     background:
@@ -1146,10 +1162,6 @@
 
   .navbar__inner::after {
     display: none;
-  }
-
-  .navbar__staggered {
-    display: inline-flex;
   }
 
   .navbar__logo {
@@ -1196,6 +1208,11 @@
     transform: translate3d(0, 0, 0) scale(1);
   }
 
+  .navbar--solid.navbar--scrolled:not(.navbar--home-scrolled) .navbar__logo img {
+    height: clamp(38px, 5.5vw, 50px);
+    max-width: min(46vw, 200px);
+  }
+
   .navbar--home-scrolled .navbar__logo {
     flex-direction: row;
     align-items: center;
@@ -1215,8 +1232,7 @@
     border-radius: 999px;
   }
 
-  .navbar--transparent .navbar__staggered,
-  .navbar--home-scrolled .navbar__staggered {
+  .navbar .navbar__staggered {
     padding: 0;
     margin-right: 0;
     border-radius: 0;
