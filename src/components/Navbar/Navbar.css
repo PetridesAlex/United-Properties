@@ -183,12 +183,12 @@
   /* Size container: wordmark type scales with the bar width (cqw) */
   container-type: inline-size;
   container-name: navbar-bar;
-  min-height: 56px;
+  min-height: 60px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.8rem;
+  gap: clamp(0.85rem, 1.2vw, 1.15rem);
   border-radius: 0;
   border: 0 !important;
   background: transparent;
@@ -208,7 +208,7 @@
 }
 
 .navbar .container.navbar__inner--wide {
-  width: min(1480px, calc(100% - 0.5rem));
+  width: min(1760px, calc(100% - 16px));
   max-width: none;
   margin-inline: auto;
   transition: width var(--transition-normal), max-width var(--transition-normal);
@@ -216,12 +216,12 @@
 
 /* Inner pages (not home): prominent logo; max-width avoids crowding hero titles */
 .navbar--solid:not(.navbar--home-scrolled) .navbar__logo {
-  max-width: min(240px, 42vw);
+  max-width: min(260px, 48vw);
   gap: 0;
 }
 
 .navbar--solid:not(.navbar--home-scrolled) .navbar__logo img {
-  height: clamp(48px, 5vw, 72px);
+  height: clamp(50px, 5.2vw, 68px);
   transform: translate3d(0, 0, 0) scale(1);
   filter:
     drop-shadow(0 0 0.5px rgba(255, 244, 232, 0.14))
@@ -229,13 +229,13 @@
 }
 
 .navbar--solid .navbar__inner {
-  min-height: 54px;
+  min-height: 68px;
   border: 0;
   background: transparent;
   box-shadow: none;
   backdrop-filter: none;
   transform: none;
-  padding: 0.14rem 0.3rem 0.14rem 0.46rem;
+  padding: 0.14rem 0.38rem 0.14rem 0.52rem;
 }
 
 /* Glass nav — only after scroll on home (no hard stroke; soft rim + depth) */
@@ -255,13 +255,13 @@
     0 0 0 1px rgba(255, 255, 255, 0.06),
     0 28px 64px rgba(2, 6, 18, 0.48),
     0 10px 28px rgba(0, 0, 0, 0.22);
-  padding: 0.34rem 0.46rem 0.34rem 0.54rem;
+  padding: 0.45rem 0.75rem 0.45rem 0.85rem;
   display: flex;
   align-items: center;
   align-content: center;
   justify-content: space-between;
   flex-wrap: nowrap;
-  min-height: 0;
+  min-height: clamp(68px, 5.5vw, 84px);
   isolation: isolate;
 }
 
@@ -337,12 +337,12 @@
 
 .navbar--solid .container.navbar__inner--wide,
 .navbar--transparent .container.navbar__inner--wide {
-  width: min(1480px, calc(100% - 0.5rem));
+  width: min(1760px, calc(100% - 16px));
 }
 
 /* Match rounded hero video horizontal inset (15px + 15px) */
 .navbar--transparent .container.navbar__inner--wide {
-  width: min(1480px, calc(100% - 30px));
+  width: min(1760px, calc(100% - 24px));
   max-width: none;
 }
 
@@ -351,10 +351,10 @@
   align-items: center;
   align-content: center;
   flex-wrap: nowrap;
-  min-height: 54px;
+  min-height: 72px;
   padding-left: max(15px, env(safe-area-inset-left, 0px));
   padding-right: max(15px, env(safe-area-inset-right, 0px));
-  gap: clamp(0.45rem, 1.2vw, 1rem);
+  gap: clamp(0.5rem, 1.35vw, 1.15rem);
 }
 
 /* Hero top: no glass capsule — float logo + controls on video; glass applies on scroll only */
@@ -369,7 +369,7 @@
   align-items: center;
   justify-content: flex-start;
   gap: 0;
-  max-width: min(280px, 42vw);
+  max-width: min(280px, 52vw);
   text-align: center;
   text-decoration: none;
   font-family: var(--font-sans);
@@ -380,13 +380,13 @@
   box-shadow: none;
 }
 
-/* Hero: logo — layout box stays compact; scale() draws a larger, crisp mark without growing the bar */
+/* Hero (home, not scrolled): room for a larger wordmark on video */
 .navbar--transparent .navbar__logo {
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
   gap: 0;
-  max-width: min(520px, 92vw);
+  max-width: min(360px, 72vw);
   flex-shrink: 0;
   overflow: visible;
   z-index: 2;
@@ -394,7 +394,7 @@
 
 .navbar__logo img {
   display: block;
-  height: clamp(52px, 5vw, 82px);
+  height: clamp(60px, 5.8vw, 96px);
   width: auto;
   max-width: 100%;
   margin-inline: auto;
@@ -410,15 +410,24 @@
     drop-shadow(0 2px 10px rgba(0, 0, 0, 0.2));
 }
 
-/* Home hero (transparent) + scrolled glass pill: same large mark — layout box stays modest via scale() */
-.navbar--transparent .navbar__logo img,
-.navbar--home-scrolled .navbar__logo img {
-  height: clamp(66px, 6.2vw, 92px);
+/* Home hero: larger lockup — only while transparent (pre-scroll) */
+.navbar--transparent .navbar__logo img {
+  height: clamp(58px, 8vw, 96px);
   width: auto;
-  max-width: none;
-  transform: translate3d(0, 0, 0) scale(3.55);
+  max-width: min(360px, 72vw);
+  transform: translate3d(0, 0, 0) scale(1);
   transform-origin: center center;
-  filter: drop-shadow(0 6px 28px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.22));
+  filter: drop-shadow(0 3px 14px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.12));
+}
+
+/* Scrolled glass pill: compact mark so nav + actions fit comfortably */
+.navbar--home-scrolled .navbar__logo img {
+  height: clamp(40px, 3.8vw, 52px);
+  width: auto;
+  max-width: min(200px, 44vw);
+  transform: translate3d(0, 0, 0) scale(1);
+  transform-origin: center center;
+  filter: drop-shadow(0 3px 14px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.12));
 }
 
 /* Scrolled pill: logo only beside nav + search — room for scaled draw */
@@ -426,13 +435,13 @@
   display: inline-flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0;
   align-self: center;
   flex-shrink: 0;
   min-width: 0;
-  padding: 0;
-  max-width: min(520px, 92vw);
+  padding: 0.06rem 0.28rem 0.06rem 0.15rem;
+  max-width: min(220px, 48vw);
   overflow: visible;
   z-index: 2;
   line-height: 0;
@@ -440,9 +449,9 @@
   margin-block: auto;
 }
 
-/* Scrolled glass bar: lift scaled mark toward the top of the pill */
+/* Scrolled glass bar: optical vertical center */
 .navbar--solid.navbar--home-scrolled .navbar__logo img {
-  transform: translate3d(0, -0.65rem, 0) scale(3.55);
+  transform: translate3d(0, 0, 0) scale(1);
 }
 
 .navbar__desktop {
@@ -925,11 +934,11 @@
 
 @media (max-width: 1180px) {
   .navbar__inner {
-    min-height: 64px;
+    min-height: 70px;
   }
 
   .navbar--solid .navbar__inner {
-    min-height: 70px;
+    min-height: 78px;
   }
 
 }
@@ -1089,7 +1098,7 @@
   }
 
   .navbar__inner {
-    min-height: 56px;
+    min-height: 62px;
     width: 100%;
     max-width: none;
     border-radius: 0;
@@ -1119,7 +1128,8 @@
       0 0 0 1px rgba(255, 255, 255, 0.05),
       0 22px 52px rgba(2, 6, 18, 0.42),
       0 8px 20px rgba(0, 0, 0, 0.2);
-    padding: 0.28rem 0.5rem 0.28rem 0.55rem;
+    padding: 0.42rem 0.62rem 0.42rem 0.68rem;
+    min-height: clamp(64px, 11vw, 82px);
     margin-inline: max(0.25rem, env(safe-area-inset-left, 0px)) max(0.25rem, env(safe-area-inset-right, 0px));
     isolation: isolate;
   }
@@ -1146,7 +1156,7 @@
     border-right: 0;
     padding: 0.22rem 0.2rem 0.22rem 0.34rem;
     margin-right: auto;
-    max-width: min(280px, 52vw);
+    max-width: min(320px, 58vw);
     position: relative;
     left: 0;
     gap: 0.4rem;
@@ -1156,27 +1166,33 @@
     flex-direction: row;
     align-items: center;
     gap: clamp(0.34rem, 2.2vw, 0.52rem);
-    max-width: min(94vw, 520px);
+    max-width: min(94vw, 340px);
   }
 
   .navbar__logo img {
-    height: clamp(48px, 10vw, 68px);
+    height: clamp(48px, 9.5vw, 62px);
     width: auto;
     transform: translate3d(0, 0, 0) scale(1);
   }
 
-  .navbar--transparent .navbar__logo img,
+  .navbar--transparent .navbar__logo img {
+    height: clamp(52px, 10vw, 80px);
+    max-width: min(72vw, 340px);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
   .navbar--home-scrolled .navbar__logo img {
-    height: clamp(58px, 6.8vw, 84px);
-    transform: translate3d(0, 0, 0) scale(3.2);
+    height: clamp(38px, 5.5vw, 50px);
+    max-width: min(46vw, 200px);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 
   .navbar--solid.navbar--home-scrolled .navbar__logo img {
-    transform: translate3d(0, -0.55rem, 0) scale(3.2);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 
   .navbar--solid:not(.navbar--home-scrolled) .navbar__logo img {
-    height: clamp(44px, 10vw, 62px);
+    height: clamp(48px, 10.5vw, 68px);
     transform: translate3d(0, 0, 0) scale(1);
   }
 
@@ -1184,7 +1200,7 @@
     flex-direction: row;
     align-items: center;
     gap: 0;
-    max-width: min(520px, 92vw);
+    max-width: min(220px, 48vw);
   }
 
   .navbar__ctas {

@@ -151,7 +151,7 @@ function Navbar() {
 
       <div className="container navbar__inner navbar__inner--wide">
         <Link to="/" className="navbar__logo" aria-label="United Properties — Home">
-          <img src="/images/logo/united-logo.svg" alt="" role="presentation" />
+          <img src="/images/logo/United_Properties_v2.1.svg" alt="" role="presentation" />
         </Link>
 
         <div className="navbar__inner-start">

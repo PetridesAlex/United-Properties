@@ -89,10 +89,14 @@ function StaggeredMenu({
     const numberEls = Array.from(panel.querySelectorAll('.smenu-panel-list[data-numbering] .smenu-panel-item'))
     const socialTitle = panel.querySelector('.smenu-socials-title')
     const socialLinks = Array.from(panel.querySelectorAll('.smenu-socials-link'))
+    const logoEl = panel.querySelector('.smenu-panel-logo')
+    const reduceMotion =
+      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     const layerStates = layers.map((el) => ({ el, start: Number(gsap.getProperty(el, 'xPercent')) }))
     const panelStart = Number(gsap.getProperty(panel, 'xPercent'))
 
+    if (logoEl) gsap.set(logoEl, reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 })
     if (itemEls.length) gsap.set(itemEls, { yPercent: 140, rotate: 10 })
     if (numberEls.length) gsap.set(numberEls, { '--smenu-num-opacity': 0 })
     if (socialTitle) gsap.set(socialTitle, { opacity: 0 })
@@ -106,6 +110,14 @@ function StaggeredMenu({
     const panelInsertTime = lastTime + (layerStates.length ? 0.08 : 0)
     const panelDuration = 0.65
     tl.fromTo(panel, { xPercent: panelStart }, { xPercent: 0, duration: panelDuration, ease: 'power4.out' }, panelInsertTime)
+
+    if (logoEl && !reduceMotion) {
+      tl.to(
+        logoEl,
+        { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' },
+        panelInsertTime + panelDuration * 0.12,
+      )
+    }
 
     if (itemEls.length) {
       const itemsStart = panelInsertTime + panelDuration * 0.15
@@ -293,10 +305,15 @@ function StaggeredMenu({
         aria-label="Site navigation"
       >
         <div className="smenu-panel-inner">
-          <div className="smenu-panel-exit">
-            <button type="button" className="smenu-exit-btn" onClick={closeMenu} aria-label="Close navigation">
-              <X size={18} strokeWidth={2.25} aria-hidden="true" />
-            </button>
+          <div className="smenu-panel-header">
+            <Link to="/" className="smenu-panel-logo" onClick={closeMenu} aria-label="United Properties — Home">
+              <img src="/images/logo/United_Properties_v2.1.svg" alt="" role="presentation" />
+            </Link>
+            <div className="smenu-panel-exit">
+              <button type="button" className="smenu-exit-btn" onClick={closeMenu} aria-label="Close navigation">
+                <X size={18} strokeWidth={2.25} aria-hidden="true" />
+              </button>
+            </div>
           </div>
           <span className="sr-only">Press Escape to close this menu.</span>
           <nav className="smenu-panel-nav" aria-label="Pages">

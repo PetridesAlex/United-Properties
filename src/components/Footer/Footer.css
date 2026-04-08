@@ -45,7 +45,9 @@
   object-fit: contain;
   max-width: min(560px, 92vw);
   transform: translate(-0.85rem, -1.15rem);
-  filter: contrast(1.22) saturate(1.1) brightness(1.08) drop-shadow(0 6px 18px rgba(0, 0, 0, 0.45));
+  /* Vector SVG: avoid contrast/saturate filters so gradients stay true */
+  image-rendering: auto;
+  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.35));
 }
 
 .footer p {
