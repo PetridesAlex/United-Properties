@@ -88,20 +88,22 @@ export default function ModalCards({ cards = [], className }) {
                 />
                 <div className="modal-expanded-overlay">
                   <div className="modal-expanded-overlay-content">
-                    <h2 id="modal-cards-title" className="modal-expanded-title">
-                      {selected.title}
-                    </h2>
+                    <div className="modal-expanded-title-block">
+                      <h2 id="modal-cards-title" className="modal-expanded-title">
+                        {selected.title}
+                      </h2>
+                    </div>
                     <button
                       type="button"
                       className="modal-close-button"
                       aria-label="Close"
                       onClick={() => setSelected(null)}
                     >
-                      <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden>
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
                         <path
                           d="M12 4L4 12M4 4L12 12"
                           stroke="currentColor"
-                          strokeWidth="2"
+                          strokeWidth="1.5"
                           strokeLinecap="round"
                         />
                       </svg>
@@ -124,23 +126,9 @@ export default function ModalCards({ cards = [], className }) {
                       className="btn btn-gold modal-description__cta"
                       onClick={() => setSelected(null)}
                     >
-                      <span>View full listing</span>
-                      <svg
-                        className="modal-description__cta-icon"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        aria-hidden
-                      >
-                        <path
-                          d="M5 12h14M13 6l6 6-6 6"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                      <span className="modal-description__cta-inner">
+                        <span className="modal-description__cta-label">View full listing</span>
+                      </span>
                     </Link>
                   </div>
                 ) : null}

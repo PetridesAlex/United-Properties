@@ -144,7 +144,7 @@ function PropertyDetails() {
         </div>
       </section>
 
-      <section className="section section--light">
+      <section className="section section--light property-details__main">
         <div className="container property-details">
           <Gallery images={property.gallery} title={property.title} />
 
@@ -375,16 +375,6 @@ function PropertyDetails() {
           )}
         </div>
       </section>
-
-      <div className="property-details__mobile-cta">
-        <a className="btn btn-gold" href="https://wa.me/35700000000" target="_blank" rel="noreferrer">
-          <WhatsAppBrandIcon size={16} className="property-details__whatsapp-brandIcon" />
-          WhatsApp
-        </a>
-        <Link className="btn btn-outline-dark" to="/contact">
-          Contact Team
-        </Link>
-      </div>
     </>
   )
 }
