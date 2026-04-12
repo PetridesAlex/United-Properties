@@ -8,9 +8,9 @@
   "theme_color": "#0a1220",
   "icons": [
     {
-      "src": "/images/logo/favicon-logo-united-properties.webp",
-      "sizes": "512x512",
-      "type": "image/webp",
+      "src": "/images/logo/favicon-united-properties.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any"
     }
   ]

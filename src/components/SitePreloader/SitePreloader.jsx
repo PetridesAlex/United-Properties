@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import './SitePreloader.css'
 
-/** Minimum time preloader stays visible (sync with `--sp-duration-bar` in CSS). */
-const MIN_MS = 3000
+/** Short minimum so the reveal does not flash away instantly (sync bar feel with `--sp-duration-bar`). */
+const MIN_MS = 900
+/** Never wait longer than this for window load; preloader dismisses at most ~MAX_MS + exit animation. */
+const MAX_MS = 3000
 /** Must match `.site-preloader--exit` animation duration in CSS */
 const EXIT_MS = 780
 const EXIT_MS_REDUCED = 420
@@ -37,7 +39,14 @@ function SitePreloader({ onDone }) {
     let cancelled = false
 
     const run = async () => {
-      await Promise.all([waitForWindowLoad(), waitMs(MIN_MS)])
+      const t0 = typeof performance !== 'undefined' ? performance.now() : Date.now()
+      await Promise.race([waitForWindowLoad(), waitMs(MAX_MS)])
+      if (cancelled) return
+      const elapsed =
+        (typeof performance !== 'undefined' ? performance.now() : Date.now()) - t0
+      const remainingMin = Math.max(0, MIN_MS - elapsed)
+      const underCap = Math.max(0, MAX_MS - elapsed)
+      await waitMs(Math.min(remainingMin, underCap))
       if (cancelled) return
       setPhase('exit')
       const exitMs =
