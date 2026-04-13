@@ -1,4 +1,5 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
+import {GalleryImagesInput} from '../studio/GalleryImagesInput'
 
 const WEBSITE = 'website'
 const BAZARAKI = 'bazaraki'
@@ -404,10 +405,11 @@ export const propertyType = defineType({
       type: 'array',
       group: MEDIA_PHOTOS,
       description:
-        '**Bulk add from library:** click **Select Uploaded Images** under the gallery list, check several assets, then **Insert Selected Images** — they append in one go. You can also drag multiple files from your computer onto the grid, or add slots one-by-one with **Add item → Select**. **Reorder:** drag rows in list view, or use the handle on each tile in grid view. Max 16 images when Bazaraki feed is enabled.',
+        '**Bulk add:** use the blue **Choose multiple images** area above the grid (checkboxes, then **Insert N images**). You can also drag multiple files from your computer onto the grid, or use **Add item → Select** one at a time. **Reorder:** drag rows or tiles. Max 16 images when Bazaraki feed is enabled.',
       options: {
         layout: 'grid',
       },
+      components: {input: GalleryImagesInput},
       of: [
         defineArrayMember({
           type: 'image',
