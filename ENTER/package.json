@@ -20,6 +20,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "sanity": "^5.17.1",
+    "sanity-plugin-image-asset-picker": "^2.0.0",
     "sanity-plugin-media": "^4.1.1",
     "styled-components": "^6.1.18"
   },

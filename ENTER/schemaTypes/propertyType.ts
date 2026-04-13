@@ -404,7 +404,7 @@ export const propertyType = defineType({
       type: 'array',
       group: MEDIA_PHOTOS,
       description:
-        '**Bulk add:** drag multiple files onto the grid, or **Add item → Select → Media** and Shift/Cmd+click several assets. **Reorder:** drag rows in list view, or use the handle on each tile in grid view. All files live in the shared Media library for reuse. Max 16 images when Bazaraki feed is enabled.',
+        '**Bulk add from library:** click **Select Uploaded Images** under the gallery list, check several assets, then **Insert Selected Images** — they append in one go. You can also drag multiple files from your computer onto the grid, or add slots one-by-one with **Add item → Select**. **Reorder:** drag rows in list view, or use the handle on each tile in grid view. Max 16 images when Bazaraki feed is enabled.',
       options: {
         layout: 'grid',
       },

@@ -2,12 +2,13 @@ import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {media} from 'sanity-plugin-media'
+import {imageAssetPickerPlugin} from 'sanity-plugin-image-asset-picker'
 import {schemaTypes} from './schemaTypes'
 import {structure} from './sanity.structure'
 
 /**
- * Put Media library first when picking images — supports multi-select (Shift/Cmd+click),
- * reuse of existing uploads. Bulk uploads: open **Media** from the **left sidebar** (grid icon).
+ * Put Media library first when picking images (reuse uploads). For image **arrays** (e.g. gallery),
+ * `sanity-plugin-image-asset-picker` adds **Select uploaded images** for true multi-select from assets.
  */
 function imageAssetSourcesWithMediaFirst<T extends {name: string}>(prev: T[]): T[] {
   const mediaSource = prev.find((s) => s.name === 'media')
@@ -59,6 +60,8 @@ export default defineConfig({
 
   plugins: [
     media(mediaPluginOptions),
+    /** Bulk-select existing uploads for any array-of-images field (e.g. property gallery). */
+    imageAssetPickerPlugin(),
     structureTool({structure}),
     visionTool(),
   ],
