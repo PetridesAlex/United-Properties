@@ -418,6 +418,14 @@ export const propertyType = defineType({
             hotspot: true,
             metadata: ['blurhash', 'lqip', 'palette'],
           },
+          fields: [
+            defineField({
+              name: 'alt',
+              title: 'Alt text',
+              type: 'string',
+              description: 'Short description for accessibility and SEO (e.g. “Sea view from living room”).',
+            }),
+          ],
         }),
       ],
       validation: (rule) =>

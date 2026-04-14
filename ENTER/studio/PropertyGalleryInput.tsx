@@ -10,6 +10,7 @@ import {
   Spinner,
   Stack,
   Text,
+  TextInput,
 } from '@sanity/ui'
 import createImageUrlBuilder from '@sanity/image-url'
 import {
@@ -36,10 +37,14 @@ import {set, useClient, useDataset, useProjectId, type ArrayOfObjectsInputProps}
 const MAX_GALLERY = 30
 const PAGE_SIZE = 48
 
-type ImageRow = {
+/** Matches gallery array member: image + optional alt / hotspot from schema */
+type GalleryImageValue = {
   _type: 'image'
   _key: string
   asset?: {_ref?: string; _type?: 'reference'}
+  alt?: string
+  hotspot?: Record<string, unknown>
+  crop?: Record<string, unknown>
 }
 
 type AssetRow = {_id: string; originalFilename?: string; url?: string}
@@ -52,11 +57,15 @@ function SortableThumb({
   id,
   url,
   index,
+  alt,
+  onAltChange,
   onRemove,
 }: {
   id: string
   url: string | null
   index: number
+  alt: string
+  onAltChange: (next: string) => void
   onRemove: () => void
 }) {
   const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({id})
@@ -120,6 +129,12 @@ function SortableThumb({
         <Text muted size={0}>
           Photo {index + 1}
         </Text>
+        <TextInput
+          fontSize={1}
+          placeholder="Alt text (accessibility)"
+          value={alt}
+          onChange={(e) => onAltChange(e.currentTarget.value)}
+        />
       </Stack>
     </Card>
   )
@@ -134,7 +149,10 @@ export function PropertyGalleryInput(props: ArrayOfObjectsInputProps) {
   const dataset = useDataset()
   const {onChange, value} = props
 
-  const items = useMemo(() => (Array.isArray(value) ? (value as ImageRow[]) : []), [value])
+  const items = useMemo(
+    () => (Array.isArray(value) ? (value as GalleryImageValue[]) : []),
+    [value],
+  )
 
   const builder = useMemo(() => {
     if (!projectId || !dataset) return null
@@ -182,7 +200,7 @@ export function PropertyGalleryInput(props: ArrayOfObjectsInputProps) {
   }, [client, libOpen, libPage])
 
   const thumbUrl = useCallback(
-    (item: ImageRow) => {
+    (item: GalleryImageValue) => {
       if (!builder || !item?.asset?._ref) return null
       try {
         return builder.image(item).width(280).height(280).fit('crop').auto('format').url()
@@ -194,7 +212,7 @@ export function PropertyGalleryInput(props: ArrayOfObjectsInputProps) {
   )
 
   const appendImages = useCallback(
-    (newRows: ImageRow[]) => {
+    (newRows: GalleryImageValue[]) => {
       if (newRows.length === 0) return
       const cap = Math.min(newRows.length, remainingSlots)
       const slice = newRows.slice(0, cap)
@@ -221,7 +239,7 @@ export function PropertyGalleryInput(props: ArrayOfObjectsInputProps) {
       setUploading(true)
       setUploadProgress({done: 0, total: cap})
 
-      const newItems: ImageRow[] = []
+      const newItems: GalleryImageValue[] = []
       try {
         for (let i = 0; i < cap; i++) {
           const file = files[i]
@@ -269,11 +287,21 @@ export function PropertyGalleryInput(props: ArrayOfObjectsInputProps) {
     [items, onChange],
   )
 
+  const updateAltAt = useCallback(
+    (index: number, nextAlt: string) => {
+      const next = items.map((it, i) =>
+        i === index ? {...it, alt: nextAlt} : it,
+      )
+      onChange(set(next))
+    },
+    [items, onChange],
+  )
+
   const libInsert = useCallback(() => {
     const ids = [...libSelected]
     if (ids.length === 0) return
     const cap = Math.min(ids.length, remainingSlots)
-    const rows: ImageRow[] = ids.slice(0, cap).map((id) => ({
+    const rows: GalleryImageValue[] = ids.slice(0, cap).map((id) => ({
       _type: 'image',
       _key: nanoid(),
       asset: {_ref: id, _type: 'reference'},
@@ -346,10 +374,20 @@ export function PropertyGalleryInput(props: ArrayOfObjectsInputProps) {
               {items.length} / {MAX_GALLERY} · {remainingSlots} slots left
             </Text>
           </Flex>
-          <Text muted size={1}>
-            Drag & drop here, or tap to choose many photos at once (works on phone with multi-select).
-            Reorder images below by dragging the handle.
-          </Text>
+          <Stack space={2}>
+            <Text muted size={1}>
+              <strong>Desktop:</strong> drag files here or use <strong>Choose images</strong> and pick many files.
+            </Text>
+            <Text muted size={1}>
+              <strong>Phone:</strong> tap <strong>Choose images</strong>, then open your <strong>photo library</strong>{' '}
+              (not the camera), tap <strong>Select</strong> if shown, choose multiple photos, then confirm. The camera
+              only sends one photo at a time.
+            </Text>
+            <Text muted size={1}>
+              Reorder below with the grip handle. Use <strong>Add from Media library</strong> to attach existing uploads
+              in one go.
+            </Text>
+          </Stack>
 
           {uploading && (
             <Stack space={2}>
@@ -419,7 +457,9 @@ export function PropertyGalleryInput(props: ArrayOfObjectsInputProps) {
                     key={item._key}
                     id={item._key}
                     index={index}
+                    alt={typeof item.alt === 'string' ? item.alt : ''}
                     url={thumbUrl(item)}
+                    onAltChange={(next) => updateAltAt(index, next)}
                     onRemove={() => removeAt(index)}
                   />
                 ))}
@@ -524,7 +564,11 @@ export function PropertyGalleryInput(props: ArrayOfObjectsInputProps) {
               />
               <Button
                 disabled={libSelected.size === 0}
-                text={`Add ${libSelected.size || ''} image${libSelected.size === 1 ? '' : 's'}`.trim()}
+                text={
+                  libSelected.size === 0
+                    ? 'Add selected images'
+                    : `Add selected images (${libSelected.size})`
+                }
                 tone="primary"
                 onClick={libInsert}
               />
