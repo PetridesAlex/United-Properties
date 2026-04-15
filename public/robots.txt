@@ -7,4 +7,4 @@ Disallow: /*?*featured=
 Disallow: /*?*keyword=
 Disallow: /*?*location=
 
-Sitemap: https://unitedproperties.eu/sitemap.xml
+Sitemap: https://www.unitedproperties.eu/sitemap.xml

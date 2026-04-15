@@ -1,9 +1,11 @@
 /**
  * Generates public/sitemap.xml for SEO.
  *
- * - Lists only canonical URLs (no client-only redirects to duplicate hubs).
- * - Uses Sanity CMS property slugs only (never local demo data).
- * - Optional: set SANITY_API_READ_TOKEN in the environment if your dataset requires a token for GROQ.
+ * - Canonical host: https://www.unitedproperties.eu (match Google Search Console property).
+ * - Minimal valid XML: urlset + loc only (sitemaps.org).
+ * - Property URLs from Sanity GROQ when fetch succeeds (no demo slugs).
+ *
+ * Optional: SANITY_API_READ_TOKEN if the dataset requires it.
  *
  * @see https://www.sitemaps.org/protocol.html
  */
@@ -11,40 +13,35 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {fileURLToPath} from 'node:url'
 
-const SITE_URL = 'https://unitedproperties.eu'
-const TODAY = new Date().toISOString().split('T')[0]
+const SITE_URL = 'https://www.unitedproperties.eu'
 
-/** Match src/lib/sanityClient.js — used only for optional build-time property discovery */
+/** Match src/lib/sanityClient.js — build-time property discovery */
 const SANITY_PROJECT_ID = 'd7j11dpu'
 const SANITY_DATASET = 'production'
 const SANITY_API_VERSION = '2026-03-21'
 
-/** Hub & marketing pages — unique content, stable priorities */
-const staticRoutes = [
-  {path: '/', changefreq: 'daily', priority: '1.0'},
-  {path: '/properties', changefreq: 'weekly', priority: '0.9'},
-  {path: '/buy', changefreq: 'weekly', priority: '0.9'},
-  {path: '/rent', changefreq: 'weekly', priority: '0.9'},
-  {path: '/new-developments', changefreq: 'weekly', priority: '0.85'},
-  {path: '/featured-properties', changefreq: 'weekly', priority: '0.85'},
-  {path: '/signature-listings', changefreq: 'weekly', priority: '0.85'},
-  {path: '/about', changefreq: 'monthly', priority: '0.7'},
-  {path: '/services', changefreq: 'monthly', priority: '0.7'},
-  {path: '/developments', changefreq: 'weekly', priority: '0.8'},
-  {path: '/agents', changefreq: 'monthly', priority: '0.75'},
-  {path: '/contact', changefreq: 'monthly', priority: '0.75'},
-  {
-    path: '/videos/luxury-real-estate-cyprus',
-    changefreq: 'monthly',
-    priority: '0.75',
-  },
+/**
+ * Ordered hub URLs (important pages first). /video/hero-video is listed; it redirects in-app to the watch page.
+ */
+const STATIC_PATHS = [
+  '/',
+  '/buy',
+  '/rent',
+  '/contact',
+  '/new-developments',
+  '/video/hero-video',
+  '/properties',
+  '/featured-properties',
+  '/signature-listings',
+  '/about',
+  '/services',
+  '/developments',
+  '/agents',
+  '/videos/luxury-real-estate-cyprus',
 ]
 
-/**
- * Region hubs that render real listing UI (see AppRouter).
- * Do NOT list /properties/paphos, nicosia, etc. — those redirect to /buy (duplicate canonical URL).
- */
-const regionRoutes = [{path: '/properties/limassol', changefreq: 'weekly', priority: '0.85'}]
+/** Region hubs only (no duplicate region redirects). */
+const REGION_PATHS = ['/properties/limassol']
 
 function buildUrl(pathname) {
   const normalizedPath = pathname.startsWith('/') ? pathname : `/${pathname}`
@@ -61,29 +58,26 @@ function escapeXml(text) {
     .replace(/'/g, '&apos;')
 }
 
-function createUrlEntry({loc, lastmod, changefreq, priority}) {
+function createUrlEntry(loc) {
   return `  <url>
     <loc>${escapeXml(loc)}</loc>
-    <lastmod>${escapeXml(lastmod)}</lastmod>
-    <changefreq>${escapeXml(changefreq)}</changefreq>
-    <priority>${escapeXml(priority)}</priority>
   </url>`
 }
 
-function uniqueByLoc(entries) {
+function uniquePreserveOrder(urls) {
   const seen = new Set()
-  return entries.filter((entry) => {
-    if (seen.has(entry.loc)) return false
-    seen.add(entry.loc)
+  return urls.filter((u) => {
+    if (seen.has(u)) return false
+    seen.add(u)
     return true
   })
 }
 
 /**
- * @returns {Promise<Array<{ slug: string, lastmod: string }>>}
+ * @returns {Promise<Array<{ slug: string }>>}
  */
-async function fetchSanityPropertyEntries() {
-  const groq = `*[_type == "property" && defined(slug.current)]{"slug": slug.current, "_updatedAt": _updatedAt}`
+async function fetchSanityPropertySlugs() {
+  const groq = `*[_type == "property" && defined(slug.current)]{"slug": slug.current}`
   const base = `https://${SANITY_PROJECT_ID}.api.sanity.io/v${SANITY_API_VERSION}/data/query/${SANITY_DATASET}`
   const url = `${base}?query=${encodeURIComponent(groq)}`
 
@@ -101,68 +95,35 @@ async function fetchSanityPropertyEntries() {
     const rows = Array.isArray(data?.result) ? data.result : []
     return rows
       .filter((row) => typeof row?.slug === 'string' && row.slug.trim().length > 0)
-      .map((row) => {
-        const lastmod =
-          typeof row._updatedAt === 'string' && row._updatedAt.includes('T')
-            ? row._updatedAt.split('T')[0]
-            : TODAY
-        return {slug: row.slug.trim(), lastmod}
-      })
+      .map((row) => ({slug: row.slug.trim()}))
   } catch (err) {
     console.warn('[sitemap] Sanity fetch failed:', err?.message || err)
     return []
   }
 }
 
-function sortEntries(entries) {
-  return [...entries].sort((a, b) => {
-    const pa = parseFloat(a.priority)
-    const pb = parseFloat(b.priority)
-    if (pb !== pa) return pb - pa
-    return a.loc.localeCompare(b.loc, 'en')
-  })
-}
-
 async function generateSitemapXml() {
-  const sanityRows = await fetchSanityPropertyEntries()
-  if (sanityRows.length === 0) {
-    console.warn('[sitemap] No Sanity property URLs found; sitemap includes hub/static pages only.')
+  const sanitySlugs = await fetchSanityPropertySlugs()
+  if (sanitySlugs.length === 0) {
+    console.warn('[sitemap] No Sanity property URLs; hub/static paths only.')
   } else {
-    console.log(`[sitemap] Sanity: ${sanityRows.length} property URL(s) included in sitemap.`)
+    console.log(`[sitemap] Sanity: ${sanitySlugs.length} property URL(s) included.`)
   }
 
-  const propertyEntries = sanityRows.map((row) => ({
-    loc: buildUrl(`/properties/${row.slug}`),
-    lastmod: row.lastmod,
-    changefreq: 'weekly',
-    priority: '0.8',
-  }))
+  const propertyUrls = sanitySlugs
+    .sort((a, b) => a.slug.localeCompare(b.slug, 'en'))
+    .map((row) => buildUrl(`/properties/${row.slug}`))
 
-  const hubEntries = [
-    ...staticRoutes.map((route) => ({
-      loc: buildUrl(route.path),
-      lastmod: TODAY,
-      changefreq: route.changefreq,
-      priority: route.priority,
-    })),
-    ...regionRoutes.map((route) => ({
-      loc: buildUrl(route.path),
-      lastmod: TODAY,
-      changefreq: route.changefreq,
-      priority: route.priority,
-    })),
-    ...propertyEntries,
-  ]
+  const urls = uniquePreserveOrder([
+    ...STATIC_PATHS.map((p) => buildUrl(p)),
+    ...REGION_PATHS.map((p) => buildUrl(p)),
+    ...propertyUrls,
+  ])
 
-  const uniqueEntries = uniqueByLoc(hubEntries)
-  const sorted = sortEntries(uniqueEntries)
-  const xmlEntries = sorted.map(createUrlEntry).join('\n')
+  const xmlEntries = urls.map(createUrlEntry).join('\n')
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<!-- United Properties — generated by scripts/generate-sitemap.js (do not edit by hand) -->
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${xmlEntries}
 </urlset>
 `
