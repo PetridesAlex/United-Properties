@@ -1,0 +1,73 @@
+.video-watch__hero {
+  padding-bottom: 1.5rem;
+}
+
+.video-watch__eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0 0 0.5rem;
+}
+
+.video-watch__title {
+  margin: 0 0 0.75rem;
+  line-height: 1.15;
+}
+
+.video-watch__lede {
+  max-width: 42rem;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.video-watch__section {
+  padding-top: 0;
+}
+
+.video-watch__inner {
+  max-width: 960px;
+}
+
+.video-watch__player-wrap {
+  border-radius: var(--radius-md, 12px);
+  overflow: hidden;
+  background: #0f172a;
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.18);
+}
+
+.video-watch__video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  vertical-align: middle;
+}
+
+.video-watch__copy {
+  margin-top: 1.75rem;
+  max-width: 46rem;
+}
+
+.video-watch__copy p {
+  margin: 0 0 1rem;
+  line-height: 1.65;
+}
+
+.video-watch__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.25rem !important;
+}
+
+.video-watch__btn-muted {
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  color: var(--color-text, #0f172a);
+  background: transparent;
+}
+
+.video-watch__btn-muted:hover {
+  background: rgba(15, 23, 42, 0.06);
+}

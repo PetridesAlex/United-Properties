@@ -32,6 +32,9 @@ function Footer() {
             <li>
               <Link to="/about">About</Link>
             </li>
+            <li>
+              <Link to="/videos/luxury-real-estate-cyprus">Brand video</Link>
+            </li>
           </ul>
         </div>
 

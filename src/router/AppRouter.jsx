@@ -7,6 +7,7 @@ import Services from '../pages/Services'
 import Developments from '../pages/Developments'
 import Agents from '../pages/Agents'
 import Contact from '../pages/Contact'
+import HeroVideoWatch from '../pages/HeroVideoWatch'
 import NotFound from '../pages/NotFound'
 
 function LegacyPropertyRedirect() {
@@ -37,6 +38,8 @@ function AppRouter() {
       <Route path="/developments" element={<Developments />} />
       <Route path="/agents" element={<Agents />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/videos/luxury-real-estate-cyprus" element={<HeroVideoWatch />} />
+      <Route path="/video/hero-video" element={<Navigate to="/videos/luxury-real-estate-cyprus" replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

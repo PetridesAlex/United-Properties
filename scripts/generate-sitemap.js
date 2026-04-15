@@ -2,7 +2,7 @@
  * Generates public/sitemap.xml for SEO.
  *
  * - Lists only canonical URLs (no client-only redirects to duplicate hubs).
- * - Merges static demo properties with Sanity CMS slugs when the API is reachable at build time.
+ * - Uses Sanity CMS property slugs only (never local demo data).
  * - Optional: set SANITY_API_READ_TOKEN in the environment if your dataset requires a token for GROQ.
  *
  * @see https://www.sitemaps.org/protocol.html
@@ -10,7 +10,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import {fileURLToPath} from 'node:url'
-import {properties} from '../src/data/properties.js'
 
 const SITE_URL = 'https://unitedproperties.eu'
 const TODAY = new Date().toISOString().split('T')[0]
@@ -34,6 +33,11 @@ const staticRoutes = [
   {path: '/developments', changefreq: 'weekly', priority: '0.8'},
   {path: '/agents', changefreq: 'monthly', priority: '0.75'},
   {path: '/contact', changefreq: 'monthly', priority: '0.75'},
+  {
+    path: '/videos/luxury-real-estate-cyprus',
+    changefreq: 'monthly',
+    priority: '0.75',
+  },
 ]
 
 /**
@@ -75,19 +79,6 @@ function uniqueByLoc(entries) {
   })
 }
 
-function getStaticPropertyEntries() {
-  if (!Array.isArray(properties) || properties.length === 0) return []
-
-  return properties
-    .filter((property) => typeof property?.slug === 'string' && property.slug.trim().length > 0)
-    .map((property) => ({
-      loc: buildUrl(`/properties/${property.slug.trim()}`),
-      lastmod: TODAY,
-      changefreq: 'weekly',
-      priority: '0.8',
-    }))
-}
-
 /**
  * @returns {Promise<Array<{ slug: string, lastmod: string }>>}
  */
@@ -103,9 +94,7 @@ async function fetchSanityPropertyEntries() {
   try {
     const res = await fetch(url, {headers})
     if (!res.ok) {
-      console.warn(
-        `[sitemap] Sanity GROQ returned ${res.status} ${res.statusText}. Using static property URLs only.`,
-      )
+      console.warn(`[sitemap] Sanity GROQ returned ${res.status} ${res.statusText}.`)
       return []
     }
     const data = await res.json()
@@ -125,26 +114,6 @@ async function fetchSanityPropertyEntries() {
   }
 }
 
-function mergePropertyEntries(staticEntries, sanityRows) {
-  const bySlug = new Map()
-
-  for (const e of staticEntries) {
-    const slug = e.loc.replace(`${SITE_URL}/properties/`, '').replace(/\/$/, '')
-    bySlug.set(slug, {...e})
-  }
-
-  for (const row of sanityRows) {
-    bySlug.set(row.slug, {
-      loc: buildUrl(`/properties/${row.slug}`),
-      lastmod: row.lastmod,
-      changefreq: 'weekly',
-      priority: '0.8',
-    })
-  }
-
-  return [...bySlug.values()]
-}
-
 function sortEntries(entries) {
   return [...entries].sort((a, b) => {
     const pa = parseFloat(a.priority)
@@ -156,12 +125,18 @@ function sortEntries(entries) {
 
 async function generateSitemapXml() {
   const sanityRows = await fetchSanityPropertyEntries()
-  if (sanityRows.length > 0) {
-    console.log(`[sitemap] Sanity: ${sanityRows.length} property URL(s) merged into sitemap.`)
+  if (sanityRows.length === 0) {
+    console.warn('[sitemap] No Sanity property URLs found; sitemap includes hub/static pages only.')
+  } else {
+    console.log(`[sitemap] Sanity: ${sanityRows.length} property URL(s) included in sitemap.`)
   }
 
-  const staticPropertyEntries = getStaticPropertyEntries()
-  const propertyEntries = mergePropertyEntries(staticPropertyEntries, sanityRows)
+  const propertyEntries = sanityRows.map((row) => ({
+    loc: buildUrl(`/properties/${row.slug}`),
+    lastmod: row.lastmod,
+    changefreq: 'weekly',
+    priority: '0.8',
+  }))
 
   const hubEntries = [
     ...staticRoutes.map((route) => ({
