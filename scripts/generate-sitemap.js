@@ -35,7 +35,6 @@ const STATIC_PATHS = [
   '/services',
   '/developments',
   '/agents',
-  '/videos/luxury-real-estate-cyprus',
 ]
 
 /** Region hubs only (no duplicate region redirects). */
