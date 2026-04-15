@@ -2,6 +2,11 @@
   padding: 1.25rem;
 }
 
+/* Hash links (#property-management) clear fixed navbar */
+.service-card[id] {
+  scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 6.5rem);
+}
+
 .service-card__icon {
   width: 44px;
   height: 44px;

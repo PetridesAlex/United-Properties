@@ -3,11 +3,12 @@ import { ArrowUpRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import './ServiceCard.css'
 
-function ServiceCard({ service }) {
+function ServiceCard({ service, id }) {
   const Icon = service.icon
 
   return (
     <motion.article
+      id={id}
       className="service-card card-luxury"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}

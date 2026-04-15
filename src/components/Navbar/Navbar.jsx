@@ -5,6 +5,27 @@ import StaggeredMenu from '../StaggeredMenu/StaggeredMenu'
 import { TELEGRAM_CHAT_URL, WHATSAPP_CHAT_URL } from '../../config/externalLinks'
 import './Navbar.css'
 
+/** Center nav — Montserrat via variables / Google Fonts in index.html */
+const CENTER_NAV_LINKS = [
+  { label: 'Buy', to: '/buy' },
+  { label: 'Rent', to: '/rent' },
+  { label: 'Services', to: '/services' },
+  { label: 'Property Management', to: '/services#property-management' },
+  { label: 'About', to: '/about' },
+  { label: 'Contact', to: '/contact' },
+]
+
+function isCenterNavActive(pathname, hash, to) {
+  if (to.includes('#')) {
+    const [path, h] = to.split('#')
+    return pathname === path && hash === `#${h}`
+  }
+  if (to === '/services') {
+    return pathname === '/services' && hash !== '#property-management'
+  }
+  return pathname === to
+}
+
 /** Premium services strip above the main nav (duplicated in DOM for seamless loop). */
 const PREMIUM_SERVICES_TICKER = [
   'Luxury sales & long-term lettings',
@@ -72,6 +93,24 @@ function Navbar() {
           <img src="/images/logo/United_Properties_v2.1.svg" alt="" role="presentation" />
         </Link>
 
+        <nav className="navbar__center" aria-label="Main navigation">
+          <ul className="navbar__center-list">
+            {CENTER_NAV_LINKS.map((item) => {
+              const active = isCenterNavActive(location.pathname, location.hash, item.to)
+              return (
+                <li key={item.to}>
+                  <Link
+                    className={`navbar__center-link${active ? ' navbar__center-link--active' : ''}`}
+                    to={item.to}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </nav>
+
         <div className="navbar__actions">
           <button
             type="button"
@@ -87,12 +126,15 @@ function Navbar() {
               className="navbar__staggered"
               position="right"
               items={[
-                { label: 'Properties', link: '/properties' },
                 { label: 'Buy', link: '/buy' },
                 { label: 'Rent', link: '/rent' },
+                { label: 'Services', link: '/services' },
+                { label: 'Property Management', link: '/services#property-management' },
+                { label: 'About', link: '/about' },
+                { label: 'Contact', link: '/contact' },
+                { label: 'Properties', link: '/properties' },
                 { label: 'New Development', link: '/new-developments' },
                 { label: 'Agents', link: '/agents' },
-                { label: 'Contact', link: '/contact' },
               ]}
               socialItems={[
                 { label: 'Instagram', link: '#' },

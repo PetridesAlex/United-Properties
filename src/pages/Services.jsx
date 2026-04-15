@@ -30,7 +30,11 @@ function Services() {
           />
           <div className="grid-3">
             {services.map((service) => (
-              <ServiceCard key={service.id} service={service} />
+              <ServiceCard
+                key={service.id}
+                service={service}
+                id={service.title === 'Property Management' ? 'property-management' : undefined}
+              />
             ))}
           </div>
         </div>

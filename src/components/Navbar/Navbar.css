@@ -185,10 +185,10 @@
   container-name: navbar-bar;
   min-height: 60px;
   position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: clamp(0.85rem, 1.2vw, 1.15rem);
+  gap: clamp(0.55rem, 1vw, 1rem);
   border-radius: 0;
   border: 0 !important;
   background: transparent;
@@ -212,6 +212,47 @@
   max-width: none;
   margin-inline: auto;
   transition: width var(--transition-normal), max-width var(--transition-normal);
+}
+
+/* Centered Montserrat nav (see .navbar__logo for grid placement) */
+.navbar__center {
+  justify-self: center;
+  min-width: 0;
+  max-width: min(720px, 100%);
+}
+
+.navbar__center-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.45rem, 1.05vw, 1.15rem);
+}
+
+.navbar__center-link {
+  font-family: 'Montserrat', var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(0.8125rem, 0.2rem + 0.55vw, 0.9375rem);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: nowrap;
+  padding: 0.4rem 0.14rem;
+  transition: color var(--transition-fast), opacity var(--transition-fast);
+  -webkit-font-smoothing: antialiased;
+}
+
+.navbar__center-link:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+.navbar__center-link--active {
+  color: var(--color-accent-light, #d5b59a);
+  font-weight: 700;
 }
 
 /* Inner pages (not home): prominent logo; max-width avoids crowding hero titles */
@@ -263,11 +304,9 @@
     0 28px 64px rgba(2, 6, 18, 0.48),
     0 10px 28px rgba(0, 0, 0, 0.22);
   padding: 0.45rem 0.75rem 0.45rem 0.85rem;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  align-content: center;
-  justify-content: space-between;
-  flex-wrap: nowrap;
   min-height: clamp(68px, 5.5vw, 84px);
   isolation: isolate;
   transform: none;
@@ -319,7 +358,7 @@
 }
 
 .navbar--solid .navbar__actions {
-  margin-left: auto;
+  margin-left: 0;
 }
 
 /* Inline nav + Portal hidden — navigation is via StaggeredMenu everywhere */
@@ -339,9 +378,9 @@
 
 /* Transparent hero: main row layout */
 .navbar--transparent .navbar__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  align-content: center;
-  flex-wrap: nowrap;
   min-height: 80px;
   padding-left: max(15px, env(safe-area-inset-left, 0px));
   padding-right: max(15px, env(safe-area-inset-right, 0px));
@@ -356,6 +395,7 @@
 }
 
 .navbar__logo {
+  justify-self: start;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -780,6 +820,7 @@
 }
 
 .navbar__actions {
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: clamp(0.35rem, 1vw, 0.55rem);
@@ -1095,6 +1136,11 @@
 
 /* Match tablet / small laptop: layout tweaks (hamburger + search on all widths) */
 @media (max-width: 1200px) {
+  /* Inline center nav → hamburger only; two-column bar: logo | actions */
+  .navbar__center {
+    display: none;
+  }
+
   .navbar__icon-btn,
   .navbar__wa,
   .navbar__menu-pill {
@@ -1115,6 +1161,8 @@
   }
 
   .navbar__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     min-height: 62px;
     width: 100%;
     max-width: none;
@@ -1126,7 +1174,6 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     transform: none;
-    justify-content: space-between;
     align-items: center;
   }
 
@@ -1149,11 +1196,13 @@
     min-height: clamp(64px, 11vw, 82px);
     margin-inline: max(0.25rem, env(safe-area-inset-left, 0px)) max(0.25rem, env(safe-area-inset-right, 0px));
     isolation: isolate;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .navbar--transparent .navbar__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    flex-wrap: wrap;
     row-gap: 0.35rem;
     padding-top: 0.2rem;
     padding-bottom: 0.28rem;
