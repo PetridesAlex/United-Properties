@@ -43,6 +43,15 @@ const STATIC_PATHS = [
 /** Region hubs only (no duplicate region redirects). */
 const REGION_PATHS = ['/properties/limassol']
 
+/**
+ * Property slugs to omit from the sitemap (demo data, typos, or removed listings still in CMS).
+ * Fix or unpublish in Sanity, then remove from this list when URLs are valid again.
+ */
+const EXCLUDED_PROPERTY_SLUGS = new Set([
+  '2-bedroom-flat',
+  '3-bedroom-city-apartmen',
+])
+
 function buildUrl(pathname) {
   const normalizedPath = pathname.startsWith('/') ? pathname : `/${pathname}`
   if (normalizedPath === '/') return `${SITE_URL}/`
@@ -93,9 +102,16 @@ async function fetchSanityPropertySlugs() {
     }
     const data = await res.json()
     const rows = Array.isArray(data?.result) ? data.result : []
-    return rows
+    const trimmed = rows
       .filter((row) => typeof row?.slug === 'string' && row.slug.trim().length > 0)
-      .map((row) => ({slug: row.slug.trim()}))
+      .map((row) => row.slug.trim())
+    const excluded = trimmed.filter((slug) => EXCLUDED_PROPERTY_SLUGS.has(slug))
+    if (excluded.length > 0) {
+      console.log(`[sitemap] Excluded ${excluded.length} property slug(s) from sitemap: ${excluded.join(', ')}`)
+    }
+    return trimmed
+      .filter((slug) => !EXCLUDED_PROPERTY_SLUGS.has(slug))
+      .map((slug) => ({slug}))
   } catch (err) {
     console.warn('[sitemap] Sanity fetch failed:', err?.message || err)
     return []
@@ -105,9 +121,9 @@ async function fetchSanityPropertySlugs() {
 async function generateSitemapXml() {
   const sanitySlugs = await fetchSanityPropertySlugs()
   if (sanitySlugs.length === 0) {
-    console.warn('[sitemap] No Sanity property URLs; hub/static paths only.')
+    console.warn('[sitemap] No property listing URLs in sitemap (exclusions only, or Sanity fetch empty/failed).')
   } else {
-    console.log(`[sitemap] Sanity: ${sanitySlugs.length} property URL(s) included.`)
+    console.log(`[sitemap] ${sanitySlugs.length} property listing URL(s) in sitemap.`)
   }
 
   const propertyUrls = sanitySlugs
