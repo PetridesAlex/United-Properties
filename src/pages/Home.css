@@ -16,7 +16,7 @@
   --ucf-node-blue-border: rgba(120, 160, 200, 0.42);
   --ucf-node-blue-glow: rgba(130, 175, 220, 0.28);
 
-  /* Serhant-style: overlap hero video (stack above .hero-section); gutters match hero frame */
+  /* Serhant-style: overlap hero video (stack above .hero-section); hero video is edge-to-edge */
   position: relative;
   z-index: 2;
   margin-inline: 0;
