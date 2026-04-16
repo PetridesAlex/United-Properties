@@ -7,19 +7,19 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="container footer__grid">
-        <div>
+        <div className="footer__col footer__col--brand">
           <h3 className="footer__brand">
             <img src="/images/logo/United_Properties_v2.1.svg" alt="United Properties" />
           </h3>
-          <p>
+          <p className="footer__brand-copy">
             Bespoke real estate advisory for premium Cyprus homes, investments, and
             international relocation.
           </p>
         </div>
 
-        <div>
-          <h4>Quick Links</h4>
-          <ul>
+        <div className="footer__col footer__col--links">
+          <h4 className="footer__section-title">Quick Links</h4>
+          <ul className="footer__list footer__list--links">
             <li>
               <Link to="/">Home</Link>
             </li>
@@ -35,9 +35,9 @@ function Footer() {
           </ul>
         </div>
 
-        <div>
-          <h4>Services</h4>
-          <ul>
+        <div className="footer__col footer__col--services">
+          <h4 className="footer__section-title">Services</h4>
+          <ul className="footer__list footer__list--services">
             <li>Property Sales</li>
             <li>Luxury Rentals</li>
             <li>Property Management</li>
@@ -45,9 +45,9 @@ function Footer() {
           </ul>
         </div>
 
-        <div className="footer__contact-block">
-          <h4>Contact</h4>
-          <ul>
+        <div className="footer__col footer__col--contact footer__contact-block">
+          <h4 className="footer__section-title">Contact</h4>
+          <ul className="footer__list footer__list--contact">
             <li>18 Marina Avenue, Limassol, Cyprus</li>
             <li>
               <a href="mailto:info@unitedproperties.eu">info@unitedproperties.eu</a>

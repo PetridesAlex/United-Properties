@@ -20,7 +20,7 @@
   position: relative;
   z-index: 2;
   margin-inline: var(--layout-hero-gutter);
-  margin-top: clamp(-8.5rem, -14vh, -2.75rem);
+  margin-top: clamp(-13.5rem, -24vh, -5rem);
   padding: clamp(0.75rem, 1.8vw, 1.25rem) 0 clamp(2.75rem, 5.5vw, 4.25rem);
   border-radius: var(--layout-poster-radius) var(--layout-poster-radius) 0 0;
   overflow: hidden;
@@ -418,14 +418,14 @@
   }
 
   .home-center-flow-section .center-flow-center.home-center-flow__center-hub {
-    width: clamp(108px, 28vw, 132px) !important;
-    height: clamp(108px, 28vw, 132px) !important;
-    border-radius: clamp(24px, 6vw, 30px) !important;
+    width: clamp(92px, 24vw, 112px) !important;
+    height: clamp(92px, 24vw, 112px) !important;
+    border-radius: clamp(20px, 5.2vw, 26px) !important;
   }
 
   .home-center-flow-section .center-flow-node {
-    width: clamp(72px, 19.5vw, 92px) !important;
-    height: clamp(72px, 19.5vw, 92px) !important;
+    width: clamp(66px, 18vw, 84px) !important;
+    height: clamp(66px, 18vw, 84px) !important;
     border-radius: clamp(14px, 4vw, 18px) !important;
   }
 
@@ -472,9 +472,9 @@
   }
 
   .home-center-flow-section .center-flow-center.home-center-flow__center-hub {
-    width: clamp(132px, 19vw, 154px) !important;
-    height: clamp(132px, 19vw, 154px) !important;
-    border-radius: clamp(28px, 4.5vw, 34px) !important;
+    width: clamp(118px, 17vw, 142px) !important;
+    height: clamp(118px, 17vw, 142px) !important;
+    border-radius: clamp(24px, 4.2vw, 32px) !important;
   }
 
   .home-center-flow-section .center-flow-node {
