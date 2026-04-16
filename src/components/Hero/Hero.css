@@ -1,9 +1,15 @@
 .hero-section {
   /* Tight inset frame — gutters/radius shared via variables.css */
   --hero-media-radius: var(--layout-hero-radius);
-  /* Tighter frame: still clears fixed ticker + bar on most viewports */
-  --hero-frame-top-gap: max(env(safe-area-inset-top, 0px), clamp(3.2rem, 5.2vh, 4.15rem));
-  --hero-frame-gap: var(--layout-hero-gutter);
+  /*
+   * Hug fixed header: --site-header-height = header getBoundingClientRect().bottom (includes safe area).
+   * Do not max() with safe-area-inset-top — that can be smaller than the real header bottom and leaves a strip.
+   */
+  --hero-frame-top-gap: max(
+    0px,
+    calc(var(--site-header-height, clamp(3.2rem, 5.2vh, 4.15rem)) - 6px)
+  );
+  --hero-frame-gap: 0px;
   --hero-frame-bottom-gap: clamp(0.22rem, 0.75vw, 0.5rem);
 
   position: relative;
@@ -14,8 +20,8 @@
   align-items: center;
   color: var(--color-white);
   padding: 0;
-  /* Letterbox / gutters around the video: black (Serhant-style), not cream */
-  background: #000000;
+  /* Gutters use page background — avoids large black bands (corners stay clipped by radius) */
+  background: transparent;
   overflow: hidden;
   isolation: isolate;
   z-index: 0;
@@ -31,8 +37,7 @@
   width: auto;
   height: auto;
   overflow: hidden;
-  /* Solid fill behind the video while loading / letterboxing */
-  background-color: #000000;
+  background-color: transparent;
   background-image: none;
   border-radius: var(--hero-media-radius);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -56,8 +61,9 @@
   min-width: 100%;
   min-height: 100%;
   object-fit: cover;
-  object-position: center 42%;
-  border-radius: var(--hero-media-radius);
+  object-position: center 38%;
+  /* Clipping + radius come from .hero-section__media (avoids double-radius corner gaps) */
+  border-radius: 0;
   filter: saturate(1.06) contrast(1.04) brightness(1.08);
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
@@ -177,7 +183,10 @@
 @media (max-width: 640px) {
   .hero-section {
     --hero-media-radius: clamp(8px, 2.2vw, 14px);
-    --hero-frame-top-gap: max(env(safe-area-inset-top, 0px), clamp(2.4rem, 7vw, 3.2rem));
+    --hero-frame-top-gap: max(
+      0px,
+      calc(var(--site-header-height, clamp(2.4rem, 7vw, 3.2rem)) - 6px)
+    );
     --hero-frame-gap: 0px;
     --hero-frame-bottom-gap: 0.28rem;
   }

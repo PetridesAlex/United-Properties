@@ -54,7 +54,7 @@
 
 /* Home over black hero: flat black family, whisper of gold, light edge */
 .navbar--transparent .navbar__ticker {
-  margin-bottom: 0.28rem;
+  margin-bottom: 0;
   border-bottom: 1px solid rgba(197, 164, 109, 0.2);
   background:
     radial-gradient(ellipse 100% 160% at 50% -80%, rgba(197, 164, 109, 0.06) 0%, transparent 52%),

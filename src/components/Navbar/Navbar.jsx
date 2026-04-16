@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ChevronDown, Search } from 'lucide-react'
 import StaggeredMenu from '../StaggeredMenu/StaggeredMenu'
@@ -48,6 +48,34 @@ function Navbar() {
   const location = useLocation()
   const navigate = useNavigate()
   const isHome = location.pathname === '/'
+  const headerRef = useRef(null)
+
+  /** Hero video frame uses this so it sits flush under the fixed header (no strip under the ticker). */
+  useEffect(() => {
+    const el = headerRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return undefined
+
+    function syncHeaderHeight() {
+      const rect = el.getBoundingClientRect()
+      /* bottom = distance from viewport top to header paint edge (avoids off-by-one vs height) */
+      const px = Math.ceil(rect.bottom)
+      document.documentElement.style.setProperty('--site-header-height', `${px}px`)
+    }
+
+    syncHeaderHeight()
+    requestAnimationFrame(() => {
+      syncHeaderHeight()
+    })
+    const ro = new ResizeObserver(syncHeaderHeight)
+    ro.observe(el)
+    window.addEventListener('resize', syncHeaderHeight)
+
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', syncHeaderHeight)
+      document.documentElement.style.removeProperty('--site-header-height')
+    }
+  }, [])
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 40)
@@ -73,7 +101,7 @@ function Navbar() {
   }
 
   return (
-    <header className={navClass}>
+    <header ref={headerRef} className={navClass}>
       <section className="navbar__ticker" aria-label="Premium services" role="region">
         <div className="navbar__ticker-viewport">
           <div className="navbar__ticker-track" aria-hidden="true">
