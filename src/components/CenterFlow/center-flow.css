@@ -1,0 +1,56 @@
+/* Do not use height: 100% — parent often only has min-height, so % height collapses to ~0
+   and the SVG / pulses disappear. min-height gives the layout a real box. */
+.center-flow-container {
+  position: relative;
+  width: 100%;
+  min-height: min(88vh, 1100px);
+  overflow: hidden;
+}
+
+.center-flow-svg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.center-flow-node {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.center-flow-node-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 9999px;
+}
+
+.center-flow-center {
+  position: absolute;
+  z-index: 4;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 300ms;
+}
+
+.center-flow-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.center-flow-icon {
+  width: 100%;
+  height: 100%;
+}

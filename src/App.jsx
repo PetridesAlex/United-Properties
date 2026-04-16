@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
+import { ThemeProvider } from 'next-themes'
 import Navbar from './components/Navbar/Navbar'
 import Footer from './components/Footer/Footer'
 import ScrollToTop from './components/ScrollToTop/ScrollToTop'
@@ -15,19 +16,21 @@ function App() {
 
   return (
     <HelmetProvider>
-      {showPreloader && <SitePreloader onDone={() => setShowPreloader(false)} />}
-      <BrowserRouter>
-        <MergedPropertiesProvider>
-          <ScrollToTop />
-          <Navbar />
-          <main>
-            <AppRouter />
-          </main>
-          <Footer />
-          <QuickContactFab />
-          <CookiePreferences />
-        </MergedPropertiesProvider>
-      </BrowserRouter>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem storageKey="united-properties-theme">
+        {showPreloader && <SitePreloader onDone={() => setShowPreloader(false)} />}
+        <BrowserRouter>
+          <MergedPropertiesProvider>
+            <ScrollToTop />
+            <Navbar />
+            <main>
+              <AppRouter />
+            </main>
+            <Footer />
+            <QuickContactFab />
+            <CookiePreferences />
+          </MergedPropertiesProvider>
+        </BrowserRouter>
+      </ThemeProvider>
     </HelmetProvider>
   )
 }

@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import Hero from '../components/Hero/Hero'
+import CenterFlow from '../components/CenterFlow/CenterFlow'
 import SectionHeader from '../components/SectionHeader/SectionHeader'
 import ModalCards from '../components/ModalCards/ModalCards'
 import ServiceCard from '../components/ServiceCard/ServiceCard'
@@ -15,6 +16,7 @@ import { services } from '../data/services'
 import { agents } from '../data/agents'
 import { developments } from '../data/developments'
 import { testimonials } from '../data/testimonials'
+import { homeCenterFlowLinks } from '../data/homeCenterFlow'
 import { useMergedProperties } from '../hooks/useMergedProperties'
 import './Home.css'
 
@@ -77,6 +79,23 @@ function Home() {
   const featuredAgents = agents.slice(0, 3)
   const homeServices = services.slice(0, 8)
 
+  const centerFlowNodeItems = useMemo(
+    () =>
+      homeCenterFlowLinks.map((item) => ({
+        content: (
+          <Link
+            className="home-center-flow__node-link"
+            to={item.to}
+            aria-label={`${item.title}: ${item.phrase}`}
+          >
+            <span className="home-center-flow__node-title">{item.title}</span>
+            <span className="home-center-flow__node-phrase">{item.phrase}</span>
+          </Link>
+        ),
+      })),
+    [],
+  )
+
   return (
     <>
       <Helmet>
@@ -84,6 +103,58 @@ function Home() {
       </Helmet>
 
       <Hero />
+
+      <section
+        className="section home-center-flow-section"
+        aria-labelledby="home-network-heading"
+      >
+        <div className="home-center-flow-section__inner">
+          <SectionHeader
+            center
+            headingId="home-network-heading"
+            eyebrow="United Properties"
+            title="Connected expertise across every property service"
+            description="From acquisition and sales to rentals, new developments, and property management—one team linking you to Cyprus’s luxury market with clarity and continuity."
+            className="section-header--center-flow"
+          />
+          <CenterFlow
+            className="home-center-flow-container"
+            surface="dark"
+            subtleGlow
+            pulseStrength={0.42}
+            centerClassName="home-center-flow__center-hub"
+            nodeItems={centerFlowNodeItems}
+            centerSize={176}
+            centerBackground="linear-gradient(165deg, #1a2233 0%, #1f2a3d 48%, #263247 100%)"
+            nodeSize={114}
+            nodeDistance={0.72}
+            pulseDuration={5}
+            pulseInterval={8}
+            pulseLength={0.42}
+            lineWidth={1.9}
+            pulseWidth={1.35}
+            pulseSoftness={8}
+            lineColor="rgba(255, 255, 255, 0.22)"
+            pulseColor="#a898b8"
+            pulseColorLight="#a898b8"
+            glowColor="#c5a46d"
+            glowColorLight="#c5a46d"
+            maxGlowIntensity={14}
+            glowDecay={0.94}
+            borderRadius={38}
+            disableBlinking={false}
+            centerContent={
+              <img
+                className="home-center-flow__logo"
+                src="/images/logo/United_Properties_v2.1.svg"
+                alt="United Properties"
+                loading="eager"
+                decoding="async"
+              />
+            }
+          />
+        </div>
+      </section>
 
       <section className="section section--light" id="featured-properties">
         <div className="container home-featured-container">

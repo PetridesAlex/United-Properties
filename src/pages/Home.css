@@ -1,3 +1,304 @@
+/* United Properties — Services / network (luxury editorial: warm band + navy diagram) */
+.home-center-flow-section {
+  --ucf-cream-a: #f7f3ee;
+  --ucf-cream-b: #efe7dc;
+  --ucf-navy-a: #1a2233;
+  --ucf-navy-b: #263247;
+  --ucf-ivory: #f7f2ea;
+  --ucf-text: #111827;
+  --ucf-muted: #5f6470;
+  --ucf-gold: #c5a46d;
+  --ucf-gold-soft: rgba(197, 164, 109, 0.38);
+  /* Service nodes: cool ice-blue base → warm shift on hover */
+  --ucf-node-blue-a: #eef5fc;
+  --ucf-node-blue-b: #dfeaf7;
+  --ucf-node-blue-c: #d0e0f0;
+  --ucf-node-blue-border: rgba(120, 160, 200, 0.42);
+  --ucf-node-blue-glow: rgba(130, 175, 220, 0.28);
+
+  padding: clamp(3.25rem, 7vw, 5.5rem) 0;
+  background:
+    radial-gradient(ellipse 85% 55% at 50% -12%, rgba(197, 164, 109, 0.09) 0%, transparent 58%),
+    radial-gradient(ellipse 70% 45% at 80% 100%, rgba(26, 34, 51, 0.06) 0%, transparent 55%),
+    linear-gradient(168deg, var(--ucf-cream-a) 0%, var(--ucf-cream-b) 100%);
+  border-top: 1px solid rgba(26, 34, 51, 0.07);
+  border-bottom: 1px solid rgba(26, 34, 51, 0.06);
+}
+
+.home-center-flow-section .home-center-flow-container {
+  position: relative;
+  isolation: isolate;
+  border-radius: clamp(28px, 3.2vw, 36px);
+  min-height: min(86vh, 1080px);
+  box-sizing: border-box;
+  /* Navy premium card + depth (aligns with dark ticker / luxury nav) */
+  background:
+    repeating-linear-gradient(
+      118deg,
+      transparent 0,
+      transparent 3px,
+      rgba(255, 255, 255, 0.014) 3px,
+      rgba(255, 255, 255, 0.014) 4px
+    ),
+    radial-gradient(ellipse 58% 48% at 50% 42%, rgba(197, 164, 109, 0.11) 0%, transparent 62%),
+    linear-gradient(168deg, var(--ucf-navy-a) 0%, #1f2a3d 46%, var(--ucf-navy-b) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -24px 48px rgba(0, 0, 0, 0.22),
+    0 28px 64px rgba(7, 12, 22, 0.35),
+    0 10px 28px rgba(7, 12, 22, 0.2);
+}
+
+.home-center-flow-section .home-center-flow-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse 52% 44% at 50% 46%,
+    rgba(197, 164, 109, 0.14) 0%,
+    rgba(168, 152, 184, 0.06) 38%,
+    transparent 68%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.home-center-flow-section .center-flow-svg {
+  z-index: 1;
+}
+
+.home-center-flow-section__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: clamp(2rem, 4vw, 3rem);
+  width: min(1680px, 96vw);
+  margin-inline: auto;
+  padding-inline: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+/* Editorial header — max ~700px, hierarchy + warmth */
+.home-center-flow-section .section-header--center-flow {
+  margin-bottom: 0;
+  max-width: 43.75rem;
+  margin-inline: auto;
+  padding: 0.35rem 0.5rem 0;
+}
+
+.home-center-flow-section .section-header--center-flow .section-header__eyebrow {
+  color: var(--ucf-gold);
+  letter-spacing: 0.2em;
+  font-size: 0.72rem;
+  margin-bottom: 0.85rem;
+}
+
+.home-center-flow-section .section-header--center-flow h2 {
+  color: var(--ucf-text);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  font-size: clamp(2.05rem, 3.8vw, 3.05rem);
+  text-wrap: balance;
+}
+
+.home-center-flow-section .section-header--center-flow .section-header__description {
+  color: var(--ucf-muted);
+  margin-top: 1.35rem;
+  max-width: 43.75rem;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.75;
+  font-size: clamp(1rem, 1.15vw, 1.075rem);
+}
+
+/* Center hub: soft gold halo behind logo (static; animated glow stays subtle in JS) */
+.home-center-flow-section .center-flow-center.home-center-flow__center-hub {
+  overflow: visible;
+}
+
+.home-center-flow-section .center-flow-center.home-center-flow__center-hub::after {
+  content: '';
+  position: absolute;
+  inset: -36%;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(226, 194, 134, 0.42) 0%,
+    rgba(197, 164, 109, 0.3) 34%,
+    rgba(168, 152, 184, 0.12) 56%,
+    transparent 74%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.home-center-flow-section .center-flow-center {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.45rem, 1.2vw, 0.7rem);
+  overflow: hidden;
+}
+
+.home-center-flow__logo {
+  display: block;
+  width: 70%;
+  height: auto;
+  max-width: 7.75rem;
+  min-width: 4.25rem;
+  min-height: 2.75rem;
+  object-fit: contain;
+  object-position: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 2px 14px rgba(197, 164, 109, 0.22));
+}
+
+.home-center-flow-section .center-flow-node {
+  overflow: hidden;
+  padding: 0;
+  border-radius: clamp(18px, 2vw, 22px) !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.home-center-flow__node-link {
+  --node-accent: #244a78;
+  --node-accent-soft: rgba(36, 74, 120, 0.28);
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28rem;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0.5rem 0.4rem;
+  text-align: center;
+  text-decoration: none;
+  color: var(--ucf-text);
+  border-radius: inherit;
+  overflow: hidden;
+  isolation: isolate;
+  /* Layered “shape”: soft blue wash + cool base (premium, not flat) */
+  background:
+    radial-gradient(ellipse 130% 95% at 12% -8%, rgba(186, 222, 255, 0.76) 0%, transparent 58%),
+    radial-gradient(ellipse 90% 70% at 100% 108%, rgba(135, 184, 228, 0.34) 0%, transparent 52%),
+    linear-gradient(
+      168deg,
+      #f1f7ff 0%,
+      #dfeeff 48%,
+      #c8ddf5 100%
+    );
+  border: 1px solid rgba(98, 148, 198, 0.62);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -1px 0 rgba(38, 72, 112, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    0 14px 34px rgba(7, 12, 22, 0.3),
+    0 4px 14px rgba(60, 110, 165, 0.2);
+  transition:
+    color 0.28s ease,
+    background 0.28s ease,
+    border-color 0.28s ease,
+    box-shadow 0.28s ease,
+    transform 0.28s ease;
+}
+
+.home-center-flow__node-link:hover {
+  color: var(--ucf-text);
+  /* Hover: shift to warm champagne + gold rim (clear contrast from ice blue) */
+  background:
+    radial-gradient(ellipse 100% 85% at 88% 0%, rgba(197, 164, 109, 0.26) 0%, transparent 52%),
+    linear-gradient(
+      168deg,
+      #fdf8ef 0%,
+      #f4eadb 46%,
+      #e9dccb 100%
+    );
+  border-color: rgba(197, 164, 109, 0.62);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(90, 70, 45, 0.08),
+    0 0 0 1px rgba(197, 164, 109, 0.3),
+    0 20px 46px rgba(7, 12, 22, 0.34),
+    0 7px 20px rgba(197, 164, 109, 0.2);
+  transform: translateY(-3px);
+}
+
+.home-center-flow__node-link:active {
+  transform: translateY(0);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    0 8px 22px rgba(7, 12, 22, 0.22);
+}
+
+.home-center-flow__node-link:focus-visible {
+  outline: none;
+  border-color: rgba(100, 150, 200, 0.65);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 0 0 3px rgba(130, 175, 220, 0.35),
+    0 14px 36px rgba(7, 12, 22, 0.26);
+}
+
+.home-center-flow__node-title {
+  font-family: 'Montserrat', var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(0.66rem, 1vw, 0.82rem);
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  line-height: 1.12;
+  color: #1e3a5f;
+  transition: color 0.28s ease;
+}
+
+.home-center-flow__node-phrase {
+  font-size: clamp(0.56rem, 0.86vw, 0.68rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  color: rgba(45, 75, 105, 0.72);
+  max-width: 100%;
+  transition: color 0.28s ease;
+}
+
+.home-center-flow__node-link:hover .home-center-flow__node-title {
+  color: #2e2518;
+}
+
+.home-center-flow__node-link:hover .home-center-flow__node-phrase {
+  color: rgba(95, 85, 70, 0.88);
+}
+
+@media (max-width: 640px) {
+  .home-center-flow-section .home-center-flow-container {
+    min-height: min(92vh, 920px);
+    border-radius: clamp(22px, 5vw, 28px);
+  }
+
+  .home-center-flow-section .section-header--center-flow {
+    padding-inline: 0.25rem;
+  }
+
+  .home-center-flow__node-link {
+    padding: 0.4rem 0.3rem;
+    gap: 0.2rem;
+  }
+
+  .home-center-flow__node-link:hover {
+    transform: translateY(-1px);
+  }
+}
+
 .home-featured-container {
   width: min(1820px, 96vw);
 }
