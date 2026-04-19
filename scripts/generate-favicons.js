@@ -13,8 +13,8 @@ const publicDir = path.join(root, "public");
 const svgPath = path.join(publicDir, "images/logo/United_Properties_v2.1.svg");
 const faviconDir = path.join(publicDir, "favicon_io");
 
-/** Matches index.html theme-color for contrast with gold/white logo */
-const BG = "#0a1220";
+const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 };
+/** Inset so the mark does not touch the square edge */
 const PADDING = 0.1;
 
 async function pngSquare(size) {
@@ -23,7 +23,7 @@ async function pngSquare(size) {
   const foreground = await sharp(svg)
     .resize(inner, inner, {
       fit: "contain",
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
+      background: TRANSPARENT,
     })
     .png()
     .toBuffer();
@@ -33,7 +33,7 @@ async function pngSquare(size) {
       width: size,
       height: size,
       channels: 4,
-      background: BG,
+      background: TRANSPARENT,
     },
   })
     .composite([{ input: foreground, gravity: "center" }])
