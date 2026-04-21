@@ -4,11 +4,18 @@ const PROPERTY_PROJECTION = `
     title,
     slug,
     status,
+    purpose,
+    listingStatus,
+    referenceId,
     propertyType,
     price,
     currency,
     location,
     address,
+    "city": city->{name, "slug": slug.current},
+    "agent": agent->{_id, name, "slug": slug.current, email, phone},
+    latitude,
+    longitude,
     bedrooms,
     bathrooms,
     internalArea,
@@ -28,6 +35,7 @@ const PROPERTY_PROJECTION = `
       }
     },
     description,
+    legacyDescriptionPlain,
     amenities,
     seoTitle,
     seoDescription
@@ -45,7 +53,7 @@ export const ALL_PROPERTIES_QUERY = `
  * Enable with VITE_SANITY_MINIMAL_QUERY=true in .env
  */
 export const MINIMAL_PROPERTIES_QUERY = `
-  *[_type == "property"][0...5]{_id,title,slug,status}
+  *[_type == "property"][0...5]{_id,title,slug,status,purpose,listingStatus}
 `
 
 export function getActivePropertiesQuery() {

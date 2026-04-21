@@ -1,12 +1,13 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
-import {GalleryImageMemberInput} from '../studio/GalleryImageMemberInput'
-import {PropertyGalleryInput} from '../studio/PropertyGalleryInput'
+import {GalleryImageMemberInput} from '../../studio/GalleryImageMemberInput'
+import {PropertyGalleryInput} from '../../studio/PropertyGalleryInput'
 
-const WEBSITE = 'website'
-const MEDIA_PHOTOS = 'mediaPhotos'
+const BASIC = 'basicInfo'
+const DETAILS = 'propertyDetails'
+const MEDIA_PHOTOS = 'media'
 const MEDIA_DOCS = 'mediaDocs'
+const LOCATION = 'location'
 const SEO = 'seo'
-/** Old dataset keys — hidden so Studio does not show “unknown fields”; remove after a one-time migration if you want a clean schema. */
 const LEGACY = 'legacy'
 
 export const propertyType = defineType({
@@ -14,9 +15,11 @@ export const propertyType = defineType({
   title: 'Property',
   type: 'document',
   groups: [
-    {name: WEBSITE, title: 'Website listing', default: true},
-    {name: MEDIA_PHOTOS, title: 'Photos & gallery'},
+    {name: BASIC, title: 'Basic info', default: true},
+    {name: DETAILS, title: 'Property details'},
+    {name: MEDIA_PHOTOS, title: 'Media'},
     {name: MEDIA_DOCS, title: 'Plans & downloads'},
+    {name: LOCATION, title: 'Location'},
     {name: SEO, title: 'SEO'},
     {name: LEGACY, title: 'Legacy (hidden)', hidden: true},
   ],
@@ -25,37 +28,111 @@ export const propertyType = defineType({
       name: 'title',
       title: 'Title',
       type: 'string',
-      group: WEBSITE,
-      validation: (rule) => rule.required().max(70),
+      group: BASIC,
+      validation: (rule) => rule.required().max(120),
     }),
     defineField({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
-      group: WEBSITE,
-      options: {source: 'title'},
+      group: BASIC,
+      options: {source: 'title', maxLength: 96},
       validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'status',
-      title: 'Listing status (website)',
+      name: 'referenceId',
+      title: 'Reference ID',
+      description: 'Unique listing code (e.g. UP-1042). Shown internally and on factsheets.',
       type: 'string',
-      group: WEBSITE,
+      group: BASIC,
+      validation: (rule) =>
+        rule.required().custom(async (value, context) => {
+          const v = typeof value === 'string' ? value.trim() : ''
+          if (!v) return 'Required'
+          const client = context.getClient({apiVersion: '2024-01-01'})
+          const rawId = context.document?._id
+          if (!rawId) return true
+          const alt = rawId.startsWith('drafts.') ? rawId.slice(7) : `drafts.${rawId}`
+          const dup = await client.fetch(
+            `count(*[_type == "property" && referenceId == $ref && !(_id in [$a, $b])])`,
+            {ref: v, a: rawId, b: alt},
+          )
+          return dup === 0 ? true : 'Reference ID already in use'
+        }),
+    }),
+    defineField({
+      name: 'purpose',
+      title: 'Purpose',
+      description: 'Buy (sale) or rent.',
+      type: 'string',
+      group: BASIC,
       options: {
         list: [
-          {title: 'Buy (for sale)', value: 'for-sale'},
-          {title: 'Rent', value: 'for-rent'},
-          {title: 'Sold', value: 'sold'},
-          {title: 'Reserved', value: 'reserved'},
+          {title: 'Sale', value: 'sale'},
+          {title: 'Rent', value: 'rent'},
         ],
+        layout: 'radio',
       },
       validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'listingStatus',
+      title: 'Listing status',
+      type: 'string',
+      group: BASIC,
+      options: {
+        list: [
+          {title: 'Available', value: 'available'},
+          {title: 'Sold', value: 'sold'},
+          {title: 'Rented', value: 'rented'},
+          {title: 'Reserved', value: 'reserved'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'available',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'price',
+      title: 'Price',
+      type: 'number',
+      group: BASIC,
+    }),
+    defineField({
+      name: 'currency',
+      title: 'Currency',
+      type: 'string',
+      group: BASIC,
+      initialValue: 'EUR',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'city',
+      title: 'City',
+      type: 'reference',
+      to: [{type: 'city'}],
+      group: BASIC,
+      weak: true,
+    }),
+    defineField({
+      name: 'area',
+      title: 'Area / neighbourhood',
+      description: 'District or community within the city.',
+      type: 'string',
+      group: BASIC,
+    }),
+    defineField({
+      name: 'location',
+      title: 'Location label (override)',
+      description: 'Optional short label for cards if different from city + area.',
+      type: 'string',
+      group: BASIC,
     }),
     defineField({
       name: 'propertyType',
       title: 'Property type',
       type: 'string',
-      group: WEBSITE,
+      group: DETAILS,
       options: {
         list: [
           {title: 'Apartment', value: 'apartment'},
@@ -63,94 +140,129 @@ export const propertyType = defineType({
           {title: 'House', value: 'house'},
           {title: 'Penthouse', value: 'penthouse'},
           {title: 'Land', value: 'land'},
+          {title: 'Commercial', value: 'commercial'},
           {title: 'Office', value: 'office'},
+          {title: 'Shop', value: 'shop'},
         ],
       },
       validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'price',
-      title: 'Price',
-      type: 'number',
-      group: WEBSITE,
-    }),
-    defineField({
-      name: 'currency',
-      title: 'Currency',
-      type: 'string',
-      group: WEBSITE,
-      initialValue: 'EUR',
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: 'location',
-      title: 'Location (label)',
-      type: 'string',
-      group: WEBSITE,
-    }),
-    defineField({
-      name: 'address',
-      title: 'Address',
-      type: 'string',
-      group: WEBSITE,
-    }),
-    defineField({
       name: 'bedrooms',
       title: 'Bedrooms',
       type: 'number',
-      group: WEBSITE,
+      group: DETAILS,
     }),
     defineField({
       name: 'bathrooms',
       title: 'Bathrooms',
       type: 'number',
-      group: WEBSITE,
+      group: DETAILS,
     }),
     defineField({
       name: 'internalArea',
       title: 'Internal area (m²)',
       type: 'number',
-      group: WEBSITE,
+      group: DETAILS,
+    }),
+    defineField({
+      name: 'coveredVeranda',
+      title: 'Covered veranda (m²)',
+      type: 'number',
+      group: DETAILS,
+    }),
+    defineField({
+      name: 'uncoveredVeranda',
+      title: 'Uncovered veranda (m²)',
+      type: 'number',
+      group: DETAILS,
     }),
     defineField({
       name: 'plotSize',
       title: 'Plot size (m²)',
       type: 'number',
-      group: WEBSITE,
+      group: DETAILS,
     }),
     defineField({
       name: 'parkingSpaces',
       title: 'Parking spaces',
       type: 'number',
-      group: WEBSITE,
+      group: DETAILS,
     }),
     defineField({
       name: 'yearBuilt',
       title: 'Year built',
       type: 'number',
-      group: WEBSITE,
+      group: DETAILS,
+    }),
+    defineField({
+      name: 'furnished',
+      title: 'Furnished',
+      type: 'boolean',
+      initialValue: false,
+      group: DETAILS,
     }),
     defineField({
       name: 'featured',
       title: 'Featured listing',
       type: 'boolean',
-      group: WEBSITE,
+      group: BASIC,
       initialValue: false,
     }),
     defineField({
       name: 'signature',
       title: 'Signature collection',
       type: 'boolean',
-      group: WEBSITE,
+      group: BASIC,
       initialValue: false,
     }),
     defineField({
       name: 'description',
       title: 'Description',
+      type: 'array',
+      group: BASIC,
+      of: [
+        defineArrayMember({
+          type: 'block',
+          styles: [
+            {title: 'Normal', value: 'normal'},
+            {title: 'Heading', value: 'h3'},
+          ],
+          lists: [
+            {title: 'Bullet', value: 'bullet'},
+            {title: 'Numbered', value: 'number'},
+          ],
+          marks: {
+            decorators: [
+              {title: 'Strong', value: 'strong'},
+              {title: 'Emphasis', value: 'em'},
+            ],
+          },
+        }),
+      ],
+      description: 'Main marketing copy for the listing.',
+    }),
+    defineField({
+      name: 'legacyDescriptionPlain',
+      title: 'Legacy plain description',
+      description: 'Migrated from old text field — copy into Description blocks then clear.',
       type: 'text',
-      group: WEBSITE,
-      rows: 8,
-      validation: (rule) => rule.max(10000),
+      group: LEGACY,
+      rows: 6,
+      hidden: ({document}) => !document?.legacyDescriptionPlain,
+    }),
+    defineField({
+      name: 'agent',
+      title: 'Listing agent',
+      type: 'reference',
+      to: [{type: 'agent'}],
+      group: BASIC,
+    }),
+    defineField({
+      name: 'publishedAt',
+      title: 'Published at',
+      type: 'datetime',
+      group: BASIC,
     }),
     defineField({
       name: 'mainImage',
@@ -168,7 +280,7 @@ export const propertyType = defineType({
     }),
     defineField({
       name: 'gallery',
-      title: 'Property Gallery',
+      title: 'Property gallery',
       type: 'array',
       group: MEDIA_PHOTOS,
       description:
@@ -195,7 +307,7 @@ export const propertyType = defineType({
           ],
         }),
       ],
-      validation: (rule) => rule.max(30),
+      validation: (rule) => rule.max(40),
     }),
     defineField({
       name: 'floorPlanImage',
@@ -217,8 +329,26 @@ export const propertyType = defineType({
       name: 'amenities',
       title: 'Amenities',
       type: 'array',
-      group: WEBSITE,
+      group: DETAILS,
       of: [{type: 'string'}],
+    }),
+    defineField({
+      name: 'address',
+      title: 'Address',
+      type: 'string',
+      group: LOCATION,
+    }),
+    defineField({
+      name: 'latitude',
+      title: 'Latitude',
+      type: 'number',
+      group: LOCATION,
+    }),
+    defineField({
+      name: 'longitude',
+      title: 'Longitude',
+      type: 'number',
+      group: LOCATION,
     }),
     defineField({
       name: 'seoTitle',
@@ -234,7 +364,15 @@ export const propertyType = defineType({
       rows: 3,
     }),
 
-    /* --- Legacy fields (older listings / Bazaraki / new-development) — keep until documents are migrated --- */
+    /* --- Legacy fields — keep until documents are cleaned up --- */
+    defineField({
+      name: 'status',
+      title: 'Legacy: old listing status (pre-migration)',
+      type: 'string',
+      group: LEGACY,
+      hidden: ({document}) => !document?.status,
+      readOnly: true,
+    }),
     defineField({
       name: 'newDevelopment',
       title: 'Legacy: new development flag',
@@ -314,7 +452,7 @@ export const propertyType = defineType({
       title: 'Legacy: geometry',
       type: 'object',
       group: LEGACY,
-      hidden: true,
+      hidden: ({document}) => !document?.geometry,
       readOnly: true,
       fields: [
         defineField({name: 'latitude', type: 'number'}),
@@ -413,14 +551,27 @@ export const propertyType = defineType({
   preview: {
     select: {
       title: 'title',
-      status: 'status',
+      purpose: 'purpose',
+      listingStatus: 'listingStatus',
+      price: 'price',
+      currency: 'currency',
+      cityName: 'city.name',
       media: 'mainImage',
+      refId: 'referenceId',
     },
-    prepare({title, status, media}) {
-      const subtitle = status || undefined
+    prepare({title, purpose, listingStatus, price, currency, cityName, media, refId}) {
+      const bits = [
+        refId,
+        typeof price === 'number' ? `${price.toLocaleString()} ${currency || 'EUR'}` : null,
+        cityName,
+        purpose === 'sale' ? 'Sale' : purpose === 'rent' ? 'Rent' : purpose,
+        listingStatus,
+      ]
+        .filter(Boolean)
+        .join(' · ')
       return {
         title: title || 'Property',
-        subtitle,
+        subtitle: bits || undefined,
         media,
       }
     },

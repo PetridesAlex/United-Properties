@@ -1,11 +1,12 @@
 import {Card, Stack, Text} from '@sanity/ui'
-import {type ImageInputProps} from 'sanity'
+import type {ImageValue} from '@sanity/types'
+import type {ObjectInputProps} from 'sanity'
 
 /**
  * Wraps the default image input for each gallery array item so editors know that
  * **bulk multi-select** happens in `PropertyGalleryInput` above, not in this single-image box.
  */
-export function GalleryImageMemberInput(props: ImageInputProps) {
+export function GalleryImageMemberInput(props: ObjectInputProps<ImageValue>) {
   const {renderDefault} = props
 
   return (

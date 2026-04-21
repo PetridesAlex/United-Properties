@@ -3,7 +3,8 @@ import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {media} from 'sanity-plugin-media'
 import {schemaTypes} from './schemaTypes'
-import {structure} from './sanity.structure'
+import {structure} from './deskStructure'
+import {unitedPropertiesTools} from './plugins/unitedPropertiesTools'
 
 /**
  * Put Media library first when picking images (reuse uploads). Property **gallery** uses a custom
@@ -30,6 +31,7 @@ export default defineConfig({
   dataset: 'production',
 
   plugins: [
+    unitedPropertiesTools(),
     media(mediaPluginOptions),
     structureTool({structure}),
     visionTool(),
@@ -49,25 +51,46 @@ export default defineConfig({
         id: 'property-for-sale',
         title: 'Property: Buy (for sale)',
         schemaType: 'property',
-        value: {status: 'for-sale', featured: false, currency: 'EUR'},
+        value: {
+          purpose: 'sale',
+          listingStatus: 'available',
+          featured: false,
+          currency: 'EUR',
+        },
       },
       {
         id: 'property-for-rent',
         title: 'Property: Rent',
         schemaType: 'property',
-        value: {status: 'for-rent', featured: false, currency: 'EUR'},
+        value: {
+          purpose: 'rent',
+          listingStatus: 'available',
+          featured: false,
+          currency: 'EUR',
+        },
       },
       {
         id: 'property-featured',
         title: 'Property: Featured listing',
         schemaType: 'property',
-        value: {status: 'for-sale', featured: true, currency: 'EUR'},
+        value: {
+          purpose: 'sale',
+          listingStatus: 'available',
+          featured: true,
+          currency: 'EUR',
+        },
       },
       {
         id: 'property-signature',
         title: 'Property: Signature collection',
         schemaType: 'property',
-        value: {status: 'for-sale', featured: false, signature: true, currency: 'EUR'},
+        value: {
+          purpose: 'sale',
+          listingStatus: 'available',
+          featured: false,
+          signature: true,
+          currency: 'EUR',
+        },
       },
     ],
   },

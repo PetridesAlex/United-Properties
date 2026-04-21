@@ -135,7 +135,8 @@ function Properties() {
       const matchesMax = !filters.maxPrice || property.price <= Number(filters.maxPrice)
       const matchesKeyword =
         !keyword ||
-        [property.title, property.location, property.description, property.type]
+        [property.title, property.location, property.description, property.type, property.referenceId]
+          .filter(Boolean)
           .join(' ')
           .toLowerCase()
           .includes(keyword)

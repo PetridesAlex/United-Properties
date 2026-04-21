@@ -20,6 +20,7 @@ const SERVICES_DROPDOWN_LINKS = [
   { label: 'Sell with us', to: '/services#sell-with-us' },
   { label: 'Invest with us', to: '/services#invest-with-us' },
   { label: 'Rent your property', to: '/services#rent-your-property' },
+  { label: 'Concierge', to: '/concierge' },
 ]
 
 function isCenterNavActive(pathname, hash, to) {

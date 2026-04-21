@@ -229,6 +229,43 @@
   outline-offset: 3px;
 }
 
+.inquiry-form__submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+  filter: grayscale(0.1);
+}
+
+.inquiry-form__honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.inquiry-form__status {
+  margin: 0;
+  border-radius: 10px;
+  padding: 0.62rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.inquiry-form__status--success {
+  background: rgba(18, 130, 89, 0.1);
+  color: #116548;
+  border: 1px solid rgba(18, 130, 89, 0.28);
+}
+
+.inquiry-form__status--error {
+  background: rgba(177, 44, 56, 0.1);
+  color: #8f2630;
+  border: 1px solid rgba(177, 44, 56, 0.3);
+}
+
 .inquiry-form__footnote {
   margin: 0;
   text-align: center;

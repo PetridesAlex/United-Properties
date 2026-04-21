@@ -43,6 +43,55 @@ function mapSanityStatus(raw) {
   return STATUS_LABELS[key] || 'For Sale'
 }
 
+/** Portable-text blocks → plain string for listing cards (CMS v2). */
+export function portableTextToPlainText(blocks) {
+  if (!Array.isArray(blocks)) return ''
+  return blocks
+    .filter((b) => b && b._type === 'block' && Array.isArray(b.children))
+    .map((b) => b.children.map((c) => (c && typeof c.text === 'string' ? c.text : '')).join(''))
+    .join('\n\n')
+    .trim()
+}
+
+function resolveDescription(item) {
+  if (typeof item.description === 'string' && item.description.trim()) {
+    return item.description.trim()
+  }
+  const fromBlocks = portableTextToPlainText(item.description)
+  if (fromBlocks) return fromBlocks
+  if (typeof item.legacyDescriptionPlain === 'string' && item.legacyDescriptionPlain.trim()) {
+    return item.legacyDescriptionPlain.trim()
+  }
+  return 'Discover this premium listing in Cyprus.'
+}
+
+/**
+ * Maps new CMS fields (`purpose`, `listingStatus`) to the same display strings the site already uses
+ * (`For Sale`, `For Rent`, `Sold`, …). Falls back to legacy `status` when needed.
+ */
+function mapDisplayStatus(item) {
+  const purpose = item.purpose
+  const listingStatus = item.listingStatus
+  const legacy = item.status
+
+  if (purpose === 'sale' || purpose === 'rent') {
+    if (listingStatus === 'sold') return 'Sold'
+    if (listingStatus === 'rented') return 'Rented'
+    if (listingStatus === 'reserved') return 'Reserved'
+    if (listingStatus === 'available') {
+      return purpose === 'rent' ? 'For Rent' : 'For Sale'
+    }
+  }
+
+  return mapSanityStatus(legacy)
+}
+
+function resolveLocationLabel(item) {
+  const cityName = item.city?.name
+  if (typeof cityName === 'string' && cityName.trim()) return cityName.trim()
+  return item.location || 'Cyprus'
+}
+
 export function mapSanityProperty(item, index) {
   const mainImage = buildImageUrl(item.mainImage, 1600, 1060)
   const floorPlanUrl = buildImageUrl(item.floorPlanImage, 1600, 1060)
@@ -71,14 +120,17 @@ export function mapSanityProperty(item, index) {
     id: item._id || `sanity-property-${index}`,
     slug: item.slug?.current || `property-${index}`,
     title: String(item.title ?? '').trim() || 'Untitled Property',
-    location: item.location || 'Cyprus',
+    location: resolveLocationLabel(item),
     price: toNumber(item.price),
     type: formatPropertyType(item.propertyType),
-    status: mapSanityStatus(item.status),
+    status: mapDisplayStatus(item),
+    purpose: item.purpose || null,
+    listingStatus: item.listingStatus || null,
+    referenceId: typeof item.referenceId === 'string' ? item.referenceId : null,
     bedrooms: toNumber(item.bedrooms),
     bathrooms: toNumber(item.bathrooms),
     sqm: toNumber(item.internalArea),
-    description: item.description || 'Discover this premium listing in Cyprus.',
+    description: resolveDescription(item),
     features: amenities,
     image:
       mainImage ||
@@ -93,7 +145,10 @@ export function mapSanityProperty(item, index) {
     yearBuilt: toNumber(item.yearBuilt),
     parking: toNumber(item.parkingSpaces),
     plotSize: toNumber(item.plotSize),
-    agentId: null,
+    agentId: item.agent?._id || null,
+    agentName: typeof item.agent?.name === 'string' ? item.agent.name : null,
+    latitude: typeof item.latitude === 'number' ? item.latitude : null,
+    longitude: typeof item.longitude === 'number' ? item.longitude : null,
     source: 'sanity',
   }
 }
