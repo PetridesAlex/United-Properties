@@ -1,5 +1,12 @@
 import { Link } from 'react-router-dom'
-import { Instagram, Linkedin, Facebook, MessageCircle, LayoutDashboard } from 'lucide-react'
+import {
+  Instagram,
+  Linkedin,
+  Facebook,
+  MessageCircle,
+  LayoutDashboard,
+  ArrowUpRight,
+} from 'lucide-react'
 import { SANITY_STUDIO_URL } from '../../config/externalLinks'
 import './Footer.css'
 
@@ -75,14 +82,19 @@ function Footer() {
             href={SANITY_STUDIO_URL}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Open team Portal (content management) in a new tab"
+            aria-label="Open team content studio in a new tab"
           >
-            <span className="footer__portal-icon" aria-hidden="true">
-              <LayoutDashboard size={22} strokeWidth={1.85} />
+            <span className="footer__portal-sheen" aria-hidden="true" />
+            <span className="footer__portal-main">
+              <span className="footer__portal-icon" aria-hidden="true">
+                <LayoutDashboard size={20} strokeWidth={1.65} />
+              </span>
+              <span className="footer__portal-copy">
+                <span className="footer__portal-title">Portal</span>
+              </span>
             </span>
-            <span className="footer__portal-copy">
-              <span className="footer__portal-title">Portal</span>
-              <span className="footer__portal-sub">Team login · Listings &amp; content</span>
+            <span className="footer__portal-arrow" aria-hidden="true">
+              <ArrowUpRight size={18} strokeWidth={1.65} />
             </span>
           </a>
         </div>

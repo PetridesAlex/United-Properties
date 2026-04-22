@@ -22,6 +22,7 @@ import SectionHeader from '../components/SectionHeader/SectionHeader'
 import PropertyCard from '../components/PropertyCard/PropertyCard'
 import { agents } from '../data/agents'
 import { useMergedProperties } from '../hooks/useMergedProperties'
+import './Properties.css'
 import './PropertyDetails.css'
 
 const DESCRIPTION_PREVIEW_CHARS = 280
@@ -123,7 +124,11 @@ function PropertyDetails() {
         <title>{property.title} | United Properties</title>
       </Helmet>
 
-      <section className="page-hero page-hero--property">
+      <section
+        className={`page-hero page-hero--property properties-hero ${
+          property.status === 'For Rent' ? 'properties-hero--rent' : 'properties-hero--buy'
+        }`.trim()}
+      >
         <div className="container property-details__hero-inner">
           <p className="property-details__hero-eyebrow">
             <span>{property.status}</span>
@@ -142,9 +147,10 @@ function PropertyDetails() {
       </section>
 
       <section className="section section--light property-details__main">
-        <div className="container property-details">
+        <div className="property-details__gallery-fullbleed">
           <Gallery images={property.gallery} title={property.title} />
-
+        </div>
+        <div className="container property-details">
           {property.brochureUrl ? (
             <div className="property-details__brochure">
               <a
@@ -347,11 +353,6 @@ function PropertyDetails() {
                   title="Similar Properties"
                   description="More listings that fit this home—matched by area, status, or price band. Open any card for the full story."
                 />
-                <ul className="property-details__similar-match-hints" aria-label="Matching criteria">
-                  <li>Area &amp; district</li>
-                  <li>Status</li>
-                  <li>Price band</li>
-                </ul>
               </div>
             </div>
             <Link className="property-details__similar-viewall" to="/buy">
@@ -359,6 +360,11 @@ function PropertyDetails() {
               <ChevronRight size={17} strokeWidth={2.1} aria-hidden />
             </Link>
           </div>
+          <ul className="property-details__similar-match-hints" aria-label="Matching criteria">
+            <li>Area &amp; district</li>
+            <li>Status</li>
+            <li>Price band</li>
+          </ul>
           {similarProperties.length > 0 ? (
             <div className="grid-3 property-details__similar-grid">
               {similarProperties.map((item) => (

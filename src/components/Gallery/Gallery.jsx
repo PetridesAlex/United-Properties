@@ -75,28 +75,28 @@ function Gallery({ images = [], title = 'Property gallery' }) {
         {count > 1 && (
           <>
             <div className="gallery__chrome" aria-hidden="true" />
+            <div className="gallery__arrows gallery__arrows--sides">
+              <button
+                type="button"
+                className="gallery__arrow gallery__arrow--prev"
+                onClick={() => go(-1)}
+                aria-label="Previous image"
+              >
+                <ChevronLeft size={22} strokeWidth={2} />
+              </button>
+              <button
+                type="button"
+                className="gallery__arrow gallery__arrow--next"
+                onClick={() => go(1)}
+                aria-label="Next image"
+              >
+                <ChevronRight size={22} strokeWidth={2} />
+              </button>
+            </div>
             <div className="gallery__toolbar">
               <span className="gallery__counter">
                 {activeIndex + 1} <span className="gallery__counter-sep">/</span> {count}
               </span>
-              <div className="gallery__arrows">
-                <button
-                  type="button"
-                  className="gallery__arrow"
-                  onClick={() => go(-1)}
-                  aria-label="Previous image"
-                >
-                  <ChevronLeft size={22} strokeWidth={2} />
-                </button>
-                <button
-                  type="button"
-                  className="gallery__arrow"
-                  onClick={() => go(1)}
-                  aria-label="Next image"
-                >
-                  <ChevronRight size={22} strokeWidth={2} />
-                </button>
-              </div>
             </div>
           </>
         )}

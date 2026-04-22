@@ -79,16 +79,26 @@ function PropertyCard({
             {coverDescription ? (
               <p className="property-card__cover-description">{coverDescription}</p>
             ) : null}
-            <p className="property-card__specs-line" aria-label="Bedrooms, bathrooms, and size">
-              <span>{property.bedrooms} BEDS</span>
-              <span className="property-card__specs-dot" aria-hidden="true">
-                ·
+            <p
+              className="property-card__specs-line"
+              aria-label={`${property.bedrooms} bedrooms, ${property.bathrooms} full bathrooms, ${
+                sqft != null ? `${sqft.toLocaleString('en-US')} square feet` : `${property.sqm} square metres`
+              }`}
+            >
+              <span className="property-card__spec-pill">
+                <span className="property-card__spec-num">{property.bedrooms}</span>
+                <span className="property-card__spec-label">Beds</span>
               </span>
-              <span>{property.bathrooms} FULL BATHS</span>
-              <span className="property-card__specs-dot" aria-hidden="true">
-                ·
+              <span className="property-card__spec-pill">
+                <span className="property-card__spec-num">{property.bathrooms}</span>
+                <span className="property-card__spec-label">Baths</span>
               </span>
-              <span>{sqft != null ? `${sqft.toLocaleString('en-US')} SQ.FT.` : `${property.sqm} SQM`}</span>
+              <span className="property-card__spec-pill">
+                <span className="property-card__spec-num">
+                  {sqft != null ? sqft.toLocaleString('en-US') : property.sqm}
+                </span>
+                <span className="property-card__spec-label">{sqft != null ? 'Sq Ft' : 'Sqm'}</span>
+              </span>
             </p>
           </div>
         </Link>

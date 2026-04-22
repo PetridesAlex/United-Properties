@@ -26,13 +26,15 @@
   max-width: 100%;
   margin-bottom: 0.1rem;
   border-top: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(168, 174, 186, 0.35);
   background:
-    radial-gradient(ellipse 120% 140% at 50% -60%, rgba(197, 164, 109, 0.07) 0%, transparent 55%),
-    linear-gradient(180deg, #101012 0%, #060606 48%, #000000 100%);
+    radial-gradient(ellipse 125% 110% at 50% -35%, rgba(210, 215, 222, 0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 90% at 100% 50%, rgba(140, 145, 155, 0.1) 0%, transparent 48%),
+    linear-gradient(180deg, #2e323c 0%, #1f2229 38%, #14161c 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.045),
-    0 1px 0 rgba(0, 0, 0, 0.5);
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+    0 2px 14px rgba(0, 0, 0, 0.4);
   font-family: 'Montserrat', var(--font-sans), system-ui, sans-serif;
   font-feature-settings: 'kern' 1;
   -webkit-font-smoothing: antialiased;
@@ -44,35 +46,44 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 250, 242, 0.04) 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(235, 238, 242, 0.07) 45%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(235, 238, 242, 0.07) 55%,
+    transparent 100%
+  );
   opacity: 0.55;
 }
 
 .navbar > .navbar__ticker:first-child {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(190, 196, 206, 0.28);
 }
 
-/* Home over black hero: flat black family, whisper of gold, light edge */
+/* Home over hero: graphite glass + silver trim */
 .navbar--transparent .navbar__ticker {
   margin-bottom: 0.08rem;
-  border-bottom: 1px solid rgba(197, 164, 109, 0.2);
+  border-bottom: 1px solid rgba(200, 206, 216, 0.4);
   background:
-    radial-gradient(ellipse 100% 160% at 50% -80%, rgba(197, 164, 109, 0.06) 0%, transparent 52%),
-    linear-gradient(180deg, #0a0a0a 0%, #000000 100%);
-  backdrop-filter: blur(10px) saturate(1.05);
-  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+    radial-gradient(ellipse 115% 130% at 50% -65%, rgba(220, 225, 232, 0.1) 0%, transparent 52%),
+    radial-gradient(ellipse 85% 75% at 0% 100%, rgba(120, 125, 135, 0.12) 0%, transparent 45%),
+    linear-gradient(180deg, rgba(36, 40, 48, 0.92) 0%, rgba(22, 24, 30, 0.95) 50%, rgba(14, 15, 18, 0.97) 100%);
+  backdrop-filter: blur(14px) saturate(1.05);
+  -webkit-backdrop-filter: blur(14px) saturate(1.05);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.42),
+    0 4px 22px rgba(0, 0, 0, 0.38);
 }
 
 .navbar--transparent .navbar__ticker::before {
-  opacity: 0.35;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.035) 50%, transparent 100%);
+  opacity: 0.45;
+  background: linear-gradient(90deg, transparent 0%, rgba(240, 242, 245, 0.06) 50%, transparent 100%);
 }
 
 .navbar--transparent > .navbar__ticker:first-child {
-  border-top-color: rgba(255, 255, 255, 0.05);
+  border-top-color: rgba(185, 192, 202, 0.32);
 }
 
 .navbar__ticker-viewport {
@@ -105,24 +116,26 @@
 .navbar__ticker-chip {
   flex-shrink: 0;
   font-family: 'Montserrat', var(--font-sans), system-ui, sans-serif;
-  font-size: clamp(0.74rem, 0.2rem + 0.62vw, 0.9rem);
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-size: clamp(0.72rem, 0.18rem + 0.6vw, 0.88rem);
+  font-weight: 500;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(252, 248, 240, 0.96);
+  color: rgba(228, 232, 238, 0.96);
   text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.12),
     0 1px 2px rgba(0, 0, 0, 0.65),
-    0 0 20px rgba(0, 0, 0, 0.35);
+    0 0 20px rgba(200, 208, 220, 0.12);
   white-space: nowrap;
 }
 
 .navbar--transparent .navbar__ticker-chip {
-  color: rgba(255, 251, 243, 0.94);
-  font-weight: 700;
-  letter-spacing: 0.095em;
+  color: rgba(236, 240, 245, 0.98);
+  font-weight: 600;
+  letter-spacing: 0.13em;
   text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.7),
-    0 0 1px rgba(0, 0, 0, 0.5);
+    0 1px 0 rgba(255, 255, 255, 0.16),
+    0 1px 3px rgba(0, 0, 0, 0.75),
+    0 0 18px rgba(210, 216, 225, 0.15);
 }
 
 .navbar__ticker-chip + .navbar__ticker-chip::before {
@@ -134,22 +147,22 @@
   border-radius: 1px;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.06) 0%,
-    rgba(197, 164, 109, 0.42) 50%,
-    rgba(255, 255, 255, 0.06) 100%
+    rgba(110, 115, 125, 0.35) 0%,
+    rgba(230, 234, 240, 0.75) 50%,
+    rgba(110, 115, 125, 0.35) 100%
   );
   vertical-align: -0.08em;
-  opacity: 0.95;
+  opacity: 0.9;
 }
 
 .navbar--transparent .navbar__ticker-chip + .navbar__ticker-chip::before {
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(197, 164, 109, 0.32) 50%,
-    rgba(255, 255, 255, 0.05) 100%
+    rgba(95, 100, 110, 0.4) 0%,
+    rgba(245, 247, 250, 0.85) 50%,
+    rgba(95, 100, 110, 0.4) 100%
   );
-  opacity: 0.85;
+  opacity: 0.88;
 }
 
 @keyframes navbar-ticker-marquee {
@@ -188,8 +201,8 @@
     white-space: normal;
     text-align: center;
     font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    font-weight: 600;
+    letter-spacing: 0.1em;
+    font-weight: 500;
     max-width: 16rem;
   }
 
@@ -201,9 +214,9 @@
     content: '·';
     margin-left: 0.55rem;
     margin-right: 0.55rem;
-    opacity: 0.5;
-    font-weight: 600;
-    color: rgba(191, 152, 117, 0.8);
+    opacity: 0.6;
+    font-weight: 500;
+    color: rgba(195, 200, 210, 0.75);
   }
 
   .navbar__ticker-viewport {

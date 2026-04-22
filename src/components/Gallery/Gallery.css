@@ -1,6 +1,7 @@
 .gallery {
   display: grid;
   gap: 1rem;
+  text-align: initial;
 }
 
 .gallery__stage {
@@ -24,12 +25,14 @@
 .gallery__slide {
   position: absolute;
   inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center;
+  object-fit: contain;
+  object-position: center center;
   opacity: 0;
-  transform: scale(1.05);
+  transform: scale(1.02);
+  transform-origin: center center;
   transition:
     opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.65s cubic-bezier(0.33, 1, 0.68, 1);
@@ -68,6 +71,23 @@
   border-radius: inherit;
 }
 
+.gallery__arrows--sides {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(0.5rem, 2vw, 1.25rem);
+  box-sizing: border-box;
+}
+
+.gallery__arrows--sides .gallery__arrow {
+  pointer-events: auto;
+  flex-shrink: 0;
+}
+
 .gallery__toolbar {
   position: absolute;
   left: 0;
@@ -76,15 +96,14 @@
   z-index: 3;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 0.75rem;
   padding: 0.85rem 1rem 1rem;
   pointer-events: none;
 }
 
-.gallery__toolbar .gallery__arrows,
-.gallery__toolbar .gallery__arrow {
-  pointer-events: auto;
+.gallery__toolbar .gallery__counter {
+  pointer-events: none;
 }
 
 .gallery__counter {
@@ -98,11 +117,6 @@
 .gallery__counter-sep {
   opacity: 0.55;
   font-weight: 500;
-}
-
-.gallery__arrows {
-  display: flex;
-  gap: 0.35rem;
 }
 
 .gallery__arrow {

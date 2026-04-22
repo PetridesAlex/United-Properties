@@ -446,28 +446,53 @@
 .property-card__specs-line {
   margin: 0;
   margin-top: auto;
-  padding-top: 0.22rem;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #475569;
-  line-height: 1.45;
+  padding-top: 0.28rem;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.35rem 0.5rem;
+  gap: 0.42rem 0.5rem;
   font-family: var(--font-sans);
+  line-height: 1;
 }
 
-.property-card--cover .property-card__specs-line {
-  color: #475569;
+.property-card__spec-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.32rem;
+  padding: 0.4rem 0.68rem 0.42rem;
+  border-radius: 999px;
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.97) 0%, rgba(248, 250, 252, 0.88) 48%, rgba(241, 245, 249, 0.72) 100%);
+  border: 1px solid rgba(23, 38, 59, 0.09);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 1px 3px rgba(15, 23, 42, 0.05);
 }
 
-.property-card__specs-dot {
-  color: #9ca3af;
-  font-weight: 500;
-  user-select: none;
+.property-card--cover .property-card__spec-pill {
+  background:
+    linear-gradient(168deg, rgba(252, 251, 248, 0.99) 0%, rgba(248, 246, 241, 0.55) 42%, rgba(236, 241, 247, 0.65) 100%);
+  border-color: rgba(196, 156, 92, 0.14);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 0 0 1px rgba(255, 255, 255, 0.35) inset;
+}
+
+.property-card__spec-num {
+  font-size: clamp(0.76rem, 1.32vw, 0.86rem);
+  font-weight: 700;
+  letter-spacing: -0.028em;
+  color: #0a101a;
+  font-variant-numeric: tabular-nums;
+}
+
+.property-card__spec-label {
+  font-size: clamp(0.56rem, 1.05vw, 0.63rem);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(51, 65, 85, 0.82);
 }
 
 @media (max-width: 720px) {
@@ -479,9 +504,18 @@
     padding: 0.88rem 0.9rem 1rem;
   }
 
-  .property-card__specs-line {
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
+  .property-card__spec-pill {
+    padding: 0.34rem 0.56rem 0.36rem;
+    gap: 0.26rem;
+  }
+
+  .property-card__spec-num {
+    font-size: 0.74rem;
+  }
+
+  .property-card__spec-label {
+    font-size: 0.54rem;
+    letter-spacing: 0.12em;
   }
 }
 
