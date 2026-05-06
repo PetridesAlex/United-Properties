@@ -9,16 +9,15 @@ import './Navbar.css'
 const CENTER_NAV_LINKS = [
   { label: 'Buy', to: '/buy' },
   { label: 'Rent', to: '/rent' },
-  { label: 'Services', to: '/services' },
-  { label: 'Property Management', to: '/services#property-management' },
+  { label: 'United Services', to: '/services' },
   { label: 'About', to: '/about' },
   { label: 'Contact', to: '/contact' },
 ]
 
 const SERVICES_DROPDOWN_LINKS = [
-  { label: 'Buy with us', to: '/buy' },
   { label: 'Sell with us', to: '/services#sell-with-us' },
   { label: 'Invest with us', to: '/services#invest-with-us' },
+  { label: 'Property Management', to: '/services#property-management' },
   { label: 'Rent your property', to: '/services#rent-your-property' },
   { label: 'Concierge', to: '/concierge' },
 ]
@@ -29,7 +28,7 @@ function isCenterNavActive(pathname, hash, to) {
     return pathname === path && hash === `#${h}`
   }
   if (to === '/services') {
-    return pathname === '/services' && hash !== '#property-management'
+    return pathname === '/services'
   }
   return pathname === to
 }
@@ -126,7 +125,7 @@ function Navbar() {
                         <ChevronDown size={14} aria-hidden="true" />
                       </Link>
 
-                      <div className="navbar__center-dropdown-menu" role="menu" aria-label="Services links">
+                      <div className="navbar__center-dropdown-menu" role="menu" aria-label="United Services links">
                         {SERVICES_DROPDOWN_LINKS.map((serviceLink) => {
                           const serviceActive = isCenterNavActive(
                             location.pathname,
@@ -180,7 +179,7 @@ function Navbar() {
               items={[
                 { label: 'Buy', link: '/buy' },
                 { label: 'Rent', link: '/rent' },
-                { label: 'Services', link: '/services' },
+                { label: 'United Services', link: '/services' },
                 { label: 'Property Management', link: '/services#property-management' },
                 { label: 'About', link: '/about' },
                 { label: 'Contact', link: '/contact' },
