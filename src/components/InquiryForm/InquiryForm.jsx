@@ -58,7 +58,12 @@ function InquiryForm({ className = '' }) {
         })
 
         if (error) {
-          console.warn('[InquiryForm] Supabase insert failed, falling back to mailto:', error.message)
+          console.warn('[InquiryForm] Supabase insert failed, falling back to mailto:', {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint,
+          })
           openMailtoFallback(payload)
           form.reset()
           setResult({

@@ -1,5 +1,7 @@
--- Run in Supabase → SQL Editor (once).
--- Enables website inquiry form inserts via the anon key + RLS.
+-- Run in Supabase → SQL Editor (safe to re-run).
+-- Fixes: table + RLS insert policy + GRANTs required for the website anon key.
+
+create extension if not exists pgcrypto;
 
 create table if not exists public.inquiries (
   id uuid primary key default gen_random_uuid(),
@@ -17,7 +19,10 @@ create table if not exists public.inquiries (
 
 alter table public.inquiries enable row level security;
 
--- Allow anonymous inserts from the public site (anon key).
+-- PostgREST needs explicit table privileges for the anon role.
+grant usage on schema public to anon, authenticated;
+grant insert on table public.inquiries to anon, authenticated;
+
 drop policy if exists "Public can insert inquiries" on public.inquiries;
 create policy "Public can insert inquiries"
   on public.inquiries
@@ -25,5 +30,4 @@ create policy "Public can insert inquiries"
   to anon, authenticated
   with check (true);
 
--- No public SELECT/UPDATE/DELETE — review rows in the Supabase Table Editor
--- (or add a separate authenticated policy for your team later).
+-- No public SELECT/UPDATE/DELETE — review rows in Table Editor.
