@@ -332,7 +332,10 @@ function PropertyDetails() {
                   </Link>
                 </article>
               )}
-              <InquiryForm />
+              <InquiryForm
+                propertyId={typeof property.id === 'string' ? property.id : null}
+                propertyInterestDefault={property.title}
+              />
             </aside>
           </div>
         </div>

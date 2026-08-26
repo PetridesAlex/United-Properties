@@ -10,6 +10,7 @@ import Agents from '../pages/Agents'
 import Contact from '../pages/Contact'
 import HeroVideoWatch from '../pages/HeroVideoWatch'
 import NotFound from '../pages/NotFound'
+import AdminRoutes from '../pages/admin/AdminRoutes'
 
 function LegacyPropertyRedirect() {
   const { slug } = useParams()
@@ -19,11 +20,14 @@ function LegacyPropertyRedirect() {
 function AppRouter() {
   return (
     <Routes>
+      <Route path="/admin/*" element={<AdminRoutes />} />
       <Route path="/" element={<Home />} />
       <Route path="/new-developments" element={<Navigate to="/properties" replace />} />
       <Route path="/developments" element={<Navigate to="/properties" replace />} />
       <Route path="/buy" element={<Properties />} />
       <Route path="/rent" element={<Properties />} />
+      <Route path="/sold" element={<Properties />} />
+      <Route path="/rented" element={<Properties />} />
       <Route path="/featured-properties" element={<Properties />} />
       <Route path="/signature-listings" element={<Properties />} />
       <Route path="/properties" element={<Properties />} />

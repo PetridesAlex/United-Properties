@@ -1,0 +1,16 @@
+/// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+  readonly VITE_SUPABASE_URL: string
+  readonly VITE_SUPABASE_ANON_KEY: string
+  readonly VITE_SUPABASE_PUBLISHABLE_KEY?: string
+  readonly VITE_GOOGLE_MAPS_API_KEY?: string
+  readonly VITE_WHATSAPP_URL?: string
+  readonly VITE_TELEGRAM_URL?: string
+  readonly VITE_CONTACT_PHONE_TEL?: string
+  readonly VITE_CONTACT_EMAIL?: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}

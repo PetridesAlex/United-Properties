@@ -40,6 +40,10 @@ function getFiltersFromLocation(location) {
     filters.status = 'For Sale'
   } else if (pathname === '/rent') {
     filters.status = 'For Rent'
+  } else if (pathname === '/sold') {
+    filters.status = 'Sold'
+  } else if (pathname === '/rented') {
+    filters.status = 'Rented'
   } else if (pathname === '/featured-properties') {
     filters.status = 'For Sale'
     filters.featured = 'true'
@@ -56,6 +60,8 @@ function getModeFromRoute(location) {
   const pathname = normalizePathname(location.pathname)
 
   if (pathname === '/rent') return 'rent'
+  if (pathname === '/sold') return 'sold'
+  if (pathname === '/rented') return 'rented'
   if (pathname === '/buy' || pathname === '/featured-properties') return 'buy'
   if (searchMode) return searchMode
   if (params.get('status') === 'For Rent') return 'rent'
@@ -69,6 +75,20 @@ function getDiscoveryIntro(mode) {
       title: 'Homes & apartments to lease',
       description:
         'Long-term and seasonal lets across prime Limassol districts — curated by our team.',
+    }
+  }
+  if (mode === 'sold') {
+    return {
+      eyebrow: 'Completed sales',
+      title: 'Recently sold properties',
+      description: 'A selection of homes successfully placed by United Properties.',
+    }
+  }
+  if (mode === 'rented') {
+    return {
+      eyebrow: 'Let by United Properties',
+      title: 'Recently rented properties',
+      description: 'Homes and apartments successfully leased through our team.',
     }
   }
   return {
@@ -89,6 +109,28 @@ function getHeroContent(mode, status) {
       description:
         'Browse premium apartments, villas, and furnished residences in Limassol — short and long-term.',
       pageTitle: 'Rent Properties | United Properties',
+    }
+  }
+
+  if (mode === 'sold' || status === 'Sold') {
+    return {
+      modeClass: 'properties-hero--buy',
+      eyebrow: 'Sold by United Properties',
+      lead: 'Completed transactions.',
+      title: 'Sold Properties',
+      description: 'Homes successfully sold through United Properties.',
+      pageTitle: 'Sold Properties | United Properties',
+    }
+  }
+
+  if (mode === 'rented' || status === 'Rented') {
+    return {
+      modeClass: 'properties-hero--rent',
+      eyebrow: 'Let by United Properties',
+      lead: 'Successfully placed rentals.',
+      title: 'Rented Properties',
+      description: 'Homes and apartments successfully leased through our team.',
+      pageTitle: 'Rented Properties | United Properties',
     }
   }
 

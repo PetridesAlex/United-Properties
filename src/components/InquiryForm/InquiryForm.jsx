@@ -20,7 +20,7 @@ function openMailtoFallback(payload) {
   window.location.href = `${CONTACT_MAILTO_HREF}?subject=${subject}&body=${body}`
 }
 
-function InquiryForm({ className = '' }) {
+function InquiryForm({ className = '', propertyId = null, propertyInterestDefault = '' }) {
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState({type: '', message: ''})
 
@@ -55,6 +55,7 @@ function InquiryForm({ className = '' }) {
           message: String(payload.message || '').trim(),
           source: 'website',
           status: 'new',
+          property_id: propertyId || null,
         })
 
         if (error) {
@@ -149,7 +150,11 @@ function InquiryForm({ className = '' }) {
             <span className="inquiry-form__label">
               Interested property <span className="inquiry-form__optional">(optional)</span>
             </span>
-            <input name="propertyInterest" type="text" />
+            <input
+              name="propertyInterest"
+              type="text"
+              defaultValue={propertyInterestDefault}
+            />
           </label>
           <label className="inquiry-form__field">
             <span className="inquiry-form__label">Preferred contact</span>

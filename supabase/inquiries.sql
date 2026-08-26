@@ -1,5 +1,7 @@
--- Run in Supabase → SQL Editor (safe to re-run).
--- Fixes: table + RLS insert policy + GRANTs required for the website anon key.
+-- Prefer the full CMS migration:
+--   supabase/migrations/20260826_001_cms_schema.sql
+--
+-- Minimal legacy path (inquiries only) for older setups:
 
 create extension if not exists pgcrypto;
 
@@ -17,9 +19,14 @@ create table if not exists public.inquiries (
   status text not null default 'new'
 );
 
+alter table public.inquiries
+  add column if not exists property_id uuid;
+
+alter table public.inquiries
+  add column if not exists updated_at timestamptz not null default now();
+
 alter table public.inquiries enable row level security;
 
--- PostgREST needs explicit table privileges for the anon role.
 grant usage on schema public to anon, authenticated;
 grant insert on table public.inquiries to anon, authenticated;
 
@@ -29,5 +36,3 @@ create policy "Public can insert inquiries"
   for insert
   to anon, authenticated
   with check (true);
-
--- No public SELECT/UPDATE/DELETE — review rows in Table Editor.
