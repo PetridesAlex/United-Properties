@@ -105,8 +105,7 @@ function getHeroContent(mode, status) {
 
 function Properties() {
   const routeLocation = useLocation()
-  const { list: allProperties, loading: propertiesLoading, error: propertiesError } =
-    useMergedProperties()
+  const { list: allProperties } = useMergedProperties()
   const [filters, setFilters] = useState(() => getFiltersFromLocation(routeLocation))
   const [visibleCount, setVisibleCount] = useState(6)
   const mode = useMemo(() => getModeFromRoute(routeLocation), [routeLocation])
@@ -185,22 +184,9 @@ function Properties() {
           </header>
 
           <div className="properties-results-zone">
-            {propertiesError && !propertiesLoading ? (
-              <div className="properties__fetch-error card-luxury" role="alert">
-                <h3>Could not load live listings</h3>
-                <p>
-                  Check your connection, then refresh the page. If the problem continues, the Sanity API may be
-                  temporarily unavailable.
-                </p>
-                <p className="properties__fetch-error-detail">{propertiesError}</p>
-              </div>
-            ) : null}
+            <p className="properties__result-count">{filtered.length} matching properties</p>
 
-            <p className="properties__result-count">
-              {propertiesLoading ? 'Loading listings…' : `${filtered.length} matching properties`}
-            </p>
-
-            {!propertiesLoading && visibleProperties.length ? (
+            {visibleProperties.length ? (
               <>
                 <div className="grid-3">
                   {visibleProperties.map((property) => (
@@ -215,18 +201,12 @@ function Properties() {
                   </div>
                 )}
               </>
-            ) : null}
-
-            {!propertiesLoading && !visibleProperties.length ? (
+            ) : (
               <div className="properties__empty card-luxury">
-                <h3>{propertiesError ? 'No cached listings to show' : 'No properties match your filters'}</h3>
-                <p>
-                  {propertiesError
-                    ? 'Fix the connection issue above, or adjust filters once listings load.'
-                    : 'Adjust your criteria to discover more listings.'}
-                </p>
+                <h3>No properties match your filters</h3>
+                <p>Adjust your criteria to discover more listings.</p>
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       </section>

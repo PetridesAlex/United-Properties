@@ -67,19 +67,11 @@ function isSignatureProperty(property) {
 }
 
 function Home() {
-  const { list: mergedProperties } = useMergedProperties()
-  const sanityOnly = useMemo(
-    () => mergedProperties.filter((property) => property.source === 'sanity'),
-    [mergedProperties],
+  const { list: listingProperties } = useMergedProperties()
+  const featuredProperties = useMemo(
+    () => takeFeaturedWithFill(listingProperties, FEATURED_MODAL_PREVIEW_COUNT),
+    [listingProperties],
   )
-  const fallbackFeaturedProperties = useMemo(
-    () => takeFeaturedWithFill(properties, FEATURED_MODAL_PREVIEW_COUNT),
-    [],
-  )
-  const featuredProperties = useMemo(() => {
-    if (!sanityOnly.length) return fallbackFeaturedProperties
-    return takeFeaturedWithFill(sanityOnly, FEATURED_MODAL_PREVIEW_COUNT)
-  }, [sanityOnly, fallbackFeaturedProperties])
   const featuredModalCards = useMemo(
     () =>
       featuredProperties.map((property, index) => ({
@@ -95,7 +87,7 @@ function Home() {
     [featuredProperties],
   )
   const signatureCollectionProperties = useMemo(() => {
-    const source = sanityOnly.length ? sanityOnly : properties
+    const source = listingProperties.length ? listingProperties : properties
     const signatureOnly = source.filter(isSignatureProperty)
 
     // Keep stack rich in preview mode: prefer signature, then featured, then fill from remaining.
@@ -110,7 +102,7 @@ function Home() {
     )
 
     return [...prioritized, ...remainder].slice(0, HOME_SCROLL_STACK_PREVIEW_COUNT)
-  }, [sanityOnly])
+  }, [listingProperties])
 
   const signatureScrollStackItems = useMemo(
     () =>

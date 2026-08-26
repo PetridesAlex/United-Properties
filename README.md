@@ -10,6 +10,7 @@ Premium luxury real estate frontend for Cyprus, built with React + Vite.
 - Framer Motion
 - Lucide React
 - React Helmet Async
+- Supabase (optional — inquiries)
 
 ## Run locally
 
@@ -18,37 +19,29 @@ npm install
 npm run dev
 ```
 
+Copy `.env.example` → `.env` and set:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY` (anon / public JWT only)
+
+Restart the dev server after changing `.env`.
+
 ## Build
 
 ```bash
 npm run build
 ```
 
-## Website inquiry API (Sanity CRM)
+## Content
 
-The contact form posts to `POST /api/inquiries`, which creates `_type: "inquiry"` documents in Sanity.
+Listings and agents come from static data in `src/data/`.
 
-### Required server env vars
+## Inquiries (Supabase)
 
-Set these in your deployment provider (for example Vercel project settings):
+The contact / inquiry form inserts into `public.inquiries` when Supabase env vars are set.
 
-- `SANITY_API_WRITE_TOKEN` (required, server-side only)
-- `SANITY_PROJECT_ID` (optional, defaults to `d7j11dpu`)
-- `SANITY_DATASET` (optional, defaults to `production`)
-- `SANITY_API_VERSION` (optional, defaults to `2024-01-01`)
+1. Open Supabase → **SQL Editor**
+2. Run [`supabase/inquiries.sql`](supabase/inquiries.sql) (creates table + insert policy)
+3. Submit a test inquiry on the site, then check **Table Editor → inquiries**
 
-Never expose `SANITY_API_WRITE_TOKEN` in client-side `VITE_*` variables.
-
-### Local development: contact form (`/api/inquiries`)
-
-`npm run dev` runs only the Vite app — there is **no** local `/api/inquiries` serverless route.
-
-By default in dev the form POSTs to `https://www.unitedproperties.eu/api/inquiries` (CORS allowed).
-
-Override origin with `.env.local`:
-
-```bash
-VITE_INQUIRY_API_URL=https://www.unitedproperties.eu
-```
-
-Or install Vercel CLI and run `vercel dev` to emulate serverless APIs locally.
+If the table/policy is missing, the form falls back to `mailto:` using `VITE_CONTACT_EMAIL`.

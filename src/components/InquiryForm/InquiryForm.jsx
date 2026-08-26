@@ -1,7 +1,24 @@
 import {useState} from 'react'
 import {Clock, Lock, Send, Sparkles} from 'lucide-react'
-import {getInquiryPostUrl} from '../../lib/inquiryEndpoint'
+import {CONTACT_EMAIL, CONTACT_MAILTO_HREF} from '../../config/externalLinks'
+import {isSupabaseConfigured, supabase} from '../../lib/supabaseClient'
 import './InquiryForm.css'
+
+function openMailtoFallback(payload) {
+  const subject = encodeURIComponent(payload.subject?.trim() || 'United Properties inquiry')
+  const body = encodeURIComponent(
+    [
+      `Name: ${payload.name || ''}`,
+      `Email: ${payload.email || ''}`,
+      `Phone: ${payload.phone || ''}`,
+      `Preferred contact: ${payload.preferredContact || ''}`,
+      `Interested property: ${payload.propertyInterest || '—'}`,
+      '',
+      payload.message || '',
+    ].join('\n'),
+  )
+  window.location.href = `${CONTACT_MAILTO_HREF}?subject=${subject}&body=${body}`
+}
 
 function InquiryForm({ className = '' }) {
   const [submitting, setSubmitting] = useState(false)
@@ -13,25 +30,57 @@ function InquiryForm({ className = '' }) {
     const formData = new FormData(form)
     const payload = Object.fromEntries(formData.entries())
 
-    setSubmitting(true)
-    setResult({type: '', message: ''})
-
-    try {
-      const res = await fetch(getInquiryPostUrl(), {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload),
-      })
-
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        throw new Error(data?.error || 'Could not send inquiry')
-      }
-
+    // Honeypot — bots fill this; treat as success without sending.
+    if (payload.company) {
       form.reset()
       setResult({
         type: 'success',
         message: 'Inquiry sent. Our team will contact you shortly.',
+      })
+      return
+    }
+
+    setSubmitting(true)
+    setResult({type: '', message: ''})
+
+    try {
+      if (isSupabaseConfigured && supabase) {
+        const {error} = await supabase.from('inquiries').insert({
+          full_name: String(payload.name || '').trim(),
+          email: String(payload.email || '').trim(),
+          phone: String(payload.phone || '').trim() || null,
+          subject: String(payload.subject || '').trim() || null,
+          property_interest: String(payload.propertyInterest || '').trim() || null,
+          preferred_contact: String(payload.preferredContact || '').trim() || null,
+          message: String(payload.message || '').trim(),
+          source: 'website',
+          status: 'new',
+        })
+
+        if (error) {
+          console.warn('[InquiryForm] Supabase insert failed, falling back to mailto:', error.message)
+          openMailtoFallback(payload)
+          form.reset()
+          setResult({
+            type: 'success',
+            message: `Could not save online — your email client should open so you can send this to ${CONTACT_EMAIL}.`,
+          })
+          return
+        }
+
+        form.reset()
+        setResult({
+          type: 'success',
+          message: 'Inquiry sent. Our team will contact you shortly.',
+        })
+        return
+      }
+
+      openMailtoFallback(payload)
+      form.reset()
+      setResult({
+        type: 'success',
+        message: `Your email client should open so you can send this to ${CONTACT_EMAIL}.`,
       })
     } catch (error) {
       setResult({
@@ -39,7 +88,7 @@ function InquiryForm({ className = '' }) {
         message:
           error instanceof Error
             ? error.message
-            : 'Could not send inquiry. Please try again.',
+            : 'Could not send your inquiry. Please try again.',
       })
     } finally {
       setSubmitting(false)
@@ -54,21 +103,21 @@ function InquiryForm({ className = '' }) {
     >
       <header className="inquiry-form__header">
         <span className="inquiry-form__eyebrow">
-          <Sparkles size={15} strokeWidth={2.2} aria-hidden />
-          Priority access
+          <Sparkles size={14} aria-hidden />
+          Private inquiry
         </span>
         <h3 className="inquiry-form__title">Request a private consultation</h3>
         <p className="inquiry-form__lede">
-          Share your details and a dedicated advisor will contact you — usually within one business day.
+          Share a few details and we will respond with tailored guidance for your brief.
         </p>
         <ul className="inquiry-form__trust" aria-label="What to expect">
           <li>
-            <Clock size={15} strokeWidth={2} aria-hidden />
-            Fast reply
+            <Clock size={14} aria-hidden />
+            Reply within one business day
           </li>
           <li>
-            <Lock size={15} strokeWidth={2} aria-hidden />
-            Confidential
+            <Lock size={14} aria-hidden />
+            Your details stay confidential
           </li>
         </ul>
       </header>
@@ -77,67 +126,64 @@ function InquiryForm({ className = '' }) {
         <div className="inquiry-form__grid">
           <label className="inquiry-form__field">
             <span className="inquiry-form__label">Full name</span>
-            <input type="text" name="fullName" autoComplete="name" required placeholder="Your name" disabled={submitting} />
+            <input name="name" type="text" required autoComplete="name" />
           </label>
           <label className="inquiry-form__field">
             <span className="inquiry-form__label">Email</span>
-            <input type="email" name="email" autoComplete="email" required placeholder="you@example.com" disabled={submitting} />
+            <input name="email" type="email" required autoComplete="email" />
           </label>
           <label className="inquiry-form__field">
             <span className="inquiry-form__label">Phone</span>
-            <input type="tel" name="phone" autoComplete="tel" required placeholder="+357 …" disabled={submitting} />
+            <input name="phone" type="tel" autoComplete="tel" />
           </label>
           <label className="inquiry-form__field">
             <span className="inquiry-form__label">Subject</span>
-            <input type="text" name="subject" required placeholder="e.g. Viewing, offer, questions" disabled={submitting} />
+            <input name="subject" type="text" placeholder="Buying / renting / investment" />
           </label>
           <label className="inquiry-form__field inquiry-form__field--full">
-            <span className="inquiry-form__label">Interested property <span className="inquiry-form__optional">(optional)</span></span>
-            <input type="text" name="property" placeholder="Address or reference" disabled={submitting} />
+            <span className="inquiry-form__label">
+              Interested property <span className="inquiry-form__optional">(optional)</span>
+            </span>
+            <input name="propertyInterest" type="text" />
           </label>
           <label className="inquiry-form__field">
             <span className="inquiry-form__label">Preferred contact</span>
-            <select name="preferredContact" defaultValue="Email" disabled={submitting}>
-              <option value="Email">Email</option>
-              <option value="Phone">Phone</option>
-              <option value="WhatsApp">WhatsApp</option>
+            <select name="preferredContact" defaultValue="email">
+              <option value="email">Email</option>
+              <option value="phone">Phone</option>
+              <option value="whatsapp">WhatsApp</option>
             </select>
           </label>
         </div>
 
-        {/* Honeypot: must stay empty */}
         <input
+          className="inquiry-form__honeypot"
+          name="company"
           type="text"
-          name="website"
           tabIndex={-1}
           autoComplete="off"
-          className="inquiry-form__honeypot"
           aria-hidden="true"
         />
 
         <label className="inquiry-form__field inquiry-form__field--full">
           <span className="inquiry-form__label">Message</span>
-          <textarea
-            name="message"
-            rows={4}
-            required
-            placeholder="Tell us what you need — viewing times, budget, or questions about this listing."
-            disabled={submitting}
-          />
+          <textarea name="message" rows={5} required />
         </label>
 
         <button type="submit" className="inquiry-form__submit" disabled={submitting}>
-          <Send size={18} strokeWidth={2.25} aria-hidden />
+          <Send size={16} aria-hidden />
           <span>{submitting ? 'Sending…' : 'Send inquiry'}</span>
         </button>
+
         {result.message ? (
           <p
             className={`inquiry-form__status inquiry-form__status--${result.type || 'info'}`}
-            role={result.type === 'error' ? 'alert' : 'status'}
+            role="status"
           >
             {result.message}
           </p>
         ) : null}
+
         <p className="inquiry-form__footnote">No spam. We only use your details to respond to this request.</p>
       </div>
     </form>
