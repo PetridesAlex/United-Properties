@@ -19,19 +19,45 @@ import {
 import {completedFromActive, revertCompleted} from '../../lib/properties/mappers'
 import {slugify} from '../../lib/properties/slug'
 import {validatePropertyForBazaraki} from '../../lib/integrations/bazaraki/validatePropertyForBazaraki'
-import type {Property, PropertyImage, PropertyStatus} from '../../types/cms'
+import {
+  BAZARAKI_MUST_HAVE_LABELS,
+  COMMERCIAL_TYPE_LABELS,
+  BAZARAKI_HOUSE_TYPE_LABELS,
+  MUST_HAVES_WITHOUT_PARKING,
+  MUST_HAVES_WITH_PARKING,
+  resolveAttrsSchema,
+} from '../../lib/integrations/bazaraki'
+import {
+  LAND_TYPE_OPTIONS,
+  PLOT_TYPE_OPTIONS,
+  SHARE_OPTIONS,
+} from '../../lib/integrations/bazaraki/landMappings'
+import {DEFAULT_BAZARAKI_RUBRICS} from '../../lib/integrations/bazaraki/rubricMappings'
+import BazarakiDistrictPicker from '../../components/admin/BazarakiDistrictPicker'
+import {supabase} from '../../lib/supabase/client'
+import type {Property, PropertyImage, PropertyStatus, SiteSettings} from '../../types/cms'
 import '../../components/admin/AdminShell.css'
 
 const PROPERTY_TYPES = [
   'Apartment',
-  'Villa',
   'Penthouse',
-  'Holiday Home',
+  'Villa',
   'Townhouse',
-  'Land',
-  'Commercial',
+  'Holiday Home',
+  'Detached House',
+  'Semi-detached House',
+  'Maisonette',
+  'Residential Building',
+  'Prefabricated House',
   'Development Unit',
+  'Commercial',
+  'Other',
+  'Land',
 ]
+
+const ENERGY_OPTIONS = ['A', 'B+', 'B', 'C', 'D', 'E', 'F', 'G', 'N/A', 'In Progress']
+const CONDITION_OPTIONS = ['Brand new', 'Resale', 'Under construction']
+const FURNISHING_OPTIONS = ['Fully Furnished', 'Semi-Furnished', 'Unfurnished', 'Appliances only']
 
 type FormState = {
   title: string
@@ -62,6 +88,24 @@ type FormState = {
   featured: boolean
   published: boolean
   publish_to_bazaraki: boolean
+  bazaraki_district_id: number | null
+  postal_code: string
+  bazaraki_must_haves: number[]
+  bazaraki_online_viewing: boolean
+  bazaraki_air_conditioning: string
+  bazaraki_parking: string
+  bazaraki_pets: string
+  bazaraki_house_type: string
+  bazaraki_commercial_type: string
+  registration_block: string
+  registration_number: string
+  land_type: string
+  plot_type: string
+  coverage: string
+  building_density: string
+  planning_zone: string
+  parcel_number: string
+  share: string
   seo_title: string
   seo_description: string
   internal_notes: string
@@ -96,6 +140,24 @@ const emptyForm: FormState = {
   featured: false,
   published: false,
   publish_to_bazaraki: false,
+  bazaraki_district_id: null,
+  postal_code: '',
+  bazaraki_must_haves: [],
+  bazaraki_online_viewing: false,
+  bazaraki_air_conditioning: '',
+  bazaraki_parking: '',
+  bazaraki_pets: '2',
+  bazaraki_house_type: '',
+  bazaraki_commercial_type: '',
+  registration_block: '',
+  registration_number: '',
+  land_type: '',
+  plot_type: '',
+  coverage: '',
+  building_density: '',
+  planning_zone: '',
+  parcel_number: '',
+  share: '',
   seo_title: '',
   seo_description: '',
   internal_notes: '',
@@ -131,6 +193,29 @@ function toForm(property: Property): FormState {
     featured: property.featured,
     published: property.published,
     publish_to_bazaraki: property.publish_to_bazaraki,
+    bazaraki_district_id: property.bazaraki_district_id ?? null,
+    postal_code: property.postal_code || '',
+    bazaraki_must_haves: property.bazaraki_must_haves ?? [],
+    bazaraki_online_viewing: property.bazaraki_online_viewing ?? false,
+    bazaraki_air_conditioning:
+      property.bazaraki_air_conditioning != null ? String(property.bazaraki_air_conditioning) : '',
+    bazaraki_parking: property.bazaraki_parking != null ? String(property.bazaraki_parking) : '',
+    bazaraki_pets: property.bazaraki_pets != null ? String(property.bazaraki_pets) : '2',
+    bazaraki_house_type:
+      property.bazaraki_house_type != null ? String(property.bazaraki_house_type) : '',
+    bazaraki_commercial_type:
+      property.bazaraki_commercial_type != null ? String(property.bazaraki_commercial_type) : '',
+    registration_block:
+      property.registration_block != null ? String(property.registration_block) : '',
+    registration_number:
+      property.registration_number != null ? String(property.registration_number) : '',
+    land_type: property.land_type || '',
+    plot_type: property.plot_type || '',
+    coverage: property.coverage || '',
+    building_density: property.building_density || '',
+    planning_zone: property.planning_zone || '',
+    parcel_number: property.parcel_number || '',
+    share: property.share || '',
     seo_title: property.seo_title || '',
     seo_description: property.seo_description || '',
     internal_notes: property.internal_notes || '',
@@ -180,6 +265,24 @@ function toPayload(form: FormState) {
     featured: form.featured,
     published: form.published,
     publish_to_bazaraki: form.publish_to_bazaraki,
+    bazaraki_district_id: form.bazaraki_district_id,
+    postal_code: form.postal_code.trim() || null,
+    bazaraki_must_haves: form.bazaraki_must_haves.length ? form.bazaraki_must_haves : null,
+    bazaraki_online_viewing: form.bazaraki_online_viewing,
+    bazaraki_air_conditioning: num(form.bazaraki_air_conditioning),
+    bazaraki_parking: num(form.bazaraki_parking),
+    bazaraki_pets: num(form.bazaraki_pets),
+    bazaraki_house_type: num(form.bazaraki_house_type),
+    bazaraki_commercial_type: num(form.bazaraki_commercial_type),
+    registration_block: num(form.registration_block),
+    registration_number: num(form.registration_number),
+    land_type: form.land_type.trim() || null,
+    plot_type: form.plot_type.trim() || null,
+    coverage: form.coverage.trim() || null,
+    building_density: form.building_density.trim() || null,
+    planning_zone: form.planning_zone.trim() || null,
+    parcel_number: form.parcel_number.trim() || null,
+    share: form.share.trim() || null,
     seo_title: form.seo_title.trim() || null,
     seo_description: form.seo_description.trim() || null,
     internal_notes: form.internal_notes.trim() || null,
@@ -197,6 +300,60 @@ export default function AdminPropertyEditPage() {
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
   const [confirmAction, setConfirmAction] = useState<string | null>(null)
+  const [bazarakiSettings, setBazarakiSettings] = useState<SiteSettings>({
+    id: 1,
+    company_name: 'United Properties',
+    company_logo_url: null,
+    phone: null,
+    email: null,
+    address: null,
+    opening_hours: null,
+    social_instagram: null,
+    social_linkedin: null,
+    social_facebook: null,
+    social_whatsapp: null,
+    social_telegram: null,
+    google_maps_embed_url: null,
+    google_maps_link: null,
+    default_seo_title: null,
+    default_seo_description: null,
+    company_registration: null,
+    bazaraki_feed_enabled: true,
+    bazaraki_rubric_for_sale: null,
+    bazaraki_rubric_for_rent: 681,
+    bazaraki_rubric_apartments_sale: DEFAULT_BAZARAKI_RUBRICS.apartments_sale,
+    bazaraki_rubric_apartments_rent: DEFAULT_BAZARAKI_RUBRICS.apartments_rent,
+    bazaraki_rubric_houses_sale: DEFAULT_BAZARAKI_RUBRICS.houses_sale,
+    bazaraki_rubric_houses_rent: DEFAULT_BAZARAKI_RUBRICS.houses_rent,
+    bazaraki_rubric_residential_buildings_sale: DEFAULT_BAZARAKI_RUBRICS.residential_buildings_sale,
+    bazaraki_rubric_prefabricated_houses_sale: DEFAULT_BAZARAKI_RUBRICS.prefabricated_houses_sale,
+    bazaraki_rubric_other_sale: DEFAULT_BAZARAKI_RUBRICS.other_sale,
+    bazaraki_rubric_other_rent: DEFAULT_BAZARAKI_RUBRICS.other_rent,
+    bazaraki_rubric_commercial_sale: DEFAULT_BAZARAKI_RUBRICS.commercial_sale,
+    bazaraki_rubric_commercial_rent: DEFAULT_BAZARAKI_RUBRICS.commercial_rent,
+    bazaraki_rubric_plots_sale: DEFAULT_BAZARAKI_RUBRICS.plots_sale,
+    bazaraki_rubric_plots_rent: DEFAULT_BAZARAKI_RUBRICS.plots_rent,
+    bazaraki_phone_hide: false,
+    bazaraki_negotiable_price: false,
+    bazaraki_exchange: false,
+    updated_at: '',
+    updated_by: null,
+  })
+
+  useEffect(() => {
+    let cancelled = false
+    async function loadSettings() {
+      if (!supabase) return
+      const {data} = await supabase.from('site_settings').select('*').eq('id', 1).maybeSingle()
+      if (!cancelled && data) {
+        setBazarakiSettings((prev) => ({...prev, ...(data as SiteSettings)}))
+      }
+    }
+    void loadSettings()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (isNew) return
@@ -222,14 +379,24 @@ export default function AdminPropertyEditPage() {
     }
   }, [id, isNew])
 
+  const bazarakiSchema = useMemo(
+    () => resolveAttrsSchema(form.property_type, form.status),
+    [form.property_type, form.status],
+  )
+
   const bazaraki = useMemo(
     () =>
-      validatePropertyForBazaraki({
-        ...toPayloadSafe(form),
-        property_images: images,
-        archived_at: property?.archived_at ?? null,
-      }),
-    [form, images, property],
+      validatePropertyForBazaraki(
+        {
+          ...toPayloadSafe(form),
+          property_images: images,
+          archived_at: property?.archived_at ?? null,
+          bazaraki_district_id: form.bazaraki_district_id,
+          postal_code: form.postal_code || null,
+        },
+        bazarakiSettings,
+      ),
+    [form, images, property, bazarakiSettings],
   )
 
   function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -448,19 +615,127 @@ export default function AdminPropertyEditPage() {
             ))}
             <div className="admin-field">
               <label>Furnishing</label>
-              <input value={form.furnishing} onChange={(e) => setField('furnishing', e.target.value)} />
+              <select value={form.furnishing} onChange={(e) => setField('furnishing', e.target.value)}>
+                <option value="">—</option>
+                {FURNISHING_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="admin-field">
               <label>Condition</label>
-              <input value={form.condition} onChange={(e) => setField('condition', e.target.value)} />
+              <select value={form.condition} onChange={(e) => setField('condition', e.target.value)}>
+                <option value="">—</option>
+                {CONDITION_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="admin-field">
               <label>Energy efficiency</label>
-              <input
+              <select
                 value={form.energy_efficiency}
                 onChange={(e) => setField('energy_efficiency', e.target.value)}
-              />
+              >
+                <option value="">—</option>
+                {ENERGY_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
             </div>
+            {form.property_type === 'Land' ? (
+              <>
+                <div className="admin-field">
+                  <label>Land type</label>
+                  <select
+                    value={form.land_type}
+                    onChange={(e) => setField('land_type', e.target.value)}
+                  >
+                    <option value="">Select land type</option>
+                    {LAND_TYPE_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="admin-field">
+                  <label>Plot type</label>
+                  <select
+                    value={form.plot_type}
+                    onChange={(e) => setField('plot_type', e.target.value)}
+                  >
+                    <option value="">Select plot type</option>
+                    {PLOT_TYPE_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="admin-field">
+                  <label>Share</label>
+                  <select value={form.share} onChange={(e) => setField('share', e.target.value)}>
+                    <option value="">—</option>
+                    {SHARE_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="admin-field">
+                  <label>Coverage</label>
+                  <input
+                    value={form.coverage}
+                    onChange={(e) => setField('coverage', e.target.value)}
+                  />
+                </div>
+                <div className="admin-field">
+                  <label>Building density</label>
+                  <input
+                    value={form.building_density}
+                    onChange={(e) => setField('building_density', e.target.value)}
+                  />
+                </div>
+                <div className="admin-field">
+                  <label>Planning zone</label>
+                  <input
+                    value={form.planning_zone}
+                    onChange={(e) => setField('planning_zone', e.target.value)}
+                  />
+                </div>
+                <div className="admin-field">
+                  <label>Parcel number</label>
+                  <input
+                    value={form.parcel_number}
+                    onChange={(e) => setField('parcel_number', e.target.value)}
+                  />
+                </div>
+                <div className="admin-field">
+                  <label>Registration block</label>
+                  <input
+                    type="number"
+                    value={form.registration_block}
+                    onChange={(e) => setField('registration_block', e.target.value)}
+                  />
+                </div>
+                <div className="admin-field">
+                  <label>Registration number</label>
+                  <input
+                    type="number"
+                    value={form.registration_number}
+                    onChange={(e) => setField('registration_number', e.target.value)}
+                  />
+                </div>
+              </>
+            ) : null}
           </div>
         </section>
 
@@ -592,6 +867,169 @@ export default function AdminPropertyEditPage() {
             />{' '}
             Publish to Bazaraki
           </label>
+          {form.publish_to_bazaraki ? (
+            <>
+              <BazarakiDistrictPicker
+                value={form.bazaraki_district_id}
+                onChange={(districtId) => setField('bazaraki_district_id', districtId)}
+                onPostalCodeSuggest={(code) => {
+                  if (!form.postal_code.trim()) setField('postal_code', code)
+                }}
+              />
+              <div className="admin-field">
+                <label>Postal code (Bazaraki)</label>
+                <input
+                  value={form.postal_code}
+                  onChange={(e) => setField('postal_code', e.target.value)}
+                  placeholder="e.g. 4152"
+                />
+              </div>
+              {bazarakiSchema ? (
+                <p>
+                  Bazaraki schema: <strong>{bazaraki.attrsSchema ?? 'Unknown'}</strong>
+                  {bazaraki.rubricCategory ? ` · ${bazaraki.rubricCategory}` : null}
+                  {bazaraki.rubricId ? ` · rubric ${bazaraki.rubricId}` : null}
+                </p>
+              ) : (
+                <p className="admin-login__error">
+                  This property type and status cannot be exported to Bazaraki.
+                </p>
+              )}
+              {bazarakiSchema === 'commercial' ? (
+                <div className="admin-field">
+                  <label>Commercial type (Bazaraki)</label>
+                  <select
+                    value={form.bazaraki_commercial_type}
+                    onChange={(e) => setField('bazaraki_commercial_type', e.target.value)}
+                  >
+                    <option value="">Select type</option>
+                    {Object.entries(COMMERCIAL_TYPE_LABELS).map(([key, label]) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
+              {bazarakiSchema === 'houses' &&
+              (form.property_type === 'Holiday Home' || form.property_type === 'Townhouse') ? (
+                <div className="admin-field">
+                  <label>Bazaraki house type</label>
+                  <select
+                    value={form.bazaraki_house_type}
+                    onChange={(e) => setField('bazaraki_house_type', e.target.value)}
+                  >
+                    <option value="">Auto from property type</option>
+                    {Object.entries(BAZARAKI_HOUSE_TYPE_LABELS).map(([key, label]) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
+              {bazarakiSchema === 'houses' || bazarakiSchema === 'apartment' ? (
+                <div className="admin-form__grid">
+                  <div className="admin-field">
+                    <label>Air conditioning</label>
+                    <select
+                      value={form.bazaraki_air_conditioning}
+                      onChange={(e) => setField('bazaraki_air_conditioning', e.target.value)}
+                    >
+                      <option value="">Auto from features</option>
+                      <option value="1">Full, all rooms</option>
+                      <option value="2">Partly</option>
+                      <option value="3">No</option>
+                    </select>
+                  </div>
+                  <div className="admin-field">
+                    <label>Parking</label>
+                    <select
+                      value={form.bazaraki_parking}
+                      onChange={(e) => setField('bazaraki_parking', e.target.value)}
+                    >
+                      <option value="">Auto from property</option>
+                      <option value="1">Covered</option>
+                      <option value="2">Uncovered</option>
+                      <option value="3">No</option>
+                    </select>
+                  </div>
+                  <div className="admin-field">
+                    <label>Pets</label>
+                    <select
+                      value={form.bazaraki_pets}
+                      onChange={(e) => setField('bazaraki_pets', e.target.value)}
+                    >
+                      <option value="1">Allowed</option>
+                      <option value="2">Not allowed</option>
+                    </select>
+                  </div>
+                </div>
+              ) : null}
+              {bazarakiSchema === 'residentialBuildings' ? (
+                <div className="admin-form__grid">
+                  <div className="admin-field">
+                    <label>Registration block</label>
+                    <input
+                      type="number"
+                      value={form.registration_block}
+                      onChange={(e) => setField('registration_block', e.target.value)}
+                    />
+                  </div>
+                  <div className="admin-field">
+                    <label>Registration number</label>
+                    <input
+                      type="number"
+                      value={form.registration_number}
+                      onChange={(e) => setField('registration_number', e.target.value)}
+                    />
+                  </div>
+                </div>
+              ) : null}
+              {bazarakiSchema &&
+              bazarakiSchema !== 'prefabricatedHouses' &&
+              bazarakiSchema !== 'other' ? (
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={form.bazaraki_online_viewing}
+                    onChange={(e) => setField('bazaraki_online_viewing', e.target.checked)}
+                  />{' '}
+                  Online viewing available
+                </label>
+              ) : null}
+              {bazarakiSchema &&
+              bazarakiSchema !== 'prefabricatedHouses' &&
+              bazarakiSchema !== 'other' &&
+              bazarakiSchema !== 'plotsOfLand' ? (
+                <div className="admin-field admin-field--full">
+                  <label>Must-haves (Bazaraki)</label>
+                  <div className="admin-form__grid">
+                    {(bazarakiSchema === 'commercial' || bazarakiSchema === 'residentialBuildings'
+                      ? MUST_HAVES_WITH_PARKING
+                      : MUST_HAVES_WITHOUT_PARKING
+                    ).map((id) => (
+                      <label key={id}>
+                        <input
+                          type="checkbox"
+                          checked={form.bazaraki_must_haves.includes(id)}
+                          onChange={(e) => {
+                            setForm((prev) => ({
+                              ...prev,
+                              bazaraki_must_haves: e.target.checked
+                                ? [...prev.bazaraki_must_haves, id]
+                                : prev.bazaraki_must_haves.filter((item) => item !== id),
+                            }))
+                          }}
+                        />{' '}
+                        {BAZARAKI_MUST_HAVE_LABELS[id]}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </>
+          ) : null}
           <div>
             <strong>Bazaraki status: {bazaraki.ready ? 'Ready' : 'Not ready'}</strong>
             {bazaraki.missingFields.length ? (
@@ -821,9 +1259,38 @@ function toPayloadSafe(form: FormState) {
       description: form.description,
       short_description: form.short_description,
       bedrooms: num(form.bedrooms),
+      bathrooms: num(form.bathrooms),
       internal_area: num(form.internal_area),
       covered_area: num(form.covered_area),
+      plot_size: num(form.plot_size),
+      year_built: num(form.year_built),
+      parking_spaces: num(form.parking_spaces),
+      furnishing: form.furnishing || null,
+      condition: form.condition || null,
+      energy_efficiency: form.energy_efficiency || null,
+      features: form.featuresText
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
       address: form.address,
+      bazaraki_district_id: form.bazaraki_district_id,
+      postal_code: form.postal_code || null,
+      bazaraki_must_haves: form.bazaraki_must_haves,
+      bazaraki_online_viewing: form.bazaraki_online_viewing,
+      bazaraki_air_conditioning: num(form.bazaraki_air_conditioning),
+      bazaraki_parking: num(form.bazaraki_parking),
+      bazaraki_pets: num(form.bazaraki_pets),
+      bazaraki_house_type: num(form.bazaraki_house_type),
+      bazaraki_commercial_type: num(form.bazaraki_commercial_type),
+      registration_block: num(form.registration_block),
+      registration_number: num(form.registration_number),
+      land_type: form.land_type || null,
+      plot_type: form.plot_type || null,
+      coverage: form.coverage || null,
+      building_density: form.building_density || null,
+      planning_zone: form.planning_zone || null,
+      parcel_number: form.parcel_number || null,
+      share: form.share || null,
     }
   }
 }

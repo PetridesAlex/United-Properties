@@ -56,7 +56,44 @@ npm run lint
 
 ## CMS
 
-Staff manage properties, images, website content, settings, enquiries, and Bazaraki readiness at `/admin` without using the Supabase dashboard for day-to-day work.
+Staff manage properties, images, website content, settings, enquiries, and Bazaraki at `/admin` without using the Supabase dashboard for day-to-day work.
+
+## Bazaraki XML feed
+
+Properties marked **Publish to Bazaraki** with a valid district, postal code, and readiness checks appear in the live XML feed:
+
+**Feed URL:** `https://www.unitedproperties.eu/api/bazaraki.xml`
+
+1. Run migrations in Supabase SQL Editor:
+   - `supabase/migrations/20260827_bazaraki_fields.sql`
+   - `supabase/migrations/20260828_bazaraki_category_fields.sql`
+   - `supabase/migrations/20260829_land_property_fields.sql`
+2. Configure per-category rubric IDs under **Admin → Settings → Bazaraki integration** (defaults from Bazaraki guide):
+
+   | Category | For sale | To rent |
+   |---|---:|---:|
+   | Apartments | 3528 | 3529 |
+   | Houses | 678 | 681 |
+   | Residential buildings | 2790 | — |
+   | Prefabricated houses | 3303 | — |
+   | Other | 142 | 3531 |
+   | Commercial | 2405 | 2408 |
+   | Plots of land | 141 | 3530 |
+
+3. On each property, set **Bazaraki district**, **Postal code**, and schema-specific fields when publishing to Bazaraki
+4. Register the feed URL in [Bazaraki profile settings](https://www.bazaraki.com/profile/settings/)
+
+Refresh district data (optional):
+
+```bash
+npm run fetch:bazaraki-districts
+```
+
+Smoke test formatters/XML:
+
+```bash
+npm run test:bazaraki
+```
 
 ## Public listings
 

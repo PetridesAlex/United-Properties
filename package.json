@@ -8,6 +8,8 @@
     "build": "node scripts/generate-sitemap.js && vite build",
     "extract:video-poster": "node scripts/extract-hero-video-poster.js",
     "generate:sitemap": "node scripts/generate-sitemap.js",
+    "fetch:bazaraki-districts": "node scripts/fetch-bazaraki-districts.mjs",
+    "test:bazaraki": "node --experimental-strip-types scripts/test-bazaraki-feed.mjs",
     "seed:properties": "node scripts/seed-properties-from-static.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",

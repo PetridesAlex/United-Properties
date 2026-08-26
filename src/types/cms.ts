@@ -62,6 +62,24 @@ export interface Property {
   featured: boolean
   published: boolean
   publish_to_bazaraki: boolean
+  bazaraki_district_id: number | null
+  postal_code: string | null
+  bazaraki_must_haves: number[] | null
+  bazaraki_online_viewing: boolean
+  bazaraki_air_conditioning: number | null
+  bazaraki_parking: number | null
+  bazaraki_pets: number | null
+  bazaraki_house_type: number | null
+  bazaraki_commercial_type: number | null
+  registration_block: number | null
+  registration_number: number | null
+  land_type: string | null
+  plot_type: string | null
+  coverage: string | null
+  building_density: string | null
+  planning_zone: string | null
+  parcel_number: string | null
+  share: string | null
   internal_notes: string | null
   seo_title: string | null
   seo_description: string | null
@@ -105,6 +123,24 @@ export type PropertyInsert = {
   featured?: boolean
   published?: boolean
   publish_to_bazaraki?: boolean
+  bazaraki_district_id?: number | null
+  postal_code?: string | null
+  bazaraki_must_haves?: number[] | null
+  bazaraki_online_viewing?: boolean
+  bazaraki_air_conditioning?: number | null
+  bazaraki_parking?: number | null
+  bazaraki_pets?: number | null
+  bazaraki_house_type?: number | null
+  bazaraki_commercial_type?: number | null
+  registration_block?: number | null
+  registration_number?: number | null
+  land_type?: string | null
+  plot_type?: string | null
+  coverage?: string | null
+  building_density?: string | null
+  planning_zone?: string | null
+  parcel_number?: string | null
+  share?: string | null
   internal_notes?: string | null
   seo_title?: string | null
   seo_description?: string | null
@@ -145,6 +181,24 @@ export interface SiteSettings {
   default_seo_title: string | null
   default_seo_description: string | null
   company_registration: string | null
+  bazaraki_feed_enabled: boolean
+  bazaraki_rubric_for_sale: number | null
+  bazaraki_rubric_for_rent: number | null
+  bazaraki_rubric_apartments_sale: number | null
+  bazaraki_rubric_apartments_rent: number | null
+  bazaraki_rubric_houses_sale: number | null
+  bazaraki_rubric_houses_rent: number | null
+  bazaraki_rubric_residential_buildings_sale: number | null
+  bazaraki_rubric_prefabricated_houses_sale: number | null
+  bazaraki_rubric_other_sale: number | null
+  bazaraki_rubric_other_rent: number | null
+  bazaraki_rubric_commercial_sale: number | null
+  bazaraki_rubric_commercial_rent: number | null
+  bazaraki_rubric_plots_sale: number | null
+  bazaraki_rubric_plots_rent: number | null
+  bazaraki_phone_hide: boolean
+  bazaraki_negotiable_price: boolean
+  bazaraki_exchange: boolean
   updated_at: string
   updated_by: string | null
 }
@@ -170,6 +224,9 @@ export interface BazarakiValidation {
   missingFields: string[]
   errors: string[]
   warnings: string[]
+  attrsSchema: string | null
+  rubricId: number | null
+  rubricCategory: string | null
 }
 
 /** Shape expected by existing public JSX PropertyCard / listing pages */
