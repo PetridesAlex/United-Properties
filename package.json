@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/generate-sitemap.js && vite build",
+    "build": "node scripts/generate-sitemap.js && vite build && node scripts/build-bazaraki-api.mjs",
+    "build:bazaraki-api": "node scripts/build-bazaraki-api.mjs",
     "extract:video-poster": "node scripts/extract-hero-video-poster.js",
     "generate:sitemap": "node scripts/generate-sitemap.js",
     "fetch:bazaraki-districts": "node scripts/fetch-bazaraki-districts.mjs",
@@ -39,6 +40,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "esbuild": "^0.27.7",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
