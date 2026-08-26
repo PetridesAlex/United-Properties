@@ -7,9 +7,13 @@ import {
   CheckCircle2,
   Home,
   Inbox,
+  KeyRound,
+  Layers3,
   Plus,
   Share2,
   Sparkles,
+  Star,
+  Tag,
 } from 'lucide-react'
 import {useAdminAuth} from '../../lib/auth/AdminAuthProvider'
 import {countPropertiesByTab, fetchAdminProperties} from '../../lib/properties/api'
@@ -46,6 +50,15 @@ function attentionReasons(property: Property) {
   if (!property.price) reasons.push('Missing price')
   return reasons
 }
+
+const INVENTORY_STATS = [
+  {label: 'Total', key: 'all', icon: Layers3, tone: 'total'},
+  {label: 'For Sale', key: 'for_sale', icon: Tag, tone: 'sale'},
+  {label: 'For Rent', key: 'for_rent', icon: KeyRound, tone: 'rent'},
+  {label: 'Sold', key: 'sold', icon: CheckCircle2, tone: 'sold'},
+  {label: 'Rented', key: 'rented', icon: Home, tone: 'rented'},
+  {label: 'Featured', key: 'featured', icon: Star, tone: 'featured'},
+] as const
 
 export default function AdminDashboardPage() {
   const {profile} = useAdminAuth()
@@ -194,20 +207,33 @@ export default function AdminDashboardPage() {
         ))}
       </section>
 
-      <section className="dash-admin__stats" aria-label="Inventory breakdown">
-        {[
-          ['Total', counts.all, '/admin/properties'],
-          ['For Sale', counts.for_sale, '/admin/properties'],
-          ['For Rent', counts.for_rent, '/admin/properties'],
-          ['Sold', counts.sold, '/admin/properties'],
-          ['Rented', counts.rented, '/admin/properties'],
-          ['Featured', counts.featured, '/admin/properties'],
-        ].map(([label, value, to]) => (
-          <Link key={String(label)} to={String(to)} className="dash-admin__stat">
-            <span>{label}</span>
-            <strong>{value ?? 0}</strong>
+      <section className="dash-admin__stats-wrap" aria-label="Inventory breakdown">
+        <div className="dash-admin__stats-head">
+          <div>
+            <p className="dash-admin__stats-eyebrow">Portfolio</p>
+            <h2 className="dash-admin__stats-title">Inventory breakdown</h2>
+          </div>
+          <Link to="/admin/properties" className="dash-admin__stats-link">
+            Open inventory <ArrowUpRight size={14} aria-hidden />
           </Link>
-        ))}
+        </div>
+        <div className="dash-admin__stats">
+          {INVENTORY_STATS.map((item) => (
+            <Link
+              key={item.key}
+              to="/admin/properties"
+              className={`dash-admin__stat dash-admin__stat--${item.tone}`}
+            >
+              <span className="dash-admin__stat-icon" aria-hidden>
+                <item.icon size={16} strokeWidth={1.85} />
+              </span>
+              <span className="dash-admin__stat-copy">
+                <span className="dash-admin__stat-label">{item.label}</span>
+                <strong>{counts[item.key] ?? 0}</strong>
+              </span>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <div className="dash-admin__grid">
@@ -265,19 +291,23 @@ export default function AdminDashboardPage() {
           )}
         </section>
 
-        <section className="dash-admin__panel">
+        <section
+          className={`dash-admin__panel dash-admin__panel--attention${attention.length ? ' has-items' : ''}`}
+        >
           <div className="dash-admin__panel-head">
             <div>
+              <p className="dash-admin__panel-eyebrow">Action required</p>
               <h2>Needs attention</h2>
               <p>Listings that are incomplete or unpublished.</p>
             </div>
             {attention.length === 0 ? (
               <span className="dash-admin__ok">
-                <CheckCircle2 size={14} aria-hidden /> Clear
+                <CheckCircle2 size={14} aria-hidden /> All clear
               </span>
             ) : (
               <span className="dash-admin__warn">
-                <AlertTriangle size={14} aria-hidden /> {attention.length}
+                <AlertTriangle size={14} aria-hidden /> {attention.length} item
+                {attention.length === 1 ? '' : 's'}
               </span>
             )}
           </div>
@@ -289,18 +319,46 @@ export default function AdminDashboardPage() {
             </div>
           ) : (
             <ul className="dash-admin__attention">
-              {attention.map((p) => (
-                <li key={p.id}>
-                  <Link to={`/admin/properties/${p.id}/edit`}>
-                    <strong>{p.title}</strong>
-                    <span className="dash-admin__chips">
-                      {attentionReasons(p).map((reason) => (
-                        <em key={reason}>{reason}</em>
-                      ))}
-                    </span>
-                  </Link>
-                </li>
-              ))}
+              {attention.map((p, index) => {
+                const image = thumb(p)
+                const reasons = attentionReasons(p)
+                return (
+                  <li key={p.id}>
+                    <Link to={`/admin/properties/${p.id}/edit`} className="dash-admin__attention-row">
+                      <span className="dash-admin__attention-rank" aria-hidden>
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span className="dash-admin__attention-media">
+                        {image ? <img src={image} alt="" /> : <span>UP</span>}
+                      </span>
+                      <span className="dash-admin__attention-copy">
+                        <em>{p.reference_number || 'Draft listing'}</em>
+                        <strong>{p.title}</strong>
+                        <span>
+                          {[p.area, p.city].filter(Boolean).join(', ') || 'Location TBC'}
+                        </span>
+                      </span>
+                      <span className="dash-admin__chips">
+                        {reasons.map((reason) => (
+                          <em
+                            key={reason}
+                            className={
+                              reason === 'Draft'
+                                ? 'is-draft'
+                                : reason.startsWith('Missing')
+                                  ? 'is-missing'
+                                  : ''
+                            }
+                          >
+                            {reason}
+                          </em>
+                        ))}
+                      </span>
+                      <ArrowUpRight className="dash-admin__attention-arrow" size={16} aria-hidden />
+                    </Link>
+                  </li>
+                )
+              })}
             </ul>
           )}
         </section>

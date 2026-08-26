@@ -1,3 +1,4 @@
+import {ArrowLeft, ExternalLink} from 'lucide-react'
 import {useEffect, useMemo, useState, type FormEvent} from 'react'
 import {Link, useNavigate, useParams} from 'react-router-dom'
 import toast from 'react-hot-toast'
@@ -34,9 +35,12 @@ import {
 } from '../../lib/integrations/bazaraki/landMappings'
 import {DEFAULT_BAZARAKI_RUBRICS} from '../../lib/integrations/bazaraki/rubricMappings'
 import BazarakiDistrictPicker from '../../components/admin/BazarakiDistrictPicker'
+import AdminToggle from '../../components/admin/AdminToggle'
+import AdminFormSection from '../../components/admin/AdminFormSection'
 import {supabase} from '../../lib/supabase/client'
 import type {Property, PropertyImage, PropertyStatus, SiteSettings} from '../../types/cms'
 import '../../components/admin/AdminShell.css'
+import './AdminPropertyEditPage.css'
 
 const PROPERTY_TYPES = [
   'Apartment',
@@ -299,6 +303,7 @@ export default function AdminPropertyEditPage() {
   const [images, setImages] = useState<PropertyImage[]>([])
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
+  const [showMoreActions, setShowMoreActions] = useState(false)
   const [confirmAction, setConfirmAction] = useState<string | null>(null)
   const [bazarakiSettings, setBazarakiSettings] = useState<SiteSettings>({
     id: 1,
@@ -479,42 +484,52 @@ export default function AdminPropertyEditPage() {
   const revertTo = property ? revertCompleted(property.status) : null
 
   return (
-    <div className="admin-page">
-      <header className="admin-page__header">
-        <div>
-          <h1>{isNew ? 'Add Property' : 'Edit Property'}</h1>
-          <p className="admin-page__lede">
-            {property?.reference_number
-              ? `Reference ${property.reference_number} · permanent`
-              : 'Reference number is assigned automatically on save.'}
-          </p>
-        </div>
-        <div className="admin-actions">
+    <div className="admin-page admin-page--editor prop-edit">
+      <header className="prop-edit__hero">
+        <div className="prop-edit__hero-bar">
+          <Link className="prop-edit__back" to="/admin/properties">
+            <ArrowLeft size={17} strokeWidth={2} aria-hidden />
+            <span>Properties</span>
+          </Link>
           {!isNew && property ? (
             <a
-              className="admin-btn admin-btn--ghost"
+              className="prop-edit__preview"
               href={`/properties/${property.slug}`}
               target="_blank"
               rel="noreferrer"
             >
-              Preview
+              <ExternalLink size={15} strokeWidth={2} aria-hidden />
+              <span>Preview</span>
             </a>
           ) : null}
-          <Link className="admin-btn admin-btn--ghost" to="/admin/properties">
-            Back
-          </Link>
+        </div>
+
+        <div className="prop-edit__head">
+          <p className="prop-edit__eyebrow">{isNew ? 'New listing' : 'Property editor'}</p>
+          <div className="prop-edit__title-row">
+            <h1>{isNew ? 'Add Property' : 'Edit Property'}</h1>
+            {property?.reference_number ? (
+              <span className="prop-edit__ref">{property.reference_number}</span>
+            ) : null}
+          </div>
+          {isNew ? (
+            <p className="prop-edit__hint">Reference is assigned automatically when you save.</p>
+          ) : null}
         </div>
       </header>
 
       <form
-        className="admin-form"
+        className="admin-form prop-edit__form"
         onSubmit={(e: FormEvent) => {
           e.preventDefault()
           void save()
         }}
       >
-        <section className="admin-card admin-form__section">
-          <h2>Basic information</h2>
+        <AdminFormSection
+          eyebrow="Listing"
+          title="Basic information"
+          lede="Core identity, pricing, and listing classification."
+        >
           <div className="admin-form__grid">
             <div className="admin-field admin-field--full">
               <label>Property title</label>
@@ -564,10 +579,9 @@ export default function AdminPropertyEditPage() {
               <input value={form.currency} onChange={(e) => setField('currency', e.target.value)} />
             </div>
           </div>
-        </section>
+        </AdminFormSection>
 
-        <section className="admin-card admin-form__section">
-          <h2>Location</h2>
+        <AdminFormSection eyebrow="Location" title="Location" lede="Where the property is situated on the website and in feeds.">
           <div className="admin-form__grid">
             <div className="admin-field">
               <label>District</label>
@@ -586,10 +600,13 @@ export default function AdminPropertyEditPage() {
               <input value={form.address} onChange={(e) => setField('address', e.target.value)} />
             </div>
           </div>
-        </section>
+        </AdminFormSection>
 
-        <section className="admin-card admin-form__section">
-          <h2>Property details</h2>
+        <AdminFormSection
+          eyebrow="Specifications"
+          title="Property details"
+          lede="Rooms, areas, condition, and land-specific attributes when applicable."
+        >
           <div className="admin-form__grid">
             {(
               [
@@ -737,10 +754,9 @@ export default function AdminPropertyEditPage() {
               </>
             ) : null}
           </div>
-        </section>
+        </AdminFormSection>
 
-        <section className="admin-card admin-form__section">
-          <h2>Description</h2>
+        <AdminFormSection eyebrow="Content" title="Description" lede="Short summary for cards and full listing copy.">
           <div className="admin-field">
             <label>Short description</label>
             <textarea
@@ -751,15 +767,14 @@ export default function AdminPropertyEditPage() {
           <div className="admin-field">
             <label>Full description</label>
             <textarea
+              className="admin-textarea--tall"
               value={form.description}
               onChange={(e) => setField('description', e.target.value)}
-              style={{minHeight: 180}}
             />
           </div>
-        </section>
+        </AdminFormSection>
 
-        <section className="admin-card admin-form__section">
-          <h2>Features / amenities</h2>
+        <AdminFormSection eyebrow="Amenities" title="Features" lede="Comma-separated highlights shown on the property page.">
           <div className="admin-field">
             <label>Comma-separated features</label>
             <textarea
@@ -768,16 +783,23 @@ export default function AdminPropertyEditPage() {
               placeholder="Pool, Sea view, Covered parking"
             />
           </div>
-        </section>
+        </AdminFormSection>
 
-        <section className="admin-card admin-form__section">
-          <h2>Images</h2>
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            multiple
-            onChange={(e) => void onUpload(e.target.files)}
-          />
+        <AdminFormSection eyebrow="Media" title="Images" lede="Upload gallery images. Set a main image and drag order with the arrow controls.">
+          <div className="admin-field admin-file-upload">
+            <label htmlFor="property-images">Upload images</label>
+            <p className="admin-file-upload__hint">
+              Tap to choose photos from your gallery or take new ones with your camera.
+            </p>
+            <input
+              id="property-images"
+              className="admin-file-input"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif,image/*"
+              multiple
+              onChange={(e) => void onUpload(e.target.files)}
+            />
+          </div>
           <div className="admin-images">
             {images.map((img, index) => (
               <div className="admin-image-tile" key={img.id}>
@@ -839,36 +861,37 @@ export default function AdminPropertyEditPage() {
               </div>
             ))}
           </div>
-        </section>
+        </AdminFormSection>
 
-        <section className="admin-card admin-form__section">
-          <h2>Publishing</h2>
-          <label>
-            <input
-              type="checkbox"
+        <AdminFormSection
+          className="admin-publish-section"
+          eyebrow="Distribution"
+          title="Publishing"
+          lede="Control website visibility and Bazaraki syndication."
+        >
+          <div className="admin-toggle-group">
+            <AdminToggle
+              label="Publish on Website"
+              description="List this property on unitedproperties.eu"
               checked={form.published}
-              onChange={(e) => setField('published', e.target.checked)}
-            />{' '}
-            Publish on Website
-          </label>
-          <label>
-            <input
-              type="checkbox"
+              onChange={(checked) => setField('published', checked)}
+            />
+            <AdminToggle
+              label="Featured Property"
+              description="Highlight on the homepage and featured modules"
               checked={form.featured}
-              onChange={(e) => setField('featured', e.target.checked)}
-            />{' '}
-            Featured Property
-          </label>
-          <label>
-            <input
-              type="checkbox"
+              onChange={(checked) => setField('featured', checked)}
+            />
+            <AdminToggle
+              label="Publish to Bazaraki"
+              description="Include in the XML feed when readiness checks pass"
               checked={form.publish_to_bazaraki}
-              onChange={(e) => setField('publish_to_bazaraki', e.target.checked)}
-            />{' '}
-            Publish to Bazaraki
-          </label>
+              onChange={(checked) => setField('publish_to_bazaraki', checked)}
+            />
+          </div>
+
           {form.publish_to_bazaraki ? (
-            <>
+            <div className="admin-publish-bazaraki">
               <BazarakiDistrictPicker
                 value={form.bazaraki_district_id}
                 onChange={(districtId) => setField('bazaraki_district_id', districtId)}
@@ -885,10 +908,13 @@ export default function AdminPropertyEditPage() {
                 />
               </div>
               {bazarakiSchema ? (
-                <p>
-                  Bazaraki schema: <strong>{bazaraki.attrsSchema ?? 'Unknown'}</strong>
-                  {bazaraki.rubricCategory ? ` · ${bazaraki.rubricCategory}` : null}
-                  {bazaraki.rubricId ? ` · rubric ${bazaraki.rubricId}` : null}
+                <p className="admin-bazaraki-schema">
+                  <span className="admin-bazaraki-schema__label">Schema</span>
+                  <strong>{bazaraki.attrsSchema ?? 'Unknown'}</strong>
+                  {bazaraki.rubricCategory ? <span>{bazaraki.rubricCategory}</span> : null}
+                  {bazaraki.rubricId ? (
+                    <span className="admin-bazaraki-schema__rubric">Rubric {bazaraki.rubricId}</span>
+                  ) : null}
                 </p>
               ) : (
                 <p className="admin-login__error">
@@ -989,14 +1015,11 @@ export default function AdminPropertyEditPage() {
               {bazarakiSchema &&
               bazarakiSchema !== 'prefabricatedHouses' &&
               bazarakiSchema !== 'other' ? (
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={form.bazaraki_online_viewing}
-                    onChange={(e) => setField('bazaraki_online_viewing', e.target.checked)}
-                  />{' '}
-                  Online viewing available
-                </label>
+                <AdminToggle
+                  label="Online viewing available"
+                  checked={form.bazaraki_online_viewing}
+                  onChange={(checked) => setField('bazaraki_online_viewing', checked)}
+                />
               ) : null}
               {bazarakiSchema &&
               bazarakiSchema !== 'prefabricatedHouses' &&
@@ -1004,50 +1027,57 @@ export default function AdminPropertyEditPage() {
               bazarakiSchema !== 'plotsOfLand' ? (
                 <div className="admin-field admin-field--full">
                   <label>Must-haves (Bazaraki)</label>
-                  <div className="admin-form__grid">
+                  <div className="admin-chip-grid">
                     {(bazarakiSchema === 'commercial' || bazarakiSchema === 'residentialBuildings'
                       ? MUST_HAVES_WITH_PARKING
                       : MUST_HAVES_WITHOUT_PARKING
                     ).map((id) => (
-                      <label key={id}>
-                        <input
-                          type="checkbox"
-                          checked={form.bazaraki_must_haves.includes(id)}
-                          onChange={(e) => {
-                            setForm((prev) => ({
-                              ...prev,
-                              bazaraki_must_haves: e.target.checked
-                                ? [...prev.bazaraki_must_haves, id]
-                                : prev.bazaraki_must_haves.filter((item) => item !== id),
-                            }))
-                          }}
-                        />{' '}
-                        {BAZARAKI_MUST_HAVE_LABELS[id]}
-                      </label>
+                      <AdminToggle
+                        key={id}
+                        variant="chip"
+                        label={BAZARAKI_MUST_HAVE_LABELS[id]}
+                        checked={form.bazaraki_must_haves.includes(id)}
+                        onChange={(checked) => {
+                          setForm((prev) => ({
+                            ...prev,
+                            bazaraki_must_haves: checked
+                              ? [...prev.bazaraki_must_haves, id]
+                              : prev.bazaraki_must_haves.filter((item) => item !== id),
+                          }))
+                        }}
+                      />
                     ))}
                   </div>
                 </div>
               ) : null}
-            </>
+            </div>
           ) : null}
-          <div>
-            <strong>Bazaraki status: {bazaraki.ready ? 'Ready' : 'Not ready'}</strong>
+          <div
+            className={`admin-bazaraki-status${bazaraki.ready ? ' admin-bazaraki-status--ready' : ' admin-bazaraki-status--pending'}`}
+          >
+            <div className="admin-bazaraki-status__head">
+              <span className="admin-bazaraki-status__dot" aria-hidden />
+              <strong>{bazaraki.ready ? 'Ready for Bazaraki' : 'Not ready for Bazaraki'}</strong>
+            </div>
             {bazaraki.missingFields.length ? (
-              <p>Missing: {bazaraki.missingFields.join(', ')}</p>
+              <p className="admin-bazaraki-status__missing">
+                Missing: {bazaraki.missingFields.join(', ')}
+              </p>
             ) : null}
             {bazaraki.errors.map((msg: string) => (
-              <p key={msg} className="admin-login__error">
+              <p key={msg} className="admin-bazaraki-status__error">
                 {msg}
               </p>
             ))}
             {bazaraki.warnings.map((msg: string) => (
-              <p key={msg}>{msg}</p>
+              <p key={msg} className="admin-bazaraki-status__warning">
+                {msg}
+              </p>
             ))}
           </div>
-        </section>
+        </AdminFormSection>
 
-        <section className="admin-card admin-form__section">
-          <h2>SEO</h2>
+        <AdminFormSection eyebrow="Search" title="SEO" lede="Optional overrides for search engines and social previews.">
           <div className="admin-field">
             <label>SEO title</label>
             <input value={form.seo_title} onChange={(e) => setField('seo_title', e.target.value)} />
@@ -1059,10 +1089,9 @@ export default function AdminPropertyEditPage() {
               onChange={(e) => setField('seo_description', e.target.value)}
             />
           </div>
-        </section>
+        </AdminFormSection>
 
-        <section className="admin-card admin-form__section">
-          <h2>Internal</h2>
+        <AdminFormSection eyebrow="Staff only" title="Internal" lede="Private notes for your team. Never shown publicly.">
           <div className="admin-field">
             <label>Internal notes (never shown publicly)</label>
             <textarea
@@ -1070,94 +1099,126 @@ export default function AdminPropertyEditPage() {
               onChange={(e) => setField('internal_notes', e.target.value)}
             />
           </div>
-        </section>
+        </AdminFormSection>
 
-        <div className="admin-actions">
-          <button
-            type="button"
-            className="admin-btn admin-btn--ghost"
-            disabled={saving}
-            onClick={() => void save({draft: true})}
-          >
-            Save Draft
-          </button>
-          <button type="submit" className="admin-btn admin-btn--gold" disabled={saving}>
-            Save Changes
-          </button>
-          <button
-            type="button"
-            className="admin-btn admin-btn--gold"
-            disabled={saving}
-            onClick={() => void save({publish: true})}
-          >
-            Publish
-          </button>
-          {!isNew && form.published ? (
-            <button
-              type="button"
-              className="admin-btn admin-btn--ghost"
-              disabled={saving}
-              onClick={() => void save({draft: true})}
-            >
-              Unpublish
-            </button>
-          ) : null}
-          {!isNew && property ? (
-            <>
+        <div className="admin-form__toolbar prop-edit__save-toolbar">
+          <div className="admin-form__toolbar-inner prop-edit__save-toolbar-inner">
+            <div className="prop-edit__save-primary">
               <button
                 type="button"
                 className="admin-btn admin-btn--ghost"
                 disabled={saving}
-                onClick={() =>
-                  void duplicateProperty(property.id, user?.id).then((copy) => {
-                    toast.success('Property duplicated')
-                    if (copy) navigate(`/admin/properties/${copy.id}/edit`)
-                  })
-                }
+                onClick={() => void save({draft: true})}
               >
-                Duplicate
+                Save Draft
               </button>
-              {completeTo === 'sold' ? (
-                <button
-                  type="button"
-                  className="admin-btn admin-btn--gold"
-                  onClick={() => setConfirmAction('sold')}
-                >
-                  Mark as Sold
-                </button>
-              ) : null}
-              {completeTo === 'rented' ? (
-                <button
-                  type="button"
-                  className="admin-btn admin-btn--gold"
-                  onClick={() => setConfirmAction('rented')}
-                >
-                  Mark as Rented
-                </button>
-              ) : null}
-              {revertTo ? (
-                <button
-                  type="button"
-                  className="admin-btn admin-btn--ghost"
-                  onClick={() => void onLifecycle(revertTo)}
-                >
-                  Revert to {revertTo === 'for_sale' ? 'For Sale' : 'For Rent'}
-                </button>
-              ) : null}
+              <button type="submit" className="admin-btn admin-btn--gold" disabled={saving}>
+                Save Changes
+              </button>
               <button
                 type="button"
-                className="admin-btn admin-btn--danger"
-                onClick={() => setConfirmAction('archive')}
+                className="admin-btn admin-btn--gold"
+                disabled={saving}
+                onClick={() => void save({publish: true})}
               >
-                Archive / Delete
+                Publish
               </button>
-            </>
-          ) : null}
+            </div>
+
+            {!isNew && property ? (
+              <>
+                <button
+                  type="button"
+                  className="prop-edit__save-more-toggle"
+                  aria-expanded={showMoreActions}
+                  onClick={() => setShowMoreActions((open) => !open)}
+                >
+                  {showMoreActions ? 'Hide actions' : 'More actions'}
+                </button>
+                <div
+                  className={`prop-edit__save-secondary admin-actions${
+                    showMoreActions ? ' is-open' : ''
+                  }`}
+                >
+                  {form.published ? (
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn--ghost"
+                      disabled={saving}
+                      onClick={() => void save({draft: true})}
+                    >
+                      Unpublish
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn--ghost"
+                    disabled={saving}
+                    onClick={() =>
+                      void duplicateProperty(property.id, user?.id).then((copy) => {
+                        toast.success('Property duplicated')
+                        if (copy) navigate(`/admin/properties/${copy.id}/edit`)
+                      })
+                    }
+                  >
+                    Duplicate
+                  </button>
+                  {completeTo === 'sold' ? (
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn--gold"
+                      onClick={() => setConfirmAction('sold')}
+                    >
+                      Mark as Sold
+                    </button>
+                  ) : null}
+                  {completeTo === 'rented' ? (
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn--gold"
+                      onClick={() => setConfirmAction('rented')}
+                    >
+                      Mark as Rented
+                    </button>
+                  ) : null}
+                  {revertTo ? (
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn--ghost"
+                      onClick={() => void onLifecycle(revertTo)}
+                    >
+                      Revert to {revertTo === 'for_sale' ? 'For Sale' : 'For Rent'}
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn--danger"
+                    onClick={() => setConfirmAction('archive')}
+                  >
+                    Archive / Delete
+                  </button>
+                </div>
+              </>
+            ) : null}
+          </div>
         </div>
       </form>
 
       {confirmAction ? (
-        <div className="admin-card" role="dialog" aria-modal="true">
+        <div
+          className="prop-edit__overlay"
+          role="presentation"
+          onClick={() => setConfirmAction(null)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setConfirmAction(null)
+          }}
+        >
+          <div
+            className="admin-card prop-edit__dialog"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+          >
           {confirmAction === 'sold' ? (
             <>
               <h2>Mark this property as Sold?</h2>
@@ -1238,6 +1299,7 @@ export default function AdminPropertyEditPage() {
               </div>
             </>
           ) : null}
+          </div>
         </div>
       ) : null}
     </div>

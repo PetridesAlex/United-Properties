@@ -1,16 +1,20 @@
-import {useEffect, useState} from 'react'
-import {Link, NavLink, Outlet, useNavigate} from 'react-router-dom'
+import {useEffect, useMemo, useState} from 'react'
+import {Link, NavLink, Outlet, useLocation, useNavigate} from 'react-router-dom'
 import {
   Building2,
+  Clock3,
   FileText,
   LayoutDashboard,
   LogOut,
   Image as ImageIcon,
   Inbox,
+  Menu,
   Plus,
   Settings,
   Share2,
   ExternalLink,
+  Sparkles,
+  X,
 } from 'lucide-react'
 import {useAdminAuth} from '../../lib/auth/AdminAuthProvider'
 import {supabase} from '../../lib/supabase/client'
@@ -29,6 +33,15 @@ type NavGroup = {
   label: string
   items: NavItem[]
 }
+
+const MOBILE_NAV_LEFT = [
+  {to: '/admin', label: 'Home', icon: LayoutDashboard, end: true},
+  {to: '/admin/properties', label: 'Listings', icon: Building2},
+] as const
+
+const MOBILE_NAV_RIGHT = [
+  {to: '/admin/enquiries', label: 'Inbox', icon: Inbox, badgeKey: 'enquiries' as const},
+] as const
 
 const NAV_GROUPS: NavGroup[] = [
   {
@@ -70,10 +83,77 @@ function roleLabel(role?: string | null) {
     .join(' ')
 }
 
+function firstNameFromProfile(fullName?: string | null, email?: string | null) {
+  const fromName = fullName?.trim().split(/\s+/)[0]
+  if (fromName) return fromName
+  const fromEmail = email?.split('@')[0]?.replace(/[._-]+/g, ' ').trim()
+  if (fromEmail) return fromEmail.split(/\s+/)[0] ?? 'there'
+  return 'there'
+}
+
+function greetingForHour(hour: number) {
+  if (hour < 12) return 'Good morning'
+  if (hour < 17) return 'Good afternoon'
+  return 'Good evening'
+}
+
+function useCyprusClock() {
+  const [now, setNow] = useState(() => new Date())
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(new Date()), 1000)
+    return () => window.clearInterval(id)
+  }, [])
+
+  return useMemo(() => {
+    const hour = Number(
+      new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Nicosia',
+        hour: 'numeric',
+        hour12: false,
+      }).format(now),
+    )
+
+    return {
+      greeting: greetingForHour(hour),
+      time: new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Nicosia',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }).format(now),
+      date: new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Nicosia',
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      }).format(now),
+      timezone: 'Cyprus · EET/EEST',
+    }
+  }, [now])
+}
+
 export default function AdminShell() {
   const {profile, signOut} = useAdminAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [newEnquiries, setNewEnquiries] = useState(0)
+  const [navOpen, setNavOpen] = useState(false)
+  const clock = useCyprusClock()
+
+  useEffect(() => {
+    setNavOpen(false)
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (!navOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [navOpen])
 
   useEffect(() => {
     let cancelled = false
@@ -99,6 +179,7 @@ export default function AdminShell() {
   }
 
   const displayName = profile?.full_name?.trim() || profile?.email || 'Staff'
+  const firstName = firstNameFromProfile(profile?.full_name, profile?.email)
   const initials = displayName
     .split(/\s+|@/)
     .filter(Boolean)
@@ -107,20 +188,121 @@ export default function AdminShell() {
     .join('')
 
   return (
-    <div className="admin-shell">
+    <div className={`admin-shell${navOpen ? ' is-nav-open' : ''}`}>
+      <header className="admin-shell__mobile-top">
+        <button
+          type="button"
+          className="admin-shell__icon-btn"
+          aria-label={navOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={navOpen}
+          onClick={() => setNavOpen((open) => !open)}
+        >
+          {navOpen ? <X size={22} strokeWidth={1.85} /> : <Menu size={22} strokeWidth={1.85} />}
+        </button>
+
+        <Link to="/admin" className="admin-shell__mobile-brand" onClick={() => setNavOpen(false)}>
+          <img
+            src="/images/logo/United_Properties_v2.1.svg"
+            alt="United Properties"
+            className="admin-shell__mobile-logo"
+          />
+        </Link>
+
+        <div className="admin-shell__mobile-greeting">
+          <span className="admin-shell__mobile-avatar" aria-hidden>
+            {initials || 'UP'}
+          </span>
+          <div className="admin-shell__mobile-greeting-copy">
+            <span className="admin-shell__mobile-greeting-label">
+              <span className="admin-shell__mobile-live-dot" aria-hidden />
+              {clock.greeting}
+            </span>
+            <strong>{firstName}</strong>
+          </div>
+        </div>
+
+        <Link
+          to="/admin/properties/new"
+          className="admin-shell__mobile-add"
+          aria-label="Add property"
+          onClick={() => setNavOpen(false)}
+        >
+          <Plus size={20} strokeWidth={2.1} />
+        </Link>
+      </header>
+
+      <button
+        type="button"
+        className="admin-shell__backdrop"
+        aria-label="Close menu"
+        tabIndex={navOpen ? 0 : -1}
+        onClick={() => setNavOpen(false)}
+      />
+
       <aside className="admin-shell__sidebar">
+        <div className="admin-shell__drawer-head">
+          <p className="admin-shell__drawer-title">Menu</p>
+          <button
+            type="button"
+            className="admin-shell__icon-btn admin-shell__drawer-close"
+            aria-label="Close menu"
+            onClick={() => setNavOpen(false)}
+          >
+            <X size={20} strokeWidth={1.85} />
+          </button>
+        </div>
+
         <div className="admin-shell__brand">
-          <Link to="/admin" className="admin-shell__brand-link">
+          <Link to="/admin" className="admin-shell__brand-link" onClick={() => setNavOpen(false)}>
             <img
               src="/images/logo/United_Properties_v2.1.svg"
               alt="United Properties"
               className="admin-shell__logo"
             />
           </Link>
-          <div className="admin-shell__brand-copy">
-            <span className="admin-shell__eyebrow">United Properties</span>
-            <strong>Command Centre</strong>
-            <p>Private staff CMS</p>
+        </div>
+
+        <div className="admin-shell__welcome">
+          <div className="admin-shell__welcome-head">
+            <span className="admin-shell__welcome-avatar" aria-hidden>
+              {initials || 'UP'}
+            </span>
+            <div className="admin-shell__welcome-copy">
+              <p className="admin-shell__welcome-greeting">
+                <Sparkles size={13} aria-hidden />
+                {clock.greeting},
+              </p>
+              <p className="admin-shell__welcome-name">{firstName}</p>
+              <p className="admin-shell__welcome-sub">Welcome back to your CRM workspace.</p>
+            </div>
+          </div>
+
+          <div className="admin-shell__clock" aria-live="polite">
+            <div className="admin-shell__clock-icon" aria-hidden>
+              <Clock3 size={15} strokeWidth={1.85} />
+            </div>
+            <div className="admin-shell__clock-copy">
+              <time className="admin-shell__clock-time">{clock.time}</time>
+              <span className="admin-shell__clock-date">{clock.date}</span>
+              <span className="admin-shell__clock-zone">{clock.timezone}</span>
+            </div>
+          </div>
+
+          <div className="admin-shell__insights">
+            <span className="admin-shell__status-pill">
+              <span className="admin-shell__status-dot" aria-hidden />
+              CRM online
+            </span>
+            {newEnquiries > 0 ? (
+              <Link className="admin-shell__insight-chip" to="/admin/enquiries">
+                <Inbox size={13} aria-hidden />
+                {newEnquiries} new {newEnquiries === 1 ? 'enquiry' : 'enquiries'}
+              </Link>
+            ) : (
+              <span className="admin-shell__insight-chip admin-shell__insight-chip--muted">
+                Inbox clear
+              </span>
+            )}
           </div>
         </div>
 
@@ -134,6 +316,7 @@ export default function AdminShell() {
                     key={item.to}
                     to={item.to}
                     end={item.end}
+                    onClick={() => setNavOpen(false)}
                     className={({isActive}) =>
                       [
                         'admin-shell__link',
@@ -182,9 +365,73 @@ export default function AdminShell() {
           </button>
         </div>
       </aside>
+
       <div className="admin-shell__main">
         <Outlet />
       </div>
+
+      <nav className="admin-shell__bottom-nav" aria-label="Quick navigation">
+        <div className="admin-shell__bottom-track">
+          {MOBILE_NAV_LEFT.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({isActive}) =>
+                ['admin-shell__bottom-link', isActive ? 'is-active' : ''].filter(Boolean).join(' ')
+              }
+            >
+              <span className="admin-shell__bottom-icon" aria-hidden>
+                <item.icon size={20} strokeWidth={1.85} />
+              </span>
+              <span className="admin-shell__bottom-label">{item.label}</span>
+            </NavLink>
+          ))}
+
+          <NavLink
+            to="/admin/properties/new"
+            className={({isActive}) =>
+              ['admin-shell__bottom-fab', isActive ? 'is-active' : ''].filter(Boolean).join(' ')
+            }
+            aria-label="Add property"
+          >
+            <Plus size={24} strokeWidth={2.15} />
+          </NavLink>
+
+          {MOBILE_NAV_RIGHT.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({isActive}) =>
+                ['admin-shell__bottom-link', isActive ? 'is-active' : ''].filter(Boolean).join(' ')
+              }
+            >
+              <span className="admin-shell__bottom-icon" aria-hidden>
+                <item.icon size={20} strokeWidth={1.85} />
+              </span>
+              <span className="admin-shell__bottom-label">{item.label}</span>
+              {item.badgeKey === 'enquiries' && newEnquiries > 0 ? (
+                <span className="admin-shell__bottom-badge" aria-label={`${newEnquiries} new enquiries`}>
+                  {newEnquiries > 9 ? '9+' : newEnquiries}
+                </span>
+              ) : null}
+            </NavLink>
+          ))}
+
+          <button
+            type="button"
+            className={`admin-shell__bottom-link admin-shell__bottom-menu${navOpen ? ' is-active' : ''}`}
+            aria-label="Open full menu"
+            aria-expanded={navOpen}
+            onClick={() => setNavOpen(true)}
+          >
+            <span className="admin-shell__bottom-icon" aria-hidden>
+              <Menu size={20} strokeWidth={1.85} />
+            </span>
+            <span className="admin-shell__bottom-label">Menu</span>
+          </button>
+        </div>
+      </nav>
     </div>
   )
 }
