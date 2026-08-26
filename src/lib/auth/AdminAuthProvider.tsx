@@ -14,11 +14,12 @@ import {supabase} from '../supabase/client'
 
 type AdminAuthState = {
   loading: boolean
+  profileLoading: boolean
   session: Session | null
   user: User | null
   profile: Profile | null
   isAdmin: boolean
-  refreshProfile: () => Promise<void>
+  refreshProfile: () => Promise<Profile | null>
   signOut: () => Promise<void>
 }
 
@@ -26,12 +27,19 @@ const AdminAuthContext = createContext<AdminAuthState | null>(null)
 
 export function AdminAuthProvider({children}: {children: ReactNode}) {
   const [loading, setLoading] = useState(true)
+  const [profileLoading, setProfileLoading] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
 
-  const loadProfile = useCallback(async () => {
-    const next = await fetchCurrentProfile()
-    setProfile(next)
+  const loadProfile = useCallback(async (): Promise<Profile | null> => {
+    setProfileLoading(true)
+    try {
+      const next = await fetchCurrentProfile()
+      setProfile(next)
+      return next
+    } finally {
+      setProfileLoading(false)
+    }
   }, [])
 
   useEffect(() => {
@@ -63,8 +71,8 @@ export function AdminAuthProvider({children}: {children: ReactNode}) {
         void loadProfile()
       } else {
         setProfile(null)
+        setProfileLoading(false)
       }
-      setLoading(false)
     })
 
     return () => {
@@ -76,6 +84,7 @@ export function AdminAuthProvider({children}: {children: ReactNode}) {
   const value = useMemo<AdminAuthState>(
     () => ({
       loading,
+      profileLoading,
       session,
       user: session?.user ?? null,
       profile,
@@ -89,7 +98,7 @@ export function AdminAuthProvider({children}: {children: ReactNode}) {
         setSession(null)
       },
     }),
-    [loading, session, profile, loadProfile],
+    [loading, profileLoading, session, profile, loadProfile],
   )
 
   return <AdminAuthContext.Provider value={value}>{children}</AdminAuthContext.Provider>

@@ -2134,6 +2134,9 @@ body:has(.admin-shell) .quick-contact-fab,
 body:has(.admin-login) .navbar,
 body:has(.admin-login) .footer,
 body:has(.admin-login) .quick-contact-fab,
+body:has(.admin-entry) .navbar,
+body:has(.admin-entry) .footer,
+body:has(.admin-entry) .quick-contact-fab,
 body:has(.admin-denied) .navbar,
 body:has(.admin-denied) .footer,
 body:has(.admin-loading) .navbar,
@@ -2142,7 +2145,8 @@ body:has(.admin-loading) .footer {
 }
 
 body:has(.admin-shell) main,
-body:has(.admin-login) main {
+body:has(.admin-login) main,
+body:has(.admin-entry) main {
   min-height: 100vh;
   min-height: 100dvh;
   overflow-x: clip;

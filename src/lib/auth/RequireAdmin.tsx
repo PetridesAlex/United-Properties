@@ -1,16 +1,13 @@
 import {Navigate, Outlet, useLocation} from 'react-router-dom'
+import AdminEntryLoader from '../../components/admin/AdminEntryLoader'
 import {useAdminAuth} from './AdminAuthProvider'
 
 export function RequireAdmin() {
-  const {loading, session, isAdmin} = useAdminAuth()
+  const {loading, profileLoading, session, isAdmin} = useAdminAuth()
   const location = useLocation()
 
-  if (loading) {
-    return (
-      <div className="admin-loading" role="status">
-        Checking access…
-      </div>
-    )
+  if (loading || profileLoading) {
+    return <AdminEntryLoader subtitle="Verifying your access" />
   }
 
   if (!session) {
