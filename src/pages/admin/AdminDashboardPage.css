@@ -30,7 +30,10 @@
 .dash-admin__hero h1 {
   margin: 0;
   font-size: clamp(1.55rem, 2.4vw, 2.15rem);
-  letter-spacing: -0.03em;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+  color: var(--admin-cream);
 }
 
 .dash-admin__freshness {
@@ -142,18 +145,21 @@
 
 .dash-admin__stats-eyebrow,
 .dash-admin__panel-eyebrow {
-  margin: 0 0 0.2rem;
-  font-size: 0.64rem;
-  font-weight: 750;
-  letter-spacing: 0.14em;
+  margin: 0 0 0.28rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--admin-gold);
+  color: rgba(232, 210, 186, 0.92);
 }
 
 .dash-admin__stats-title {
   margin: 0;
-  font-size: 1.02rem;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.12rem, 2.4vw, 1.28rem);
+  font-weight: 800;
+  letter-spacing: -0.028em;
+  line-height: 1.15;
+  color: var(--admin-cream);
 }
 
 .dash-admin__stats-link {
@@ -330,14 +336,26 @@
 
 .dash-admin__panel-head h2 {
   margin: 0;
-  font-size: 1.05rem;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.15rem, 2.8vw, 1.32rem);
+  font-weight: 800;
+  letter-spacing: -0.028em;
+  line-height: 1.15;
+  color: var(--admin-cream);
+  text-wrap: balance;
 }
 
-.dash-admin__panel-head p {
-  margin: 0.25rem 0 0;
-  color: var(--admin-muted);
-  font-size: 0.82rem;
+.dash-admin__panel-head p:not(.dash-admin__panel-eyebrow) {
+  margin: 0.35rem 0 0;
+  color: rgba(244, 239, 230, 0.62);
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+}
+
+.dash-admin__panel--attention.has-items .dash-admin__panel-eyebrow {
+  color: #ffd79f;
+  letter-spacing: 0.2em;
 }
 
 .dash-admin__panel-head > a {
@@ -696,6 +714,45 @@
   }
 }
 
+@media (max-width: 960px) {
+  .dash-admin__hero {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem 1.05rem;
+    border-radius: 18px;
+  }
+
+  .dash-admin__hero h1 {
+    font-size: clamp(1.35rem, 5.5vw, 1.75rem);
+    line-height: 1.15;
+  }
+
+  .dash-admin__hero-actions {
+    width: 100%;
+  }
+
+  .dash-admin__hero-actions .admin-btn {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .dash-admin__spotlight,
+  .dash-admin__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dash-admin__stats-wrap,
+  .dash-admin__panel {
+    padding: 0.95rem;
+    border-radius: 18px;
+  }
+
+  .dash-admin__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 720px) {
   .dash-admin__spotlight,
   .dash-admin__stats,
@@ -725,6 +782,54 @@
     justify-items: start;
     grid-auto-flow: column;
     align-items: center;
+  }
+}
+
+@media (max-width: 430px) {
+  .dash-admin__hero {
+    padding: 0.95rem;
+  }
+
+  .dash-admin__hero-actions {
+    flex-direction: column;
+  }
+
+  .dash-admin__hero-actions .admin-btn {
+    width: 100%;
+    min-height: 2.85rem;
+  }
+
+  .dash-admin__spotlight-value {
+    font-size: 1.55rem;
+  }
+
+  .dash-admin__stat strong {
+    font-size: 1.2rem;
+  }
+
+  .dash-admin__panel-head h2,
+  .dash-admin__stats-title {
+    font-size: clamp(1.2rem, 4.8vw, 1.35rem);
+    font-weight: 800;
+  }
+
+  .dash-admin__panel-eyebrow,
+  .dash-admin__stats-eyebrow {
+    font-size: 0.64rem;
+    letter-spacing: 0.16em;
+  }
+
+  .dash-admin__panel-head p:not(.dash-admin__panel-eyebrow) {
+    font-size: 0.84rem;
+  }
+
+  .dash-admin__panel-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dash-admin__panel-head > a {
+    white-space: normal;
   }
 }
 

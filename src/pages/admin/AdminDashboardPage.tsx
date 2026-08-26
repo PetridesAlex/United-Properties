@@ -36,12 +36,6 @@ function thumb(property: Property) {
   return images.find((i) => i.is_featured)?.image_url || images[0]?.image_url || ''
 }
 
-function greetingForHour(hour: number) {
-  if (hour < 12) return 'Good morning'
-  if (hour < 18) return 'Good afternoon'
-  return 'Good evening'
-}
-
 function attentionReasons(property: Property) {
   const reasons: string[] = []
   if (!property.published) reasons.push('Draft')
@@ -128,8 +122,6 @@ export default function AdminDashboardPage() {
     return raw.split(/\s+/)[0]
   }, [profile])
 
-  const greeting = greetingForHour(new Date().getHours())
-
   const spotlight = [
     {
       label: 'Active listings',
@@ -166,9 +158,7 @@ export default function AdminDashboardPage() {
       <header className="dash-admin__hero">
         <div>
           <p className="dash-admin__eyebrow">United Properties CMS</p>
-          <h1>
-            {greeting}, {firstName}
-          </h1>
+          <h1>Welcome, {firstName}</h1>
           <p className="admin-page__lede">
             Your inventory pulse — listings, enquiries, and publishing health in one place.
           </p>

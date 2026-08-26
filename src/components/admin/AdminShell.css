@@ -7,8 +7,8 @@
   --admin-line: rgba(244, 239, 230, 0.12);
   --admin-gold: #bf9875;
   --admin-cream: #f6f0e6;
-  --admin-mobile-top: 3.35rem;
-  --admin-mobile-bottom: 5.85rem;
+  --admin-mobile-top: 6.75rem;
+  --admin-mobile-bottom: 6.35rem;
   min-height: 100vh;
   min-height: 100dvh;
   display: grid;
@@ -64,16 +64,12 @@
 
 .admin-shell__welcome {
   display: grid;
-  gap: 0.75rem;
-  padding: 0.85rem;
-  border-radius: 18px;
-  border: 1px solid rgba(191, 152, 117, 0.2);
-  background:
-    linear-gradient(160deg, rgba(191, 152, 117, 0.12), rgba(191, 152, 117, 0.02) 42%),
-    rgba(255, 255, 255, 0.03);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
-    0 12px 28px rgba(0, 0, 0, 0.16);
+  gap: 0.85rem;
+  padding: 0.35rem 0.65rem 0.95rem;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .admin-shell__welcome-head {
@@ -89,8 +85,8 @@
   border-radius: 14px;
   display: grid;
   place-items: center;
-  background: linear-gradient(145deg, rgba(213, 181, 154, 0.42), rgba(191, 152, 117, 0.2));
-  border: 1px solid rgba(191, 152, 117, 0.42);
+  background: linear-gradient(145deg, rgba(213, 181, 154, 0.32), rgba(191, 152, 117, 0.14));
+  border: none;
   color: #f6f0e6;
   font-size: 0.78rem;
   font-weight: 800;
@@ -136,10 +132,10 @@
   grid-template-columns: auto 1fr;
   gap: 0.65rem;
   align-items: center;
-  padding: 0.65rem 0.7rem;
-  border-radius: 14px;
-  border: 1px solid rgba(244, 239, 230, 0.1);
-  background: rgba(8, 16, 28, 0.55);
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
 }
 
 .admin-shell__clock-icon {
@@ -148,9 +144,27 @@
   border-radius: 10px;
   display: grid;
   place-items: center;
-  background: rgba(191, 152, 117, 0.12);
-  border: 1px solid rgba(191, 152, 117, 0.22);
+  background: rgba(191, 152, 117, 0.1);
+  border: none;
   color: var(--admin-gold);
+}
+
+.admin-shell__welcome .admin-shell__status-pill,
+.admin-shell__welcome .admin-shell__insight-chip {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.admin-shell__welcome .admin-shell__insight-chip:hover {
+  background: transparent;
+  color: var(--admin-cream);
+}
+
+.admin-shell__welcome .admin-shell__insight-chip--muted {
+  background: transparent;
+  border: none;
 }
 
 .admin-shell__clock-copy {
@@ -503,26 +517,32 @@
 
 @media (max-width: 960px) {
   .admin-shell {
+    display: flex;
+    flex-direction: column;
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-    padding-top: calc(var(--admin-mobile-top) + env(safe-area-inset-top, 0px));
+    grid-template-rows: unset;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-top: 0;
     padding-bottom: calc(var(--admin-mobile-bottom) + env(safe-area-inset-bottom, 0px));
+    overflow-x: clip;
   }
 
   .admin-shell__mobile-top {
-    display: grid;
-    grid-template-columns: auto 1fr auto auto;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
     gap: 0.55rem;
-    position: fixed;
-    inset: 0 0 auto 0;
+    position: sticky;
+    top: 0;
+    inset: auto;
     z-index: 90;
-    min-height: var(--admin-mobile-top);
+    width: 100%;
+    min-height: unset;
     padding:
-      calc(0.45rem + env(safe-area-inset-top, 0px))
-      max(0.75rem, env(safe-area-inset-right, 0px))
-      0.45rem
-      max(0.75rem, env(safe-area-inset-left, 0px));
+      calc(0.5rem + env(safe-area-inset-top, 0px))
+      max(0.85rem, env(safe-area-inset-right, 0px))
+      0.65rem
+      max(0.85rem, env(safe-area-inset-left, 0px));
     overflow: hidden;
     isolation: isolate;
     border-bottom: 1px solid rgba(191, 152, 117, 0.2);
@@ -532,6 +552,14 @@
       0 10px 28px rgba(0, 0, 0, 0.32),
       inset 0 1px 0 rgba(255, 255, 255, 0.07);
     backdrop-filter: blur(20px) saturate(130%);
+  }
+
+  .admin-shell__mobile-topbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.55rem;
+    width: 100%;
   }
 
   .admin-shell__mobile-top::before {
@@ -612,16 +640,28 @@
   }
 
   .admin-shell__mobile-brand {
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    text-decoration: none;
+  }
+
+  .admin-shell__mobile-logo {
+    display: block;
+    height: clamp(30px, 8vw, 34px);
+    width: auto;
+    max-width: min(100%, 11.5rem);
   }
 
   .admin-shell__mobile-greeting {
     display: flex;
     align-items: center;
     gap: 0.55rem;
+    width: 100%;
     min-width: 0;
-    padding: 0.15rem 0.35rem 0.15rem 0.15rem;
-    border-radius: 999px;
+    padding: 0.42rem 0.55rem;
+    border-radius: 14px;
     border: 1px solid rgba(191, 152, 117, 0.16);
     background: rgba(8, 16, 28, 0.45);
   }
@@ -643,8 +683,9 @@
 
   .admin-shell__mobile-greeting-copy {
     display: grid;
-    gap: 0.02rem;
+    gap: 0.04rem;
     min-width: 0;
+    flex: 1;
   }
 
   .admin-shell__mobile-greeting-label {
@@ -784,11 +825,14 @@
   }
 
   .admin-shell__main {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
     padding:
       0.85rem max(0.85rem, env(safe-area-inset-right, 0px))
-      1.25rem
+      1.35rem
       max(0.85rem, env(safe-area-inset-left, 0px));
-    min-height: calc(100dvh - var(--admin-mobile-top) - var(--admin-mobile-bottom));
+    min-height: 0;
   }
 
   .admin-shell__bottom-nav {
@@ -1264,29 +1308,45 @@
   }
 }
 
-@media (max-width: 420px) {
-  .admin-shell__mobile-greeting {
-    padding: 0.1rem 0.25rem 0.1rem 0.1rem;
-    gap: 0.45rem;
-  }
-
-  .admin-shell__mobile-greeting-copy {
-    display: none;
-  }
-
+@media (max-width: 430px) {
   .admin-shell__mobile-top {
-    grid-template-columns: auto 1fr auto;
+    gap: 0.48rem;
+    padding-bottom: 0.58rem;
   }
 
-  .admin-shell__mobile-brand {
-    display: inline-flex;
-    align-items: center;
+  .admin-shell__icon-btn,
+  .admin-shell__mobile-add {
+    width: 2.85rem;
+    height: 2.85rem;
+    min-width: 2.85rem;
+    min-height: 2.85rem;
   }
 
-  .admin-shell__mobile-logo {
-    height: 34px;
-    width: auto;
-    display: block;
+  .admin-shell__mobile-greeting {
+    padding: 0.38rem 0.5rem;
+  }
+
+  .admin-shell__mobile-greeting-label {
+    font-size: 0.56rem;
+    letter-spacing: 0.08em;
+  }
+
+  .admin-shell__mobile-greeting strong {
+    font-size: 0.84rem;
+  }
+
+  .admin-shell__bottom-link {
+    min-height: 3.15rem;
+  }
+
+  .admin-shell__bottom-label {
+    font-size: 0.58rem;
+  }
+
+  .admin-shell__bottom-fab {
+    width: 3.25rem;
+    height: 3.25rem;
+    margin-top: -1.2rem;
   }
 
   .admin-chip-grid {
@@ -1295,6 +1355,12 @@
 
   .admin-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .admin-shell__mobile-greeting {
+    gap: 0.48rem;
   }
 }
 
@@ -2078,6 +2144,8 @@ body:has(.admin-loading) .footer {
 body:has(.admin-shell) main,
 body:has(.admin-login) main {
   min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
 }
 
 .admin-district-picker {

@@ -190,25 +190,36 @@ export default function AdminShell() {
   return (
     <div className={`admin-shell${navOpen ? ' is-nav-open' : ''}`}>
       <header className="admin-shell__mobile-top">
-        <button
-          type="button"
-          className="admin-shell__icon-btn"
-          aria-label={navOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={navOpen}
-          onClick={() => setNavOpen((open) => !open)}
-        >
-          {navOpen ? <X size={22} strokeWidth={1.85} /> : <Menu size={22} strokeWidth={1.85} />}
-        </button>
+        <div className="admin-shell__mobile-topbar">
+          <button
+            type="button"
+            className="admin-shell__icon-btn"
+            aria-label={navOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={navOpen}
+            onClick={() => setNavOpen((open) => !open)}
+          >
+            {navOpen ? <X size={22} strokeWidth={1.85} /> : <Menu size={22} strokeWidth={1.85} />}
+          </button>
 
-        <Link to="/admin" className="admin-shell__mobile-brand" onClick={() => setNavOpen(false)}>
-          <img
-            src="/images/logo/United_Properties_v2.1.svg"
-            alt="United Properties"
-            className="admin-shell__mobile-logo"
-          />
-        </Link>
+          <Link to="/admin" className="admin-shell__mobile-brand" onClick={() => setNavOpen(false)}>
+            <img
+              src="/images/logo/United_Properties_v2.1.svg"
+              alt="United Properties"
+              className="admin-shell__mobile-logo"
+            />
+          </Link>
 
-        <div className="admin-shell__mobile-greeting">
+          <Link
+            to="/admin/properties/new"
+            className="admin-shell__mobile-add"
+            aria-label="Add property"
+            onClick={() => setNavOpen(false)}
+          >
+            <Plus size={20} strokeWidth={2.1} />
+          </Link>
+        </div>
+
+        <div className="admin-shell__mobile-greeting" aria-label="Signed in user">
           <span className="admin-shell__mobile-avatar" aria-hidden>
             {initials || 'UP'}
           </span>
@@ -220,15 +231,6 @@ export default function AdminShell() {
             <strong>{firstName}</strong>
           </div>
         </div>
-
-        <Link
-          to="/admin/properties/new"
-          className="admin-shell__mobile-add"
-          aria-label="Add property"
-          onClick={() => setNavOpen(false)}
-        >
-          <Plus size={20} strokeWidth={2.1} />
-        </Link>
       </header>
 
       <button
