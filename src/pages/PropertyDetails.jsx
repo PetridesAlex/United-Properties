@@ -12,8 +12,12 @@ import {
   ChevronRight,
   LayoutTemplate,
   Map,
+  Mail,
+  Phone,
+  ArrowUpRight,
   Sparkles,
   FileDown,
+  UserRound,
 } from 'lucide-react'
 import { WhatsAppBrandIcon } from '../components/Navbar/SocialBrandIcons'
 import Gallery from '../components/Gallery/Gallery'
@@ -130,15 +134,16 @@ function PropertyDetails() {
         }`.trim()}
       >
         <div className="container property-details__hero-inner">
-          <p className="property-details__hero-eyebrow">
-            <span>{property.status}</span>
+          <div className="property-details__hero-meta" aria-label="Listing details">
+            <span className="property-details__hero-badge property-details__hero-badge--status">
+              {property.status}
+            </span>
             {property.type ? (
-              <>
-                <span className="property-details__hero-eyebrow-sep" aria-hidden="true" />
-                <span>{property.type}</span>
-              </>
+              <span className="property-details__hero-badge property-details__hero-badge--type">
+                {property.type}
+              </span>
             ) : null}
-          </p>
+          </div>
           <h1 className="property-details__hero-title">{property.title}</h1>
           <p className="property-details__hero-location">
             <MapPin size={16} aria-hidden /> {property.location}
@@ -324,12 +329,52 @@ function PropertyDetails() {
             <aside className="property-details__sidebar">
               {agent && (
                 <article className="card-luxury property-details__agent">
-                  <img src={agent.image} alt={agent.name} />
-                  <h4>{agent.name}</h4>
-                  <p>{agent.role}</p>
-                  <Link to="/agents" className="btn btn-outline-dark">
-                    View Agent Profile
-                  </Link>
+                  <div className="property-details__agent-head">
+                    <span className="property-details__agent-eyebrow">
+                      <UserRound size={14} aria-hidden />
+                      Your property consultant
+                    </span>
+                  </div>
+
+                  <div className="property-details__agent-media">
+                    <img src={agent.image} alt={agent.name} loading="lazy" />
+                  </div>
+
+                  <div className="property-details__agent-body">
+                    <h4 className="property-details__agent-name">{agent.name}</h4>
+                    <p className="property-details__agent-role">{agent.role}</p>
+                    {agent.specialization ? (
+                      <p className="property-details__agent-spec">{agent.specialization}</p>
+                    ) : null}
+
+                    <div className="property-details__agent-contacts">
+                      {agent.phone ? (
+                        <a
+                          className="property-details__agent-contact"
+                          href={`tel:${agent.phone.replace(/\s/g, '')}`}
+                        >
+                          <Phone size={16} aria-hidden />
+                          <span>{agent.phone}</span>
+                        </a>
+                      ) : null}
+                      {agent.email ? (
+                        <a
+                          className="property-details__agent-contact"
+                          href={`mailto:${agent.email}?subject=${encodeURIComponent(
+                            `Enquiry: ${property.title}`,
+                          )}`}
+                        >
+                          <Mail size={16} aria-hidden />
+                          <span>{agent.email}</span>
+                        </a>
+                      ) : null}
+                    </div>
+
+                    <Link to="/agents" className="property-details__agent-cta">
+                      View agent profile
+                      <ArrowUpRight size={17} aria-hidden />
+                    </Link>
+                  </div>
                 </article>
               )}
               <InquiryForm
