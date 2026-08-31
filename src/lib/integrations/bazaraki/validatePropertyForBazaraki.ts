@@ -175,11 +175,13 @@ function validateSchemaFields(
       if (area == null) missingFields.push('Area (sqm)')
       if (energy == null) missingFields.push('Energy efficiency')
       if (property.bedrooms == null) missingFields.push('Bedrooms')
-      if (mapConditionToBazaraki(property.condition) == null) {
+      const isRent =
+        property.status === 'for_rent' || property.status === 'rented'
+      if (!isRent && mapConditionToBazaraki(property.condition) == null) {
         missingFields.push('Condition')
       }
       if (mapApartmentType(property.property_type) == null) {
-        missingFields.push('Apartment type mapping')
+        missingFields.push('Apartment type')
       }
       break
     }

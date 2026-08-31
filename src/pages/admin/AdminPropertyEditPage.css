@@ -92,66 +92,240 @@
 .prop-edit__category-board {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 0.9rem;
   min-height: 16rem;
 }
 
 .prop-edit__category-col {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  padding: 0.55rem;
-  border-radius: 12px;
-  border: 1px solid rgba(244, 239, 230, 0.1);
-  background: rgba(0, 0, 0, 0.16);
+  gap: 0.35rem;
+  padding: 0.7rem 0.65rem 0.75rem;
+  border-radius: 16px;
+  border: 1px solid rgba(191, 152, 117, 0.22);
+  background:
+    linear-gradient(165deg, rgba(191, 152, 117, 0.1) 0%, transparent 38%),
+    linear-gradient(180deg, rgba(24, 42, 67, 0.92), rgba(13, 26, 44, 0.96));
+  box-shadow:
+    inset 0 1px 0 rgba(246, 240, 230, 0.06),
+    0 12px 28px rgba(8, 16, 28, 0.28);
   max-height: 22rem;
   overflow: auto;
 }
 
 .prop-edit__category-heading {
-  margin: 0 0 0.35rem;
-  padding: 0.2rem 0.45rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  margin: 0 0 0.45rem;
+  padding: 0.15rem 0.55rem 0.45rem;
+  border-bottom: 1px solid rgba(191, 152, 117, 0.18);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(244, 239, 230, 0.5);
+  color: var(--admin-gold, #bf9875);
 }
 
 .prop-edit__category-option {
   display: block;
   width: 100%;
-  padding: 0.65rem 0.75rem;
-  border: 0;
-  border-radius: 8px;
+  padding: 0.72rem 0.85rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
   background: transparent;
-  color: var(--admin-cream);
+  color: rgba(246, 240, 230, 0.88);
   font: inherit;
   font-size: 0.9rem;
   font-weight: 550;
+  letter-spacing: 0.01em;
   text-align: left;
   cursor: pointer;
-  transition: background 0.14s ease;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
 }
 
 .prop-edit__category-option:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(191, 152, 117, 0.1);
+  border-color: rgba(191, 152, 117, 0.2);
+  color: var(--admin-cream, #f6f0e6);
 }
 
 .prop-edit__category-option.is-selected {
-  background: rgba(232, 145, 58, 0.92);
-  color: #1a1208;
+  background: linear-gradient(135deg, #d5b59a 0%, #bf9875 52%, #a8825f 100%);
+  border-color: rgba(246, 240, 230, 0.18);
+  color: #17263b;
   font-weight: 700;
+  box-shadow:
+    0 8px 18px rgba(191, 152, 117, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.prop-edit__category-option.is-selected:hover {
+  background: linear-gradient(135deg, #dfc0a8 0%, #c9a484 52%, #b08d68 100%);
+  border-color: rgba(246, 240, 230, 0.22);
+  color: #122033;
+  transform: none;
+}
+
+.prop-edit__category-option:focus-visible {
+  outline: 2px solid rgba(191, 152, 117, 0.65);
+  outline-offset: 2px;
 }
 
 .prop-edit__step-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.55rem;
+  gap: 0.65rem;
   justify-content: flex-end;
-  margin-top: 1rem;
-  padding-top: 0.85rem;
-  border-top: 1px solid rgba(244, 239, 230, 0.08);
+  margin-top: 1.15rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(191, 152, 117, 0.14);
+}
+
+.prop-edit__step-actions .admin-btn--gold {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 3.05rem;
+  padding: 0.85rem 1.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(246, 240, 230, 0.28);
+  background: linear-gradient(135deg, #f0dcc4 0%, #e2c29e 28%, #bf9875 62%, #a67f5a 100%);
+  color: #142033;
+  font-size: 0.95rem;
+  font-weight: 780;
+  letter-spacing: 0.02em;
+  box-shadow:
+    0 10px 24px rgba(191, 152, 117, 0.32),
+    0 2px 0 rgba(255, 255, 255, 0.35) inset,
+    0 -1px 0 rgba(80, 52, 28, 0.18) inset;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    filter 0.22s ease;
+}
+
+.prop-edit__step-actions .admin-btn--gold::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 32%,
+    rgba(255, 255, 255, 0.45) 48%,
+    transparent 64%
+  );
+  background-size: 220% 100%;
+  background-position: 120% 0;
+  mix-blend-mode: soft-light;
+  animation: prop-edit-cta-shine 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.prop-edit__step-actions .admin-btn--gold:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  box-shadow:
+    0 14px 30px rgba(191, 152, 117, 0.42),
+    0 2px 0 rgba(255, 255, 255, 0.42) inset,
+    0 -1px 0 rgba(80, 52, 28, 0.16) inset;
+}
+
+.prop-edit__step-actions .admin-btn--gold:active {
+  transform: translateY(0);
+  filter: brightness(0.98);
+  box-shadow:
+    0 6px 14px rgba(191, 152, 117, 0.28),
+    0 1px 0 rgba(255, 255, 255, 0.28) inset;
+}
+
+.prop-edit__step-actions .admin-btn--gold:focus-visible {
+  outline: 2px solid rgba(232, 210, 186, 0.85);
+  outline-offset: 3px;
+}
+
+@keyframes prop-edit-cta-shine {
+  0%,
+  50% {
+    background-position: 130% 0;
+    opacity: 0.35;
+  }
+
+  72% {
+    opacity: 1;
+  }
+
+  100% {
+    background-position: -40% 0;
+    opacity: 0.2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prop-edit__step-actions .admin-btn--gold::before {
+    animation: none;
+  }
+
+  .prop-edit__step-actions .admin-btn--gold,
+  .prop-edit__step-actions .admin-btn--gold:hover,
+  .prop-edit__step-actions .admin-btn--gold:active {
+    transition: none;
+    transform: none;
+  }
+}
+
+.prop-edit__input-suffix {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.prop-edit__input-suffix input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.prop-edit__input-suffix span {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.75rem;
+  border: 1px solid rgba(244, 239, 230, 0.14);
+  border-left: 0;
+  background: rgba(244, 239, 230, 0.06);
+  color: rgba(244, 239, 230, 0.62);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.prop-edit__price-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem 1.25rem;
+}
+
+.prop-edit__price-row .prop-edit__input-suffix {
+  flex: 1 1 12rem;
+  max-width: 18rem;
+}
+
+.prop-edit__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: rgba(244, 239, 230, 0.78);
+  cursor: pointer;
+}
+
+.prop-edit__check input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #c5a46d;
 }
 
 @media (max-width: 720px) {

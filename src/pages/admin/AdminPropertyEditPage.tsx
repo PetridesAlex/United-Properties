@@ -78,6 +78,50 @@ const ENERGY_OPTIONS = ['A', 'B+', 'B', 'C', 'D', 'E', 'F', 'G', 'N/A', 'In Prog
 const CONDITION_OPTIONS = ['Brand new', 'Resale', 'Under construction']
 const FURNISHING_OPTIONS = ['Fully Furnished', 'Semi-Furnished', 'Unfurnished', 'Appliances only']
 
+/** Bazaraki apartment form — Type attr values (XML `type`). */
+const APARTMENT_TYPE_OPTIONS = [
+  {value: '5', label: 'Apartment'},
+  {value: '8', label: 'Penthouse'},
+] as const
+
+const APARTMENT_BEDROOM_OPTIONS = [
+  {value: '0', label: 'Studio'},
+  {value: '1', label: '1'},
+  {value: '2', label: '2'},
+  {value: '3', label: '3'},
+  {value: '4', label: '4'},
+  {value: '5', label: '5'},
+  {value: '6', label: '6+'},
+] as const
+
+const APARTMENT_BATHROOM_OPTIONS = [
+  {value: '1', label: '1'},
+  {value: '2', label: '2'},
+  {value: '3', label: '3'},
+  {value: '4', label: '4'},
+  {value: '5', label: '5+'},
+] as const
+
+const APARTMENT_FLOOR_OPTIONS = [
+  {value: '0', label: 'Ground floor'},
+  {value: '1', label: '1'},
+  {value: '2', label: '2'},
+  {value: '3', label: '3'},
+  {value: '4', label: '4'},
+  {value: '5', label: '5'},
+  {value: '6', label: '6'},
+  {value: '7', label: '7'},
+  {value: '8', label: '8 and above'},
+] as const
+
+const CONSTRUCTION_YEAR_OPTIONS = [
+  {value: '1990', label: 'Before 1994'},
+  ...Array.from({length: 2026 - 1994 + 1}, (_, i) => {
+    const year = String(2026 - i)
+    return {value: year, label: year}
+  }),
+] as const
+
 type FormState = {
   title: string
   slug: string
@@ -112,12 +156,13 @@ type FormState = {
   bazaraki_district_id: number | null
   postal_code: string
   bazaraki_must_haves: number[]
-  bazaraki_online_viewing: boolean
+  bazaraki_online_viewing: boolean | null
   bazaraki_air_conditioning: string
   bazaraki_parking: string
   bazaraki_pets: string
   bazaraki_house_type: string
   bazaraki_commercial_type: string
+  bazaraki_negotiable_price: boolean
   registration_block: string
   registration_number: string
   land_type: string
@@ -166,12 +211,13 @@ const emptyForm: FormState = {
   bazaraki_district_id: null,
   postal_code: '',
   bazaraki_must_haves: [],
-  bazaraki_online_viewing: false,
+  bazaraki_online_viewing: null,
   bazaraki_air_conditioning: '',
   bazaraki_parking: '',
-  bazaraki_pets: '2',
+  bazaraki_pets: '',
   bazaraki_house_type: '',
   bazaraki_commercial_type: '',
+  bazaraki_negotiable_price: false,
   registration_block: '',
   registration_number: '',
   land_type: '',
@@ -296,15 +342,16 @@ function toForm(property: Property): FormState {
     bazaraki_district_id: property.bazaraki_district_id ?? null,
     postal_code: property.postal_code || '',
     bazaraki_must_haves: property.bazaraki_must_haves ?? [],
-    bazaraki_online_viewing: property.bazaraki_online_viewing ?? false,
+    bazaraki_online_viewing: property.bazaraki_online_viewing ?? null,
     bazaraki_air_conditioning:
       property.bazaraki_air_conditioning != null ? String(property.bazaraki_air_conditioning) : '',
     bazaraki_parking: property.bazaraki_parking != null ? String(property.bazaraki_parking) : '',
-    bazaraki_pets: property.bazaraki_pets != null ? String(property.bazaraki_pets) : '2',
+    bazaraki_pets: property.bazaraki_pets != null ? String(property.bazaraki_pets) : '',
     bazaraki_house_type:
       property.bazaraki_house_type != null ? String(property.bazaraki_house_type) : '',
     bazaraki_commercial_type:
       property.bazaraki_commercial_type != null ? String(property.bazaraki_commercial_type) : '',
+    bazaraki_negotiable_price: Boolean(property.bazaraki_negotiable_price),
     registration_block:
       property.registration_block != null ? String(property.registration_block) : '',
     registration_number:
@@ -333,6 +380,10 @@ function toPayload(form: FormState) {
   const price = num(form.price)
   if (price != null && price < 0) throw new Error('Price must be positive')
 
+  const isApartmentRent =
+    (form.status === 'for_rent' || form.status === 'rented') &&
+    resolveAttrsSchema(form.property_type, form.status) === 'apartment'
+
   return {
     title: form.title.trim(),
     slug: form.slug.trim() || slugify(form.title),
@@ -356,7 +407,11 @@ function toPayload(form: FormState) {
     year_built: num(form.year_built),
     parking_spaces: num(form.parking_spaces),
     furnishing: form.furnishing.trim() || null,
-    condition: form.condition.trim() || null,
+    // Rent apartments omit Condition on Bazaraki; default so the XML attrs still validate.
+    condition:
+      form.condition.trim() ||
+      (isApartmentRent ? 'Resale' : '') ||
+      null,
     energy_efficiency: form.energy_efficiency.trim() || null,
     short_description: form.short_description.trim() || null,
     description: form.description.trim() || null,
@@ -370,12 +425,13 @@ function toPayload(form: FormState) {
     bazaraki_district_id: form.bazaraki_district_id,
     postal_code: form.postal_code.trim() || null,
     bazaraki_must_haves: form.bazaraki_must_haves.length ? form.bazaraki_must_haves : null,
-    bazaraki_online_viewing: form.bazaraki_online_viewing,
+    bazaraki_online_viewing: form.bazaraki_online_viewing ?? false,
     bazaraki_air_conditioning: num(form.bazaraki_air_conditioning),
     bazaraki_parking: num(form.bazaraki_parking),
     bazaraki_pets: num(form.bazaraki_pets),
     bazaraki_house_type: num(form.bazaraki_house_type),
     bazaraki_commercial_type: num(form.bazaraki_commercial_type),
+    bazaraki_negotiable_price: form.bazaraki_negotiable_price,
     registration_block: num(form.registration_block),
     registration_number: num(form.registration_number),
     land_type: form.land_type.trim() || null,
@@ -1106,7 +1162,11 @@ export default function AdminPropertyEditPage() {
           <AdminFormSection
             eyebrow="Step 4"
             title="Property details"
-            lede="Fields follow the Bazaraki listing form order for this category."
+            lede={
+              bazarakiSchema === 'apartment'
+                ? 'Same fields and order as Bazaraki for Apartments, flats.'
+                : 'Fields follow the Bazaraki listing form order for this category.'
+            }
           >
             <div className="admin-form__grid">
               <div className="admin-field admin-field--full">
@@ -1129,69 +1189,120 @@ export default function AdminPropertyEditPage() {
                   </button>
                 </p>
               </div>
-              <div className="admin-field">
-                <label>Price (€)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={form.price}
-                  onChange={(e) => setField('price', e.target.value)}
-                />
-              </div>
 
-              {bazarakiSchema === 'houses' ? (
-                <div className="admin-field">
-                  <label>Type</label>
-                  <select
-                    value={form.bazaraki_house_type}
-                    onChange={(e) => setField('bazaraki_house_type', e.target.value)}
-                  >
-                    <option value="">Choose one…</option>
-                    {Object.entries(BAZARAKI_HOUSE_TYPE_LABELS).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ) : null}
-
-              {bazarakiSchema === 'commercial' ? (
-                <div className="admin-field">
-                  <label>Property type</label>
-                  <select
-                    value={form.bazaraki_commercial_type}
-                    onChange={(e) => setField('bazaraki_commercial_type', e.target.value)}
-                  >
-                    <option value="">Choose one…</option>
-                    {Object.entries(COMMERCIAL_TYPE_LABELS).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ) : null}
-
-              {bazarakiSchema === 'houses' || bazarakiSchema === 'apartment' ? (
+              {bazarakiSchema === 'apartment' ? (
                 <>
                   <div className="admin-field">
-                    <label>Bedrooms</label>
-                    <input
-                      type="number"
-                      value={form.bedrooms}
-                      onChange={(e) => setField('bedrooms', e.target.value)}
-                    />
+                    <label>Type</label>
+                    <select
+                      value={
+                        form.property_type === 'Penthouse'
+                          ? '8'
+                          : form.property_type === 'Apartments, flats' ||
+                              form.property_type === 'Apartment'
+                            ? '5'
+                            : ''
+                      }
+                      onChange={(e) => {
+                        const next = e.target.value
+                        if (next === '8') setField('property_type', 'Penthouse')
+                        else if (next === '5') setField('property_type', 'Apartments, flats')
+                      }}
+                    >
+                      <option value="">Choose one…</option>
+                      {APARTMENT_TYPE_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+
+                  {(form.status === 'for_sale' || form.status === 'sold') && (
+                    <div className="admin-field">
+                      <label>Condition</label>
+                      <select
+                        value={form.condition}
+                        onChange={(e) => setField('condition', e.target.value)}
+                      >
+                        <option value="">Choose one…</option>
+                        {CONDITION_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="admin-field">
+                    <label>Bedrooms</label>
+                    <select value={form.bedrooms} onChange={(e) => setField('bedrooms', e.target.value)}>
+                      <option value="">Choose one…</option>
+                      {APARTMENT_BEDROOM_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div className="admin-field">
                     <label>Bathrooms</label>
-                    <input
-                      type="number"
+                    <select
                       value={form.bathrooms}
                       onChange={(e) => setField('bathrooms', e.target.value)}
-                    />
+                    >
+                      <option value="">Choose one…</option>
+                      {APARTMENT_BATHROOM_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+
+                  <div className="admin-field">
+                    <label>Property area</label>
+                    <div className="prop-edit__input-suffix">
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={form.internal_area}
+                        onChange={(e) => setField('internal_area', e.target.value)}
+                      />
+                      <span>m²</span>
+                    </div>
+                  </div>
+
+                  <div className="admin-field">
+                    <label>Floor</label>
+                    <select value={form.floor} onChange={(e) => setField('floor', e.target.value)}>
+                      <option value="">Choose one…</option>
+                      {APARTMENT_FLOOR_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="admin-field">
+                    <label>Furnishing</label>
+                    <select
+                      value={form.furnishing}
+                      onChange={(e) => setField('furnishing', e.target.value)}
+                    >
+                      <option value="">Choose one…</option>
+                      {FURNISHING_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div className="admin-field">
                     <label>Parking</label>
                     <select
@@ -1204,17 +1315,7 @@ export default function AdminPropertyEditPage() {
                       <option value="3">No</option>
                     </select>
                   </div>
-                  <div className="admin-field">
-                    <label>Furnishing</label>
-                    <select value={form.furnishing} onChange={(e) => setField('furnishing', e.target.value)}>
-                      <option value="">Choose one…</option>
-                      {FURNISHING_OPTIONS.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+
                   <div className="admin-field">
                     <label>Air conditioning</label>
                     <select
@@ -1227,174 +1328,396 @@ export default function AdminPropertyEditPage() {
                       <option value="3">No</option>
                     </select>
                   </div>
+
+                  <div className="admin-field admin-field--full">
+                    <label>Included</label>
+                    <div className="admin-chip-grid">
+                      {MUST_HAVES_WITHOUT_PARKING.map((id) => (
+                        <AdminToggle
+                          key={id}
+                          variant="chip"
+                          label={BAZARAKI_MUST_HAVE_LABELS[id]}
+                          checked={form.bazaraki_must_haves.includes(id)}
+                          onChange={(checked) => {
+                            setForm((prev) => ({
+                              ...prev,
+                              bazaraki_must_haves: checked
+                                ? [...prev.bazaraki_must_haves, id]
+                                : prev.bazaraki_must_haves.filter((item) => item !== id),
+                            }))
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="admin-field">
+                    <label>Pets</label>
+                    <select
+                      value={form.bazaraki_pets}
+                      onChange={(e) => setField('bazaraki_pets', e.target.value)}
+                    >
+                      <option value="">Choose one…</option>
+                      <option value="1">Allowed</option>
+                      <option value="2">Not allowed</option>
+                    </select>
+                  </div>
+
+                  <div className="admin-field">
+                    <label>Online viewing</label>
+                    <select
+                      value={
+                        form.bazaraki_online_viewing === true
+                          ? 'yes'
+                          : form.bazaraki_online_viewing === false
+                            ? 'no'
+                            : ''
+                      }
+                      onChange={(e) => {
+                        const next = e.target.value
+                        if (next === 'yes') setField('bazaraki_online_viewing', true)
+                        else if (next === 'no') setField('bazaraki_online_viewing', false)
+                        else setField('bazaraki_online_viewing', null)
+                      }}
+                    >
+                      <option value="">Choose one…</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </div>
+
+                  <div className="admin-field">
+                    <label>Energy Efficiency</label>
+                    <select
+                      value={form.energy_efficiency}
+                      onChange={(e) => setField('energy_efficiency', e.target.value)}
+                    >
+                      <option value="">Choose one…</option>
+                      {ENERGY_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="admin-field">
+                    <label>Construction year</label>
+                    <select
+                      value={form.year_built}
+                      onChange={(e) => setField('year_built', e.target.value)}
+                    >
+                      <option value="">Choose one…</option>
+                      {CONSTRUCTION_YEAR_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="admin-field">
+                    <label>Postal code</label>
+                    <input
+                      value={form.postal_code}
+                      onChange={(e) => setField('postal_code', e.target.value)}
+                      inputMode="numeric"
+                      autoComplete="postal-code"
+                    />
+                  </div>
+
+                  <div className="admin-field admin-field--full">
+                    <label>Price</label>
+                    <div className="prop-edit__price-row">
+                      <div className="prop-edit__input-suffix">
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={form.price}
+                          onChange={(e) => setField('price', e.target.value)}
+                        />
+                        <span>€</span>
+                      </div>
+                      <label className="prop-edit__check">
+                        <input
+                          type="checkbox"
+                          checked={form.bazaraki_negotiable_price}
+                          onChange={(e) => setField('bazaraki_negotiable_price', e.target.checked)}
+                        />
+                        Negotiable price
+                      </label>
+                    </div>
+                  </div>
                 </>
-              ) : null}
-
-              <div className="admin-field">
-                <label>Condition</label>
-                <select value={form.condition} onChange={(e) => setField('condition', e.target.value)}>
-                  <option value="">Choose one…</option>
-                  {CONDITION_OPTIONS.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="admin-field">
-                <label>Construction year</label>
-                <input
-                  type="number"
-                  value={form.year_built}
-                  onChange={(e) => setField('year_built', e.target.value)}
-                />
-              </div>
-              <div className="admin-field">
-                <label>Property area (m²)</label>
-                <input
-                  type="number"
-                  value={form.internal_area}
-                  onChange={(e) => setField('internal_area', e.target.value)}
-                />
-              </div>
-              <div className="admin-field">
-                <label>Covered area (m²)</label>
-                <input
-                  type="number"
-                  value={form.covered_area}
-                  onChange={(e) => setField('covered_area', e.target.value)}
-                />
-              </div>
-              <div className="admin-field">
-                <label>Plot area (m²)</label>
-                <input
-                  type="number"
-                  value={form.plot_size}
-                  onChange={(e) => setField('plot_size', e.target.value)}
-                />
-              </div>
-
-              {bazarakiSchema === 'apartment' ? (
-                <div className="admin-field">
-                  <label>Floor</label>
-                  <input type="number" value={form.floor} onChange={(e) => setField('floor', e.target.value)} />
-                </div>
-              ) : null}
-
-              <div className="admin-field">
-                <label>Energy efficiency</label>
-                <select
-                  value={form.energy_efficiency}
-                  onChange={(e) => setField('energy_efficiency', e.target.value)}
-                >
-                  <option value="">Choose one…</option>
-                  {ENERGY_OPTIONS.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {bazarakiSchema === 'houses' || bazarakiSchema === 'apartment' ? (
-                <div className="admin-field">
-                  <label>Pets</label>
-                  <select
-                    value={form.bazaraki_pets}
-                    onChange={(e) => setField('bazaraki_pets', e.target.value)}
-                  >
-                    <option value="1">Allowed</option>
-                    <option value="2">Not allowed</option>
-                  </select>
-                </div>
-              ) : null}
-
-              {(bazarakiSchema === 'residentialBuildings' || isPlotsOfLandType(form.property_type)) && (
+              ) : (
                 <>
                   <div className="admin-field">
-                    <label>Registration block</label>
+                    <label>Price (€)</label>
                     <input
                       type="number"
-                      value={form.registration_block}
-                      onChange={(e) => setField('registration_block', e.target.value)}
+                      min="0"
+                      step="1"
+                      value={form.price}
+                      onChange={(e) => setField('price', e.target.value)}
+                    />
+                  </div>
+
+                  {bazarakiSchema === 'houses' ? (
+                    <div className="admin-field">
+                      <label>Type</label>
+                      <select
+                        value={form.bazaraki_house_type}
+                        onChange={(e) => setField('bazaraki_house_type', e.target.value)}
+                      >
+                        <option value="">Choose one…</option>
+                        {Object.entries(BAZARAKI_HOUSE_TYPE_LABELS).map(([key, label]) => (
+                          <option key={key} value={key}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : null}
+
+                  {bazarakiSchema === 'commercial' ? (
+                    <div className="admin-field">
+                      <label>Property type</label>
+                      <select
+                        value={form.bazaraki_commercial_type}
+                        onChange={(e) => setField('bazaraki_commercial_type', e.target.value)}
+                      >
+                        <option value="">Choose one…</option>
+                        {Object.entries(COMMERCIAL_TYPE_LABELS).map(([key, label]) => (
+                          <option key={key} value={key}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : null}
+
+                  {bazarakiSchema === 'houses' ? (
+                    <>
+                      <div className="admin-field">
+                        <label>Bedrooms</label>
+                        <input
+                          type="number"
+                          value={form.bedrooms}
+                          onChange={(e) => setField('bedrooms', e.target.value)}
+                        />
+                      </div>
+                      <div className="admin-field">
+                        <label>Bathrooms</label>
+                        <input
+                          type="number"
+                          value={form.bathrooms}
+                          onChange={(e) => setField('bathrooms', e.target.value)}
+                        />
+                      </div>
+                      <div className="admin-field">
+                        <label>Parking</label>
+                        <select
+                          value={form.bazaraki_parking}
+                          onChange={(e) => setField('bazaraki_parking', e.target.value)}
+                        >
+                          <option value="">Choose one…</option>
+                          <option value="1">Covered</option>
+                          <option value="2">Uncovered</option>
+                          <option value="3">No</option>
+                        </select>
+                      </div>
+                      <div className="admin-field">
+                        <label>Furnishing</label>
+                        <select
+                          value={form.furnishing}
+                          onChange={(e) => setField('furnishing', e.target.value)}
+                        >
+                          <option value="">Choose one…</option>
+                          {FURNISHING_OPTIONS.map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="admin-field">
+                        <label>Air conditioning</label>
+                        <select
+                          value={form.bazaraki_air_conditioning}
+                          onChange={(e) => setField('bazaraki_air_conditioning', e.target.value)}
+                        >
+                          <option value="">Choose one…</option>
+                          <option value="1">Full, all rooms</option>
+                          <option value="2">Partly</option>
+                          <option value="3">No</option>
+                        </select>
+                      </div>
+                    </>
+                  ) : null}
+
+                  <div className="admin-field">
+                    <label>Condition</label>
+                    <select value={form.condition} onChange={(e) => setField('condition', e.target.value)}>
+                      <option value="">Choose one…</option>
+                      {CONDITION_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="admin-field">
+                    <label>Construction year</label>
+                    <input
+                      type="number"
+                      value={form.year_built}
+                      onChange={(e) => setField('year_built', e.target.value)}
                     />
                   </div>
                   <div className="admin-field">
-                    <label>Registration number</label>
+                    <label>Property area (m²)</label>
                     <input
                       type="number"
-                      value={form.registration_number}
-                      onChange={(e) => setField('registration_number', e.target.value)}
+                      value={form.internal_area}
+                      onChange={(e) => setField('internal_area', e.target.value)}
                     />
                   </div>
+                  <div className="admin-field">
+                    <label>Covered area (m²)</label>
+                    <input
+                      type="number"
+                      value={form.covered_area}
+                      onChange={(e) => setField('covered_area', e.target.value)}
+                    />
+                  </div>
+                  <div className="admin-field">
+                    <label>Plot area (m²)</label>
+                    <input
+                      type="number"
+                      value={form.plot_size}
+                      onChange={(e) => setField('plot_size', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="admin-field">
+                    <label>Energy efficiency</label>
+                    <select
+                      value={form.energy_efficiency}
+                      onChange={(e) => setField('energy_efficiency', e.target.value)}
+                    >
+                      <option value="">Choose one…</option>
+                      {ENERGY_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {bazarakiSchema === 'houses' ? (
+                    <div className="admin-field">
+                      <label>Pets</label>
+                      <select
+                        value={form.bazaraki_pets}
+                        onChange={(e) => setField('bazaraki_pets', e.target.value)}
+                      >
+                        <option value="">Choose one…</option>
+                        <option value="1">Allowed</option>
+                        <option value="2">Not allowed</option>
+                      </select>
+                    </div>
+                  ) : null}
+
+                  {(bazarakiSchema === 'residentialBuildings' || isPlotsOfLandType(form.property_type)) && (
+                    <>
+                      <div className="admin-field">
+                        <label>Registration block</label>
+                        <input
+                          type="number"
+                          value={form.registration_block}
+                          onChange={(e) => setField('registration_block', e.target.value)}
+                        />
+                      </div>
+                      <div className="admin-field">
+                        <label>Registration number</label>
+                        <input
+                          type="number"
+                          value={form.registration_number}
+                          onChange={(e) => setField('registration_number', e.target.value)}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {isPlotsOfLandType(form.property_type) ? (
+                    <>
+                      <div className="admin-field">
+                        <label>Land type</label>
+                        <select value={form.land_type} onChange={(e) => setField('land_type', e.target.value)}>
+                          <option value="">Choose one…</option>
+                          {LAND_TYPE_OPTIONS.map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="admin-field">
+                        <label>Plot type</label>
+                        <select value={form.plot_type} onChange={(e) => setField('plot_type', e.target.value)}>
+                          <option value="">Choose one…</option>
+                          {PLOT_TYPE_OPTIONS.map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="admin-field">
+                        <label>Share</label>
+                        <select value={form.share} onChange={(e) => setField('share', e.target.value)}>
+                          <option value="">—</option>
+                          {SHARE_OPTIONS.map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="admin-field">
+                        <label>Coverage</label>
+                        <input value={form.coverage} onChange={(e) => setField('coverage', e.target.value)} />
+                      </div>
+                      <div className="admin-field">
+                        <label>Building density</label>
+                        <input
+                          value={form.building_density}
+                          onChange={(e) => setField('building_density', e.target.value)}
+                        />
+                      </div>
+                      <div className="admin-field">
+                        <label>Planning zone</label>
+                        <input
+                          value={form.planning_zone}
+                          onChange={(e) => setField('planning_zone', e.target.value)}
+                        />
+                      </div>
+                      <div className="admin-field">
+                        <label>Parcel number</label>
+                        <input
+                          value={form.parcel_number}
+                          onChange={(e) => setField('parcel_number', e.target.value)}
+                        />
+                      </div>
+                    </>
+                  ) : null}
                 </>
               )}
-
-              {isPlotsOfLandType(form.property_type) ? (
-                <>
-                  <div className="admin-field">
-                    <label>Land type</label>
-                    <select value={form.land_type} onChange={(e) => setField('land_type', e.target.value)}>
-                      <option value="">Choose one…</option>
-                      {LAND_TYPE_OPTIONS.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="admin-field">
-                    <label>Plot type</label>
-                    <select value={form.plot_type} onChange={(e) => setField('plot_type', e.target.value)}>
-                      <option value="">Choose one…</option>
-                      {PLOT_TYPE_OPTIONS.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="admin-field">
-                    <label>Share</label>
-                    <select value={form.share} onChange={(e) => setField('share', e.target.value)}>
-                      <option value="">—</option>
-                      {SHARE_OPTIONS.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="admin-field">
-                    <label>Coverage</label>
-                    <input value={form.coverage} onChange={(e) => setField('coverage', e.target.value)} />
-                  </div>
-                  <div className="admin-field">
-                    <label>Building density</label>
-                    <input
-                      value={form.building_density}
-                      onChange={(e) => setField('building_density', e.target.value)}
-                    />
-                  </div>
-                  <div className="admin-field">
-                    <label>Planning zone</label>
-                    <input
-                      value={form.planning_zone}
-                      onChange={(e) => setField('planning_zone', e.target.value)}
-                    />
-                  </div>
-                  <div className="admin-field">
-                    <label>Parcel number</label>
-                    <input
-                      value={form.parcel_number}
-                      onChange={(e) => setField('parcel_number', e.target.value)}
-                    />
-                  </div>
-                </>
-              ) : null}
             </div>
 
             {bazarakiSchema &&
+            bazarakiSchema !== 'apartment' &&
             bazarakiSchema !== 'prefabricatedHouses' &&
             bazarakiSchema !== 'other' &&
             bazarakiSchema !== 'plotsOfLand' ? (
@@ -1425,13 +1748,14 @@ export default function AdminPropertyEditPage() {
             ) : null}
 
             {bazarakiSchema &&
+            bazarakiSchema !== 'apartment' &&
             bazarakiSchema !== 'prefabricatedHouses' &&
             bazarakiSchema !== 'other' ? (
               <div style={{marginTop: '0.85rem'}}>
                 <AdminToggle
                   label="Online viewing"
                   description="Available for online viewing"
-                  checked={form.bazaraki_online_viewing}
+                  checked={Boolean(form.bazaraki_online_viewing)}
                   onChange={(checked) => setField('bazaraki_online_viewing', checked)}
                 />
               </div>
@@ -1962,7 +2286,7 @@ function toPayloadSafe(form: FormState) {
       bazaraki_district_id: form.bazaraki_district_id,
       postal_code: form.postal_code || null,
       bazaraki_must_haves: form.bazaraki_must_haves,
-      bazaraki_online_viewing: form.bazaraki_online_viewing,
+      bazaraki_online_viewing: form.bazaraki_online_viewing ?? false,
       bazaraki_air_conditioning: num(form.bazaraki_air_conditioning),
       bazaraki_parking: num(form.bazaraki_parking),
       bazaraki_pets: num(form.bazaraki_pets),

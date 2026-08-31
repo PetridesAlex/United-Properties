@@ -71,6 +71,7 @@ export interface Property {
   bazaraki_pets: number | null
   bazaraki_house_type: number | null
   bazaraki_commercial_type: number | null
+  bazaraki_negotiable_price: boolean
   registration_block: number | null
   registration_number: number | null
   land_type: string | null
@@ -132,6 +133,7 @@ export type PropertyInsert = {
   bazaraki_pets?: number | null
   bazaraki_house_type?: number | null
   bazaraki_commercial_type?: number | null
+  bazaraki_negotiable_price?: boolean
   registration_block?: number | null
   registration_number?: number | null
   land_type?: string | null

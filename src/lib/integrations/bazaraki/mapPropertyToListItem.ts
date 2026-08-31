@@ -105,7 +105,11 @@ export function mapPropertyToListItem(
     description: escapeBazarakiDescription(description),
     price: formatBazarakiPrice(property.price),
     phoneHide: settings.bazaraki_phone_hide ? 1 : 0,
-    negotiablePrice: settings.bazaraki_negotiable_price ? 1 : 0,
+    negotiablePrice: property.bazaraki_negotiable_price
+      ? 1
+      : settings.bazaraki_negotiable_price
+        ? 1
+        : 0,
     exchange: settings.bazaraki_exchange ? 1 : 0,
     attrsSchema: schema,
     attrs,
