@@ -424,51 +424,101 @@
 }
 
 .admin-shell__user-card {
+  position: relative;
+  overflow: hidden;
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.7rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.75rem;
   align-items: center;
-  padding: 0.7rem;
-  border-radius: 16px;
-  border: 1px solid rgba(244, 239, 230, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  padding: 0.85rem 0.9rem;
+  border-radius: 18px;
+  border: 1px solid rgba(191, 152, 117, 0.28);
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(191, 152, 117, 0.22), transparent 55%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08), transparent 48%),
+    rgba(10, 18, 32, 0.72);
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: admin-shell-user-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.admin-shell__user-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(232, 210, 186, 0.55), transparent);
+  opacity: 0.9;
 }
 
 .admin-shell__avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+  width: 2.55rem;
+  height: 2.55rem;
+  border-radius: 13px;
   display: grid;
   place-items: center;
-  background: linear-gradient(145deg, rgba(213, 181, 154, 0.35), rgba(191, 152, 117, 0.18));
-  border: 1px solid rgba(191, 152, 117, 0.35);
-  color: #f6f0e6;
-  font-size: 0.75rem;
+  background: linear-gradient(145deg, #e8d2ba, #bf9875);
+  border: 1px solid rgba(246, 240, 230, 0.35);
+  color: #1a120c;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.04em;
+  box-shadow: 0 6px 14px rgba(191, 152, 117, 0.32);
 }
 
 .admin-shell__user-meta {
   min-width: 0;
+  display: grid;
+  gap: 0.22rem;
 }
 
 .admin-shell__user-name {
   margin: 0;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--admin-cream);
+  font-size: 0.9rem;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+  color: #fff8ef;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .admin-shell__user-role {
-  margin: 0.15rem 0 0;
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: fit-content;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--admin-gold);
-  font-weight: 700;
+  color: #e8d2ba;
+  font-weight: 750;
+}
+
+.admin-shell__user-live {
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+  background: #7dffb3;
+  box-shadow: 0 0 0 0 rgba(125, 255, 179, 0.5);
+  animation: admin-shell-user-pulse 1.8s ease-out infinite;
+  flex-shrink: 0;
+}
+
+.admin-shell__user-status {
+  padding: 0.28rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 255, 179, 0.28);
+  background: rgba(80, 160, 120, 0.16);
+  color: #b8f0d0;
+  font-size: 0.58rem;
+  font-weight: 780;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .admin-shell__user {
@@ -476,6 +526,36 @@
   font-size: 0.8rem;
   color: var(--admin-muted);
   word-break: break-word;
+}
+
+@keyframes admin-shell-user-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes admin-shell-user-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(125, 255, 179, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(125, 255, 179, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(125, 255, 179, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell__user-card,
+  .admin-shell__user-live {
+    animation: none;
+  }
 }
 
 .admin-shell__logout {
@@ -670,65 +750,126 @@
   .admin-shell__mobile-greeting {
     display: flex;
     align-items: center;
-    gap: 0.55rem;
+    gap: 0.72rem;
     width: 100%;
     min-width: 0;
-    padding: 0.42rem 0.55rem;
-    border-radius: 14px;
-    border: 1px solid rgba(191, 152, 117, 0.16);
-    background: rgba(8, 16, 28, 0.45);
+    padding: 0.72rem 0.78rem;
+    border-radius: 18px;
+    border: 1px solid rgba(191, 152, 117, 0.28);
+    background:
+      radial-gradient(120% 140% at 0% 0%, rgba(191, 152, 117, 0.22), transparent 55%),
+      linear-gradient(145deg, rgba(255, 255, 255, 0.07), transparent 48%),
+      rgba(10, 18, 32, 0.72);
+    box-shadow:
+      0 12px 28px rgba(0, 0, 0, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
 
   .admin-shell__mobile-avatar {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 10px;
+    width: 2.65rem;
+    height: 2.65rem;
+    border-radius: 13px;
     display: grid;
     place-items: center;
     flex-shrink: 0;
-    background: linear-gradient(145deg, rgba(213, 181, 154, 0.38), rgba(191, 152, 117, 0.2));
-    border: 1px solid rgba(191, 152, 117, 0.35);
-    color: #f6f0e6;
-    font-size: 0.62rem;
+    background: linear-gradient(145deg, #e8d2ba, #bf9875);
+    border: 1px solid rgba(246, 240, 230, 0.35);
+    color: #1a120c;
+    font-size: 0.72rem;
     font-weight: 800;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.04em;
+    box-shadow: 0 6px 14px rgba(191, 152, 117, 0.32);
   }
 
   .admin-shell__mobile-greeting-copy {
     display: grid;
-    gap: 0.04rem;
+    gap: 0.22rem;
     min-width: 0;
     flex: 1;
+  }
+
+  .admin-shell__mobile-calendar {
+    appearance: none;
+    display: inline-grid;
+    place-items: center;
+    width: 2.65rem;
+    height: 2.65rem;
+    flex-shrink: 0;
+    border-radius: 13px;
+    border: 1px solid rgba(160, 190, 220, 0.35);
+    background: rgba(90, 130, 170, 0.16);
+    color: #c9daf0;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: none;
+  }
+
+  .admin-shell__mobile-calendar.is-active {
+    border-color: rgba(180, 210, 240, 0.55);
+    background: linear-gradient(145deg, #8eb4d8, #5a7fa8);
+    color: #0d1828;
+    box-shadow: 0 6px 14px rgba(70, 110, 150, 0.32);
+  }
+
+  .admin-shell__mobile-calendar:active {
+    transform: scale(0.96);
   }
 
   .admin-shell__mobile-greeting-label {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    font-size: 0.58rem;
-    letter-spacing: 0.09em;
+    gap: 0.38rem;
+    font-size: 0.64rem;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--admin-gold);
-    font-weight: 750;
+    color: #e8d2ba;
+    font-weight: 780;
+  }
+
+  .admin-shell__mobile-quote {
+    margin: 0;
+    min-width: 0;
+    font-family: 'Montserrat', var(--font-sans), system-ui, sans-serif;
+    font-size: 0.92rem;
+    font-weight: 600;
+    font-style: normal;
+    line-height: 1.32;
+    letter-spacing: -0.015em;
+    color: #f6f0e6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    animation: admin-shell-quote-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes admin-shell-quote-in {
+    from {
+      opacity: 0;
+      transform: translateY(7px);
+      filter: blur(3px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .admin-shell__mobile-quote {
+      animation: none;
+    }
   }
 
   .admin-shell__mobile-live-dot {
-    width: 0.35rem;
-    height: 0.35rem;
+    width: 0.42rem;
+    height: 0.42rem;
     border-radius: 50%;
-    background: #6fd99a;
-    box-shadow: 0 0 0 3px rgba(70, 190, 120, 0.18);
-    animation: admin-shell-pulse 2.4s ease-in-out infinite;
+    background: #7dffb3;
+    box-shadow: 0 0 0 0 rgba(125, 255, 179, 0.5);
+    animation: admin-shell-pulse 2.2s ease-in-out infinite;
     flex-shrink: 0;
-  }
-
-  .admin-shell__mobile-greeting strong {
-    font-size: 0.88rem;
-    font-weight: 750;
-    color: var(--admin-cream);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .admin-shell__mobile-add {
@@ -1336,16 +1477,17 @@
   }
 
   .admin-shell__mobile-greeting {
-    padding: 0.38rem 0.5rem;
+    padding: 0.68rem 0.72rem;
+    gap: 0.62rem;
   }
 
   .admin-shell__mobile-greeting-label {
-    font-size: 0.56rem;
-    letter-spacing: 0.08em;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
   }
 
-  .admin-shell__mobile-greeting strong {
-    font-size: 0.84rem;
+  .admin-shell__mobile-quote {
+    font-size: 0.88rem;
   }
 
   .admin-shell__bottom-link {
@@ -1373,7 +1515,13 @@
 
 @media (max-width: 420px) {
   .admin-shell__mobile-greeting {
-    gap: 0.48rem;
+    gap: 0.58rem;
+  }
+
+  .admin-shell__mobile-avatar,
+  .admin-shell__mobile-calendar {
+    width: 2.45rem;
+    height: 2.45rem;
   }
 }
 

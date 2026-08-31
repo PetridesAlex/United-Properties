@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {ArrowLeft, ExternalLink, FileText, Save} from 'lucide-react'
 import toast from 'react-hot-toast'
 import {useAdminAuth} from '../../lib/auth/AdminAuthProvider'
@@ -14,25 +14,103 @@ import {
 import '../../components/admin/AdminShell.css'
 import './AdminContentPage.css'
 
+const PROGRESS_KEY = 'up.contentCms.v1'
+
+type ContentProgress = {
+  activePageId: string | null
+  values: Record<string, string>
+  savedSnapshot: Record<string, string>
+  scrollY: number
+  updatedAt: string
+}
+
+function readProgress(): ContentProgress | null {
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<ContentProgress>
+    if (!parsed || typeof parsed !== 'object') return null
+    return {
+      activePageId: typeof parsed.activePageId === 'string' ? parsed.activePageId : null,
+      values: parsed.values && typeof parsed.values === 'object' ? parsed.values : {},
+      savedSnapshot:
+        parsed.savedSnapshot && typeof parsed.savedSnapshot === 'object' ? parsed.savedSnapshot : {},
+      scrollY: typeof parsed.scrollY === 'number' ? parsed.scrollY : 0,
+      updatedAt: parsed.updatedAt || new Date().toISOString(),
+    }
+  } catch {
+    return null
+  }
+}
+
+function writeProgress(progress: Omit<ContentProgress, 'updatedAt'>) {
+  try {
+    localStorage.setItem(
+      PROGRESS_KEY,
+      JSON.stringify({
+        ...progress,
+        updatedAt: new Date().toISOString(),
+      } satisfies ContentProgress),
+    )
+  } catch {
+    // Ignore quota / private mode.
+  }
+}
+
 export default function AdminContentPage() {
   const {user} = useAdminAuth()
-  const [values, setValues] = useState<Record<string, string>>({})
-  const [savedSnapshot, setSavedSnapshot] = useState<Record<string, string>>({})
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [activePageId, setActivePageId] = useState<string | null>(null)
-
   const defaults = useMemo(() => getDefaultContentMap(), [])
+  const cached = useMemo(() => readProgress(), [])
+
+  const [values, setValues] = useState<Record<string, string>>(() => ({
+    ...defaults,
+    ...(cached?.values ?? {}),
+  }))
+  const [savedSnapshot, setSavedSnapshot] = useState<Record<string, string>>(() => ({
+    ...defaults,
+    ...(cached?.savedSnapshot ?? cached?.values ?? {}),
+  }))
+  const [loading, setLoading] = useState(() => !cached)
+  const [saving, setSaving] = useState(false)
+  const [activePageId, setActivePageId] = useState<string | null>(() => {
+    if (cached?.activePageId && getContentPage(cached.activePageId)) return cached.activePageId
+    return null
+  })
+
   const activePage = activePageId ? getContentPage(activePageId) : undefined
+  const valuesRef = useRef(values)
+  const savedRef = useRef(savedSnapshot)
+  const pageRef = useRef(activePageId)
+  const persistTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const restoredScroll = useRef(false)
+
+  valuesRef.current = values
+  savedRef.current = savedSnapshot
+  pageRef.current = activePageId
 
   useEffect(() => {
     let cancelled = false
     async function load() {
       const map = await fetchSiteContentMap()
       if (cancelled) return
-      const merged = {...defaults, ...map}
-      setValues(merged)
-      setSavedSnapshot(merged)
+
+      setValues((prev) => {
+        // Keep in-progress edits; only fill gaps from the server.
+        const next = {...defaults, ...map}
+        for (const [key, value] of Object.entries(prev)) {
+          const saved = savedRef.current[key] ?? ''
+          if (value !== saved) next[key] = value
+        }
+        return next
+      })
+      setSavedSnapshot((prev) => {
+        const next = {...defaults, ...map}
+        // Preserve snapshot keys that still match local drafts so dirty state stays accurate.
+        for (const [key, value] of Object.entries(prev)) {
+          if ((valuesRef.current[key] ?? '') !== value) next[key] = value
+        }
+        return next
+      })
       setLoading(false)
     }
     void load()
@@ -40,6 +118,48 @@ export default function AdminContentPage() {
       cancelled = true
     }
   }, [defaults])
+
+  useEffect(() => {
+    if (persistTimer.current) clearTimeout(persistTimer.current)
+    persistTimer.current = setTimeout(() => {
+      writeProgress({
+        activePageId,
+        values,
+        savedSnapshot,
+        scrollY: window.scrollY || 0,
+      })
+    }, 400)
+    return () => {
+      if (persistTimer.current) clearTimeout(persistTimer.current)
+    }
+  }, [activePageId, values, savedSnapshot])
+
+  useEffect(() => {
+    function onScroll() {
+      if (persistTimer.current) clearTimeout(persistTimer.current)
+      persistTimer.current = setTimeout(() => {
+        writeProgress({
+          activePageId: pageRef.current,
+          values: valuesRef.current,
+          savedSnapshot: savedRef.current,
+          scrollY: window.scrollY || 0,
+        })
+      }, 500)
+    }
+    window.addEventListener('scroll', onScroll, {passive: true})
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    if (loading || restoredScroll.current) return
+    const y = cached?.scrollY ?? 0
+    if (y > 0 && cached?.activePageId === activePageId) {
+      restoredScroll.current = true
+      requestAnimationFrame(() => window.scrollTo(0, y))
+    } else {
+      restoredScroll.current = true
+    }
+  }, [loading, activePageId, cached])
 
   const dirty = useMemo(() => {
     if (!activePage) return false
@@ -68,6 +188,19 @@ export default function AdminContentPage() {
     return filled
   }
 
+  function openPage(pageId: string) {
+    restoredScroll.current = true
+    setActivePageId(pageId)
+    requestAnimationFrame(() => window.scrollTo(0, 0))
+  }
+
+  function backToCatalog() {
+    if (dirty && !window.confirm('You have unsaved changes. Leave this page?')) return
+    restoredScroll.current = true
+    setActivePageId(null)
+    requestAnimationFrame(() => window.scrollTo(0, 0))
+  }
+
   async function onSavePage() {
     if (!activePage) return
     setSaving(true)
@@ -81,7 +214,13 @@ export default function AdminContentPage() {
         }
       }
       setSavedSnapshot(nextSnapshot)
-      toast.success(`${activePage.title} updated — live on the website`)
+      writeProgress({
+        activePageId,
+        values,
+        savedSnapshot: nextSnapshot,
+        scrollY: window.scrollY || 0,
+      })
+      toast.success(`${activePage.title} saved`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Save failed')
     } finally {
@@ -113,8 +252,8 @@ export default function AdminContentPage() {
             <p className="content-admin__eyebrow">Website copy</p>
             <h1>Edit by page</h1>
             <p className="content-admin__lede">
-              Choose a page, update the text section by section, then save. Changes go live on the
-              website immediately.
+              Choose a page, update the text section by section, then save. Your place is kept so you
+              can continue where you left off.
             </p>
           </div>
           <div className="content-admin__hero-meta" aria-label="Content overview">
@@ -150,9 +289,7 @@ export default function AdminContentPage() {
                   <h2 className="content-admin__group-title">{group.title}</h2>
                   <p className="content-admin__group-blurb">{group.blurb}</p>
                 </div>
-                <span className="content-admin__group-count">
-                  {group.ids.length} area{group.ids.length === 1 ? '' : 's'}
-                </span>
+                <span className="content-admin__group-count">{group.ids.length} areas</span>
               </header>
               <div className="content-admin__pages">
                 {group.ids.map((id) => {
@@ -165,7 +302,7 @@ export default function AdminContentPage() {
                       key={page.id}
                       type="button"
                       className="content-admin__page-card"
-                      onClick={() => setActivePageId(page.id)}
+                      onClick={() => openPage(page.id)}
                     >
                       <span className="content-admin__page-icon" aria-hidden>
                         <FileText size={18} />
@@ -193,14 +330,7 @@ export default function AdminContentPage() {
     <div className="admin-page content-admin">
       <header className="admin-page__header content-admin__header">
         <div className="content-admin__editor-intro">
-          <button
-            type="button"
-            className="content-admin__back"
-            onClick={() => {
-              if (dirty && !window.confirm('You have unsaved changes. Leave this page?')) return
-              setActivePageId(null)
-            }}
-          >
+          <button type="button" className="content-admin__back" onClick={backToCatalog}>
             <ArrowLeft size={16} aria-hidden />
             All pages
           </button>
@@ -281,7 +411,7 @@ export default function AdminContentPage() {
       </div>
 
       <div className="content-admin__footer-bar">
-        <p>Changes go live on the website as soon as you save.</p>
+        <p>Save when ready — you stay on this page and can keep editing.</p>
         <button
           type="button"
           className="admin-btn admin-btn--gold"

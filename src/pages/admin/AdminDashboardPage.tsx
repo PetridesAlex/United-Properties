@@ -4,11 +4,14 @@ import {
   AlertTriangle,
   ArrowUpRight,
   Building2,
+  CalendarDays,
   CheckCircle2,
+  Clock3,
   Home,
   Inbox,
   KeyRound,
   Layers3,
+  MapPin,
   Plus,
   Share2,
   Sparkles,
@@ -16,6 +19,10 @@ import {
   Tag,
 } from 'lucide-react'
 import {useAdminAuth} from '../../lib/auth/AdminAuthProvider'
+import {resolveAdminDisplay} from '../../lib/auth/displayName'
+import {listUpcomingAppointments} from '../../lib/appointments/storage'
+import {APPOINTMENT_TYPE_LABELS} from '../../lib/appointments/types'
+import {useAgentQuote} from '../../lib/admin/agentQuotes'
 import {countPropertiesByTab, fetchAdminProperties} from '../../lib/properties/api'
 import {validatePropertyForBazaraki} from '../../lib/integrations/bazaraki/validatePropertyForBazaraki'
 import {supabase} from '../../lib/supabase/client'
@@ -65,6 +72,11 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [refreshedAt, setRefreshedAt] = useState<Date | null>(null)
+  const [upcomingMeetings, setUpcomingMeetings] = useState(() => listUpcomingAppointments(5))
+
+  useEffect(() => {
+    setUpcomingMeetings(listUpcomingAppointments(5))
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -117,10 +129,9 @@ export default function AdminDashboardPage() {
     }
   }, [])
 
-  const firstName = useMemo(() => {
-    const raw = profile?.full_name?.trim() || profile?.email?.split('@')[0] || 'there'
-    return raw.split(/\s+/)[0]
-  }, [profile])
+  const display = useMemo(() => resolveAdminDisplay(profile), [profile])
+  const firstName = display.firstName
+  const agentQuote = useAgentQuote(7200)
 
   const spotlight = [
     {
@@ -158,10 +169,14 @@ export default function AdminDashboardPage() {
       <header className="dash-admin__hero">
         <div>
           <p className="dash-admin__eyebrow">United Properties CMS</p>
-          <h1>Welcome, {firstName}</h1>
-          <p className="admin-page__lede">
-            Your inventory pulse — listings, enquiries, and publishing health in one place.
-          </p>
+          <h1 className="dash-admin__welcome" aria-label={`Welcome, ${firstName}`}>
+            <span className="dash-admin__wave" aria-hidden="true">
+              👋
+            </span>
+            <span className="dash-admin__welcome-text">
+              Welcome, <em>{firstName}</em>
+            </span>
+          </h1>
           {refreshedAt ? (
             <p className="dash-admin__freshness">
               Updated {refreshedAt.toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})}
@@ -174,6 +189,13 @@ export default function AdminDashboardPage() {
             <Plus size={16} aria-hidden />
             Add Property
           </Link>
+          <Link className="admin-btn admin-btn--ghost" to="/admin/calendar">
+            <CalendarDays size={16} aria-hidden />
+            Calendar
+            {upcomingMeetings.length > 0 ? (
+              <span className="dash-admin__pill">{upcomingMeetings.length}</span>
+            ) : null}
+          </Link>
           <Link className="admin-btn admin-btn--ghost" to="/admin/enquiries">
             <Inbox size={16} aria-hidden />
             Enquiries
@@ -181,6 +203,74 @@ export default function AdminDashboardPage() {
           </Link>
         </div>
       </header>
+
+      <aside className="dash-admin__quote" aria-label="Quote of the day">
+        <span className="dash-admin__quote-label">
+          <span className="dash-admin__quote-dot" aria-hidden />
+          Quote of the day
+        </span>
+        <p key={agentQuote.tick} className="dash-admin__quote-text" aria-live="polite">
+          {agentQuote.quote}
+        </p>
+      </aside>
+
+      {upcomingMeetings.length > 0 ? (
+        <section className="dash-admin__meetings" aria-label="Upcoming appointments">
+          <div className="dash-admin__meetings-head">
+            <div>
+              <p className="dash-admin__stats-eyebrow">
+                <span className="dash-admin__meetings-live" aria-hidden />
+                Schedule
+              </p>
+              <h2 className="dash-admin__stats-title">Upcoming meetings</h2>
+            </div>
+            <Link to="/admin/calendar" className="dash-admin__meetings-open">
+              Open calendar
+              <ArrowUpRight size={14} aria-hidden />
+            </Link>
+          </div>
+          <ul className="dash-admin__meetings-list">
+            {upcomingMeetings.map((row) => {
+              const when = new Date(`${row.date}T12:00:00`)
+              const dayNum = new Intl.DateTimeFormat('en-GB', {day: 'numeric'}).format(when)
+              const monthShort = new Intl.DateTimeFormat('en-GB', {month: 'short'}).format(when)
+              const weekday = new Intl.DateTimeFormat('en-GB', {weekday: 'short'}).format(when)
+              return (
+                <li key={row.id}>
+                  <Link to="/admin/calendar" className={`dash-admin__meeting-card dash-admin__meeting-card--${row.type}`}>
+                    <span className="dash-admin__meeting-date" aria-hidden>
+                      <span className="dash-admin__meeting-day">{dayNum}</span>
+                      <span className="dash-admin__meeting-mon">{monthShort}</span>
+                    </span>
+                    <span className="dash-admin__meeting-body">
+                      <span className="dash-admin__meeting-top">
+                        <span className="dash-admin__meeting-weekday">{weekday}</span>
+                        <span className={`dash-admin__meeting-type dash-admin__meeting-type--${row.type}`}>
+                          {APPOINTMENT_TYPE_LABELS[row.type]}
+                        </span>
+                      </span>
+                      <strong className="dash-admin__meeting-title">{row.title}</strong>
+                      <span className="dash-admin__meeting-meta">
+                        <span>
+                          <Clock3 size={13} aria-hidden />
+                          {row.startTime}
+                          {row.endTime ? ` – ${row.endTime}` : ''}
+                        </span>
+                        {row.location ? (
+                          <span>
+                            <MapPin size={13} aria-hidden />
+                            {row.location}
+                          </span>
+                        ) : null}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      ) : null}
 
       {error ? <p className="admin-login__error">{error}</p> : null}
 

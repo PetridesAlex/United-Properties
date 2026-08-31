@@ -1,7 +1,12 @@
 import {useEffect, useMemo, useState} from 'react'
 import {Link} from 'react-router-dom'
-import {Plus, Search, Sparkles} from 'lucide-react'
-import {countPropertiesByTab, fetchAdminProperties} from '../../lib/properties/api'
+import {Plus, Search, Sparkles, Trash2} from 'lucide-react'
+import toast from 'react-hot-toast'
+import {
+  countPropertiesByTab,
+  deleteProperty,
+  fetchAdminProperties,
+} from '../../lib/properties/api'
 import {PROPERTY_STATUS_LABELS, type Property, type PropertyStatus} from '../../types/cms'
 import '../../components/admin/AdminShell.css'
 import './AdminPropertiesPage.css'
@@ -60,6 +65,8 @@ export default function AdminPropertiesPage() {
   const [counts, setCounts] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [pendingDelete, setPendingDelete] = useState<Property | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -87,6 +94,26 @@ export default function AdminPropertiesPage() {
   }, [tab, search])
 
   const countFor = useMemo(() => (key: string) => counts[key] ?? 0, [counts])
+
+  async function confirmDelete() {
+    if (!pendingDelete) return
+    setDeleting(true)
+    try {
+      await deleteProperty(pendingDelete.id)
+      setRows((prev) => prev.filter((row) => row.id !== pendingDelete.id))
+      try {
+        setCounts(await countPropertiesByTab())
+      } catch {
+        // List already updated; counts can refresh on next load.
+      }
+      toast.success(`Deleted ${pendingDelete.reference_number}`)
+      setPendingDelete(null)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Delete failed')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   return (
     <div className="admin-page props-admin">
@@ -219,6 +246,14 @@ export default function AdminPropertiesPage() {
                         View
                       </a>
                     ) : null}
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn--danger props-admin__delete"
+                      onClick={() => setPendingDelete(p)}
+                    >
+                      <Trash2 size={14} aria-hidden />
+                      Delete
+                    </button>
                   </div>
                 </li>
               )
@@ -226,6 +261,51 @@ export default function AdminPropertiesPage() {
           </ul>
         )}
       </section>
+
+      {pendingDelete ? (
+        <div
+          className="props-admin__overlay"
+          role="presentation"
+          onClick={() => {
+            if (!deleting) setPendingDelete(null)
+          }}
+        >
+          <div
+            className="props-admin__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-property-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="delete-property-title">Delete this property?</h2>
+            <p>
+              <strong>{pendingDelete.reference_number}</strong> — {pendingDelete.title}
+            </p>
+            <p>
+              This permanently removes the listing, its images, and Bazaraki feed entry. This cannot
+              be undone.
+            </p>
+            <div className="admin-actions">
+              <button
+                type="button"
+                className="admin-btn admin-btn--danger"
+                disabled={deleting}
+                onClick={() => void confirmDelete()}
+              >
+                {deleting ? 'Deleting…' : 'Delete permanently'}
+              </button>
+              <button
+                type="button"
+                className="admin-btn admin-btn--ghost"
+                disabled={deleting}
+                onClick={() => setPendingDelete(null)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

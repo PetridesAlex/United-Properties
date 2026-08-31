@@ -262,6 +262,26 @@ export async function archiveProperty(id: string, userId?: string | null) {
   )
 }
 
+export async function deleteProperty(id: string) {
+  if (!supabase) throw new Error('Supabase is not configured')
+
+  const {data: images} = await supabase
+    .from('property_images')
+    .select('storage_path')
+    .eq('property_id', id)
+
+  const paths = (images ?? [])
+    .map((row) => row.storage_path)
+    .filter((path): path is string => Boolean(path))
+
+  if (paths.length) {
+    await supabase.storage.from('properties').remove(paths)
+  }
+
+  const {error} = await supabase.from('properties').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
 export async function duplicateProperty(id: string, userId?: string | null) {
   const original = await fetchPropertyById(id)
   if (!original) throw new Error('Property not found')

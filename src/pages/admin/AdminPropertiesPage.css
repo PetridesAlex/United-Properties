@@ -256,6 +256,55 @@
   font-size: 0.82rem;
 }
 
+.props-admin__delete {
+  gap: 0.35rem;
+}
+
+.props-admin__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(6, 12, 22, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.props-admin__dialog {
+  width: min(100%, 26rem);
+  padding: 1.25rem 1.3rem 1.15rem;
+  border-radius: 16px;
+  border: 1px solid rgba(240, 168, 168, 0.28);
+  background: linear-gradient(165deg, #1a2a40, #121c2c);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.4);
+}
+
+.props-admin__dialog h2 {
+  margin: 0 0 0.55rem;
+  font-size: 1.15rem;
+  color: var(--admin-cream);
+}
+
+.props-admin__dialog p {
+  margin: 0 0 0.65rem;
+  color: var(--admin-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.props-admin__dialog .admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.props-admin__dialog .admin-actions .admin-btn {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
 .props-admin__empty {
   display: grid;
   place-items: center;

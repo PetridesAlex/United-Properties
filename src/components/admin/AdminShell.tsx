@@ -2,6 +2,7 @@ import {useEffect, useMemo, useState} from 'react'
 import {Link, NavLink, Outlet, useLocation, useNavigate} from 'react-router-dom'
 import {
   Building2,
+  CalendarDays,
   Clock3,
   FileText,
   LayoutDashboard,
@@ -17,6 +18,8 @@ import {
   X,
 } from 'lucide-react'
 import {useAdminAuth} from '../../lib/auth/AdminAuthProvider'
+import {resolveAdminDisplay} from '../../lib/auth/displayName'
+import {useAgentQuote} from '../../lib/admin/agentQuotes'
 import {supabase} from '../../lib/supabase/client'
 import './AdminShell.css'
 
@@ -46,7 +49,10 @@ const MOBILE_NAV_RIGHT = [
 const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Overview',
-    items: [{to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true}],
+    items: [
+      {to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true},
+      {to: '/admin/calendar', label: 'Calendar', icon: CalendarDays},
+    ],
   },
   {
     label: 'Inventory',
@@ -81,14 +87,6 @@ function roleLabel(role?: string | null) {
     .split('_')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ')
-}
-
-function firstNameFromProfile(fullName?: string | null, email?: string | null) {
-  const fromName = fullName?.trim().split(/\s+/)[0]
-  if (fromName) return fromName
-  const fromEmail = email?.split('@')[0]?.replace(/[._-]+/g, ' ').trim()
-  if (fromEmail) return fromEmail.split(/\s+/)[0] ?? 'there'
-  return 'there'
 }
 
 function greetingForHour(hour: number) {
@@ -141,6 +139,7 @@ export default function AdminShell() {
   const [newEnquiries, setNewEnquiries] = useState(0)
   const [navOpen, setNavOpen] = useState(false)
   const clock = useCyprusClock()
+  const agentQuote = useAgentQuote(7200)
 
   useEffect(() => {
     setNavOpen(false)
@@ -178,8 +177,10 @@ export default function AdminShell() {
     navigate('/admin/login', {replace: true})
   }
 
-  const displayName = profile?.full_name?.trim() || profile?.email || 'Staff'
-  const firstName = firstNameFromProfile(profile?.full_name, profile?.email)
+  const display = resolveAdminDisplay(profile)
+  const displayName = profile?.full_name?.trim() || display.firstName
+  const firstName = display.firstName
+  const shownRole = display.roleLabel || roleLabel(profile?.role)
   const initials = displayName
     .split(/\s+|@/)
     .filter(Boolean)
@@ -226,10 +227,32 @@ export default function AdminShell() {
           <div className="admin-shell__mobile-greeting-copy">
             <span className="admin-shell__mobile-greeting-label">
               <span className="admin-shell__mobile-live-dot" aria-hidden />
-              {clock.greeting}
+              Quote of the day
             </span>
-            <strong>{firstName}</strong>
+            <p key={agentQuote.tick} className="admin-shell__mobile-quote" aria-live="polite">
+              {agentQuote.quote}
+            </p>
           </div>
+          <button
+            type="button"
+            className={`admin-shell__mobile-calendar${location.pathname.startsWith('/admin/calendar') ? ' is-active' : ''}`}
+            aria-label={location.pathname.startsWith('/admin/calendar') ? 'Close calendar' : 'Open calendar'}
+            aria-pressed={location.pathname.startsWith('/admin/calendar')}
+            onClick={() => {
+              setNavOpen(false)
+              if (location.pathname.startsWith('/admin/calendar')) {
+                navigate('/admin')
+              } else {
+                navigate('/admin/calendar')
+              }
+            }}
+          >
+            {location.pathname.startsWith('/admin/calendar') ? (
+              <X size={18} strokeWidth={1.9} aria-hidden />
+            ) : (
+              <CalendarDays size={18} strokeWidth={1.9} aria-hidden />
+            )}
+          </button>
         </div>
       </header>
 
@@ -275,7 +298,7 @@ export default function AdminShell() {
                 {clock.greeting},
               </p>
               <p className="admin-shell__welcome-name">{firstName}</p>
-              <p className="admin-shell__welcome-sub">Welcome back to your CRM workspace.</p>
+              <p className="admin-shell__welcome-sub">{shownRole}</p>
             </div>
           </div>
 
@@ -357,8 +380,12 @@ export default function AdminShell() {
             </span>
             <div className="admin-shell__user-meta">
               <p className="admin-shell__user-name">{displayName}</p>
-              <p className="admin-shell__user-role">{roleLabel(profile?.role)}</p>
+              <p className="admin-shell__user-role">
+                <span className="admin-shell__user-live" aria-hidden />
+                {shownRole}
+              </p>
             </div>
+            <span className="admin-shell__user-status">Online</span>
           </div>
 
           <button type="button" className="admin-shell__logout" onClick={() => void onLogout()}>
@@ -378,7 +405,7 @@ export default function AdminShell() {
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.end}
+              end={'end' in item ? item.end : false}
               className={({isActive}) =>
                 ['admin-shell__bottom-link', isActive ? 'is-active' : ''].filter(Boolean).join(' ')
               }

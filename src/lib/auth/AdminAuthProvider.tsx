@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -30,15 +31,18 @@ export function AdminAuthProvider({children}: {children: ReactNode}) {
   const [profileLoading, setProfileLoading] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
+  const hasProfileRef = useRef(false)
 
   const loadProfile = useCallback(async (): Promise<Profile | null> => {
-    setProfileLoading(true)
+    const blockUi = !hasProfileRef.current
+    if (blockUi) setProfileLoading(true)
     try {
       const next = await fetchCurrentProfile()
+      hasProfileRef.current = Boolean(next)
       setProfile(next)
       return next
     } finally {
-      setProfileLoading(false)
+      if (blockUi) setProfileLoading(false)
     }
   }, [])
 
@@ -70,6 +74,7 @@ export function AdminAuthProvider({children}: {children: ReactNode}) {
       if (nextSession) {
         void loadProfile()
       } else {
+        hasProfileRef.current = false
         setProfile(null)
         setProfileLoading(false)
       }
@@ -94,6 +99,7 @@ export function AdminAuthProvider({children}: {children: ReactNode}) {
       refreshProfile: loadProfile,
       signOut: async () => {
         await authSignOut()
+        hasProfileRef.current = false
         setProfile(null)
         setSession(null)
       },

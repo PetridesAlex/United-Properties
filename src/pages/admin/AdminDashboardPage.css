@@ -18,6 +18,90 @@
   box-shadow: 0 20px 44px rgba(0, 0, 0, 0.18);
 }
 
+.dash-admin__quote {
+  display: none;
+}
+
+@media (min-width: 961px) {
+  .dash-admin__quote {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.95rem 1.2rem;
+    border-radius: 18px;
+    border: 1px solid rgba(191, 152, 117, 0.26);
+    background:
+      radial-gradient(120% 140% at 0% 50%, rgba(191, 152, 117, 0.18), transparent 55%),
+      linear-gradient(145deg, rgba(255, 255, 255, 0.06), transparent 48%),
+      rgba(12, 22, 38, 0.9);
+    box-shadow:
+      0 12px 28px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .dash-admin__quote-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.64rem;
+    font-weight: 780;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #e8d2ba;
+  }
+
+  .dash-admin__quote-dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: #7dffb3;
+    box-shadow: 0 0 0 0 rgba(125, 255, 179, 0.5);
+    animation: dash-admin-quote-pulse 1.8s ease-out infinite;
+  }
+
+  .dash-admin__quote-text {
+    margin: 0;
+    font-family: 'Montserrat', var(--font-sans), system-ui, sans-serif;
+    font-size: 1.15rem;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    line-height: 1.35;
+    color: #fff8ef;
+    animation: dash-admin-quote-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes dash-admin-quote-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes dash-admin-quote-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(125, 255, 179, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(125, 255, 179, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(125, 255, 179, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-admin__quote-text,
+  .dash-admin__quote-dot {
+    animation: none;
+  }
+}
+
 .dash-admin__eyebrow {
   margin: 0 0 0.35rem;
   font-size: 0.68rem;
@@ -27,13 +111,113 @@
   color: var(--admin-gold);
 }
 
-.dash-admin__hero h1 {
+.dash-admin__hero h1,
+.dash-admin__welcome {
   margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
   font-size: clamp(1.55rem, 2.4vw, 2.15rem);
   font-weight: 800;
   letter-spacing: -0.035em;
   line-height: 1.12;
   color: var(--admin-cream);
+  animation: dash-admin-welcome-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dash-admin__wave {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15em;
+  height: 1.15em;
+  font-size: 0.92em;
+  line-height: 1;
+  transform-origin: 70% 70%;
+  animation: dash-admin-wave 1.8s ease-in-out 0.35s 3;
+}
+
+.dash-admin__welcome-text {
+  display: inline;
+  color: #f6f0e6;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+}
+
+.dash-admin__welcome-text em {
+  font-style: normal;
+  font-weight: 800;
+  background: linear-gradient(120deg, #f0dcc4 0%, #bf9875 55%, #e8d2ba 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.dash-admin__role-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+  margin: 0.55rem 0 0;
+  font-size: 0.84rem;
+  color: rgba(244, 239, 230, 0.62);
+}
+
+.dash-admin__role-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(191, 152, 117, 0.35);
+  background: rgba(191, 152, 117, 0.14);
+  color: #e8d2ba;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@keyframes dash-admin-wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  12% {
+    transform: rotate(16deg);
+  }
+  24% {
+    transform: rotate(-10deg);
+  }
+  36% {
+    transform: rotate(14deg);
+  }
+  48% {
+    transform: rotate(-6deg);
+  }
+  60% {
+    transform: rotate(8deg);
+  }
+  72% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes dash-admin-welcome-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-admin__wave,
+  .dash-admin__welcome {
+    animation: none !important;
+  }
 }
 
 .dash-admin__freshness {
@@ -62,6 +246,237 @@
 .dash-admin__hero-actions .admin-btn--ghost .dash-admin__pill {
   background: rgba(191, 152, 117, 0.85);
   color: #1a120c;
+}
+
+.dash-admin__meetings {
+  position: relative;
+  overflow: hidden;
+  padding: 1.15rem 1.15rem 1.2rem;
+  border-radius: 22px;
+  border: 1px solid rgba(191, 152, 117, 0.26);
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(191, 152, 117, 0.16), transparent 52%),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.06), transparent 42%),
+    rgba(12, 22, 38, 0.94);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.dash-admin__meetings-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin-bottom: 0.95rem;
+}
+
+.dash-admin__meetings-live {
+  display: inline-block;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-right: 0.35rem;
+  border-radius: 50%;
+  background: #7dffb3;
+  box-shadow: 0 0 0 0 rgba(125, 255, 179, 0.5);
+  vertical-align: 0.05em;
+  animation: dash-admin-meetings-pulse 1.8s ease-out infinite;
+}
+
+.dash-admin__meetings-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.42rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(191, 152, 117, 0.32);
+  background: rgba(191, 152, 117, 0.1);
+  color: #e8d2ba;
+  text-decoration: none;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.dash-admin__meetings-open:hover {
+  background: rgba(191, 152, 117, 0.18);
+  border-color: rgba(232, 210, 186, 0.45);
+}
+
+.dash-admin__meetings-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.dash-admin__meeting-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: start;
+  padding: 0.85rem 0.9rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 44%, rgba(14, 26, 42, 0.5)),
+    rgba(24, 34, 48, 0.78);
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(16px) saturate(140%);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.dash-admin__meeting-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(232, 210, 186, 0.42);
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(191, 152, 117, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.dash-admin__meeting-date {
+  width: 3.15rem;
+  padding: 0.45rem 0.3rem;
+  border-radius: 12px;
+  display: grid;
+  justify-items: center;
+  gap: 0.06rem;
+  background: linear-gradient(145deg, rgba(232, 210, 186, 0.95), rgba(191, 152, 117, 0.88));
+  color: #1a120c;
+  box-shadow: 0 6px 14px rgba(191, 152, 117, 0.28);
+}
+
+.dash-admin__meeting-day {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.dash-admin__meeting-mon {
+  font-size: 0.62rem;
+  font-weight: 780;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dash-admin__meeting-body {
+  display: grid;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.dash-admin__meeting-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem 0.55rem;
+}
+
+.dash-admin__meeting-weekday {
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(232, 210, 186, 0.82);
+}
+
+.dash-admin__meeting-type {
+  padding: 0.14rem 0.48rem;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 780;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(191, 152, 117, 0.2);
+  color: #e8d2ba;
+  border: 1px solid rgba(191, 152, 117, 0.28);
+}
+
+.dash-admin__meeting-type--viewing {
+  background: rgba(110, 170, 220, 0.2);
+  border-color: rgba(110, 170, 220, 0.35);
+  color: #c9e2f7;
+}
+
+.dash-admin__meeting-type--call {
+  background: rgba(120, 200, 150, 0.18);
+  border-color: rgba(120, 200, 150, 0.35);
+  color: #c8efd5;
+}
+
+.dash-admin__meeting-type--other {
+  background: rgba(244, 239, 230, 0.1);
+  border-color: rgba(244, 239, 230, 0.18);
+  color: rgba(244, 239, 230, 0.75);
+}
+
+.dash-admin__meeting-title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: #fff8ef;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-admin__meeting-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  margin-top: 0.1rem;
+}
+
+.dash-admin__meeting-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: rgba(244, 239, 230, 0.72);
+}
+
+.dash-admin__meeting-meta > span:first-child {
+  padding: 0.16rem 0.48rem;
+  border-radius: 999px;
+  background: rgba(191, 152, 117, 0.18);
+  color: #f0dcc4;
+  border: 1px solid rgba(191, 152, 117, 0.26);
+}
+
+@keyframes dash-admin-meetings-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(125, 255, 179, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(125, 255, 179, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(125, 255, 179, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-admin__meetings-live {
+    animation: none;
+  }
 }
 
 .dash-admin__spotlight {
@@ -722,7 +1137,8 @@
     border-radius: 18px;
   }
 
-  .dash-admin__hero h1 {
+  .dash-admin__hero h1,
+  .dash-admin__welcome {
     font-size: clamp(1.35rem, 5.5vw, 1.75rem);
     line-height: 1.15;
   }
