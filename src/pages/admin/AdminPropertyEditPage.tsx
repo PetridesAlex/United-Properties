@@ -1,5 +1,5 @@
 import {ArrowLeft, ExternalLink} from 'lucide-react'
-import {useEffect, useMemo, useState, type FormEvent} from 'react'
+import {useEffect, useMemo, useRef, useState, type FormEvent} from 'react'
 import {Link, useNavigate, useParams} from 'react-router-dom'
 import toast from 'react-hot-toast'
 import {useAdminAuth} from '../../lib/auth/AdminAuthProvider'
@@ -186,6 +186,81 @@ const emptyForm: FormState = {
   internal_notes: '',
 }
 
+const PROGRESS_PREFIX = 'up.propertyEditor.v1:'
+const NEW_PROGRESS_KEY = 'new'
+
+type EditorProgress = {
+  form: FormState
+  listingStep: ListingStepId
+  slugLocked: boolean
+  updatedAt: string
+}
+
+function isListingStepId(value: unknown): value is ListingStepId {
+  return LISTING_STEPS.some((step) => step.id === value)
+}
+
+function readEditorProgress(key: string): EditorProgress | null {
+  try {
+    const raw = localStorage.getItem(PROGRESS_PREFIX + key)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<EditorProgress>
+    if (!parsed?.form || typeof parsed.form !== 'object') return null
+    if (!isListingStepId(parsed.listingStep)) return null
+    return {
+      form: {...emptyForm, ...parsed.form},
+      listingStep: parsed.listingStep,
+      slugLocked: Boolean(parsed.slugLocked),
+      updatedAt: parsed.updatedAt || new Date().toISOString(),
+    }
+  } catch {
+    return null
+  }
+}
+
+function writeEditorProgress(key: string, progress: Omit<EditorProgress, 'updatedAt'>) {
+  try {
+    const payload: EditorProgress = {
+      ...progress,
+      updatedAt: new Date().toISOString(),
+    }
+    localStorage.setItem(PROGRESS_PREFIX + key, JSON.stringify(payload))
+  } catch {
+    // Ignore quota / private mode failures — DB autosave still covers titled drafts.
+  }
+}
+
+function clearEditorProgress(key: string) {
+  try {
+    localStorage.removeItem(PROGRESS_PREFIX + key)
+  } catch {
+    // ignore
+  }
+}
+
+function moveEditorProgress(fromKey: string, toKey: string) {
+  const current = readEditorProgress(fromKey)
+  if (!current) return
+  writeEditorProgress(toKey, {
+    form: current.form,
+    listingStep: current.listingStep,
+    slugLocked: current.slugLocked,
+  })
+  clearEditorProgress(fromKey)
+}
+
+function hasProgressContent(form: FormState, step: ListingStepId) {
+  if (step !== 'category') return true
+  return Boolean(
+    form.title.trim() ||
+      form.district.trim() ||
+      form.area.trim() ||
+      form.price.trim() ||
+      form.description.trim() ||
+      form.bazaraki_district_id != null,
+  )
+}
+
 function toForm(property: Property): FormState {
   return {
     title: property.title,
@@ -326,9 +401,33 @@ export default function AdminPropertyEditPage() {
   const [images, setImages] = useState<PropertyImage[]>([])
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
+  const [uploadingImages, setUploadingImages] = useState(false)
+  const [slugLocked, setSlugLocked] = useState(false)
+  const slugLockedRef = useRef(false)
+  const [autosaveState, setAutosaveState] = useState<'idle' | 'pending' | 'saving' | 'saved' | 'error'>(
+    'idle',
+  )
+  const [autosaveError, setAutosaveError] = useState('')
   const [showMoreActions, setShowMoreActions] = useState(false)
   const [confirmAction, setConfirmAction] = useState<string | null>(null)
   const [listingStep, setListingStep] = useState<ListingStepId>('category')
+  const [progressReady, setProgressReady] = useState(false)
+  const [resumeBanner, setResumeBanner] = useState<{step: ListingStepId; updatedAt: string} | null>(
+    null,
+  )
+  const formRef = useRef(form)
+  const listingStepRef = useRef(listingStep)
+  const lastSavedJson = useRef('')
+  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const creatingDraft = useRef(false)
+  const autosaveReady = useRef(isNew)
+
+  formRef.current = form
+  listingStepRef.current = listingStep
+  slugLockedRef.current = slugLocked
+
+  const progressKey = isNew ? NEW_PROGRESS_KEY : id!
+
   const [bazarakiSettings, setBazarakiSettings] = useState<SiteSettings>({
     id: 1,
     company_name: 'United Properties',
@@ -385,17 +484,73 @@ export default function AdminPropertyEditPage() {
   }, [])
 
   useEffect(() => {
-    if (isNew) return
+    setProgressReady(false)
+    setResumeBanner(null)
+
+    if (isNew) {
+      const saved = readEditorProgress(NEW_PROGRESS_KEY)
+      if (saved && hasProgressContent(saved.form, saved.listingStep)) {
+        setForm(saved.form)
+        setListingStep(saved.listingStep)
+        slugLockedRef.current = saved.slugLocked
+        setSlugLocked(saved.slugLocked)
+        setResumeBanner({step: saved.listingStep, updatedAt: saved.updatedAt})
+      } else {
+        setForm(emptyForm)
+        setListingStep('category')
+        slugLockedRef.current = false
+        setSlugLocked(false)
+      }
+      setProperty(null)
+      setImages([])
+      lastSavedJson.current = JSON.stringify(emptyForm)
+      autosaveReady.current = true
+      setProgressReady(true)
+      return
+    }
+
     let cancelled = false
+    setLoading(true)
     async function load() {
       try {
         const row = await fetchPropertyById(id!)
         if (!row || cancelled) return
+        const nextForm = toForm(row)
         setProperty(row)
-        setForm(toForm(row))
         setImages(
           [...(row.property_images ?? [])].sort((a, b) => a.position - b.position),
         )
+        lastSavedJson.current = JSON.stringify(nextForm)
+
+        const saved = readEditorProgress(id!)
+        const lockSlug = Boolean(row.published)
+        const localNewer =
+          Boolean(saved) &&
+          !row.published &&
+          new Date(saved!.updatedAt).getTime() > new Date(row.updated_at).getTime() &&
+          JSON.stringify(saved!.form) !== JSON.stringify(nextForm)
+
+        if (localNewer && saved) {
+          setForm(saved.form)
+          slugLockedRef.current = saved.slugLocked
+          setSlugLocked(saved.slugLocked)
+        } else {
+          setForm(nextForm)
+          slugLockedRef.current = lockSlug
+          setSlugLocked(lockSlug)
+        }
+
+        if (saved && isListingStepId(saved.listingStep)) {
+          setListingStep(saved.listingStep)
+          if (!row.published && (saved.listingStep !== 'category' || localNewer)) {
+            setResumeBanner({step: saved.listingStep, updatedAt: saved.updatedAt})
+          }
+        } else {
+          setListingStep('category')
+        }
+
+        autosaveReady.current = true
+        setProgressReady(true)
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Failed to load property')
       } finally {
@@ -407,6 +562,15 @@ export default function AdminPropertyEditPage() {
       cancelled = true
     }
   }, [id, isNew])
+
+  useEffect(() => {
+    if (loading || !progressReady) return
+    if (isNew && !hasProgressContent(form, listingStep)) {
+      clearEditorProgress(NEW_PROGRESS_KEY)
+      return
+    }
+    writeEditorProgress(progressKey, {form, listingStep, slugLocked})
+  }, [form, listingStep, slugLocked, loading, progressReady, isNew, progressKey])
 
   const bazarakiSchema = useMemo(
     () => resolveAttrsSchema(form.property_type, form.status),
@@ -441,10 +605,19 @@ export default function AdminPropertyEditPage() {
     [form, images, property, bazarakiSettings],
   )
 
+  function goToStep(step: ListingStepId) {
+    setListingStep(step)
+    setResumeBanner(null)
+  }
+
   function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
+    if (key === 'slug') {
+      slugLockedRef.current = true
+      setSlugLocked(true)
+    }
     setForm((prev) => {
       const next = {...prev, [key]: value}
-      if (key === 'title' && isNew && !prev.slug) {
+      if (key === 'title' && !slugLockedRef.current) {
         next.slug = slugify(String(value))
       }
       if (key === 'status') {
@@ -457,45 +630,215 @@ export default function AdminPropertyEditPage() {
     })
   }
 
-  async function save(opts: {publish?: boolean; draft?: boolean} = {}) {
-    setSaving(true)
-    try {
-      const payload = toPayload(form)
-      if (opts.publish) payload.published = true
-      if (opts.draft) payload.published = false
+  function resetSlugFromTitle() {
+    slugLockedRef.current = false
+    setSlugLocked(false)
+    setForm((prev) => ({...prev, slug: slugify(prev.title)}))
+  }
 
-      if (isNew) {
-        const created = await createProperty(payload, user?.id)
-        toast.success(payload.published ? 'Property published' : 'Property saved as draft')
-        navigate(`/admin/properties/${created.id}/edit`, {replace: true})
-        return
+  async function persistForm(
+    nextForm: FormState,
+    opts: {publish?: boolean; draft?: boolean; quiet?: boolean} = {},
+  ) {
+    const payload = toPayload(nextForm)
+    if (opts.publish) payload.published = true
+    if (opts.draft) payload.published = false
+
+    if (isNew) {
+      const created = await createProperty(
+        {...payload, published: opts.publish ? true : false},
+        user?.id,
+      )
+      lastSavedJson.current = JSON.stringify(nextForm)
+      moveEditorProgress(NEW_PROGRESS_KEY, String(created.id))
+      writeEditorProgress(String(created.id), {
+        form: nextForm,
+        listingStep: listingStepRef.current,
+        slugLocked: slugLockedRef.current,
+      })
+      if (opts.publish) {
+        clearEditorProgress(String(created.id))
       }
+      if (!opts.quiet) {
+        toast.success(payload.published ? 'Property published' : 'Property saved as draft')
+      }
+      navigate(`/admin/properties/${created.id}/edit`, {replace: true})
+      return created
+    }
 
-      const updated = await updateProperty(id!, payload, user?.id)
-      setProperty(updated)
+    const updated = await updateProperty(id!, payload, user?.id)
+    lastSavedJson.current = JSON.stringify(toForm(updated))
+    setProperty(updated)
+    writeEditorProgress(id!, {
+      form: toForm(updated),
+      listingStep: listingStepRef.current,
+      slugLocked: slugLockedRef.current,
+    })
+    if (opts.publish) {
+      clearEditorProgress(id!)
+    }
+    if (!opts.quiet) {
       setForm(toForm(updated))
       setImages([...(updated.property_images ?? [])].sort((a, b) => a.position - b.position))
       toast.success(payload.published ? 'Property published' : 'Property saved successfully')
+    }
+    return updated
+  }
+
+  function discardUnfinishedProgress() {
+    clearEditorProgress(progressKey)
+    setResumeBanner(null)
+    if (isNew) {
+      setForm(emptyForm)
+      setListingStep('category')
+      slugLockedRef.current = false
+      setSlugLocked(false)
+      lastSavedJson.current = JSON.stringify(emptyForm)
+      setAutosaveState('idle')
+      return
+    }
+    if (!property) return
+    const nextForm = toForm(property)
+    setForm(nextForm)
+    setListingStep('category')
+    const lockSlug = Boolean(property.published)
+    slugLockedRef.current = lockSlug
+    setSlugLocked(lockSlug)
+    lastSavedJson.current = JSON.stringify(nextForm)
+    setAutosaveState('idle')
+  }
+
+  async function save(opts: {publish?: boolean; draft?: boolean} = {}) {
+    setSaving(true)
+    setAutosaveError('')
+    try {
+      await persistForm(form, opts)
+      setAutosaveState('saved')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Save failed')
+      setAutosaveState('error')
+      setAutosaveError(err instanceof Error ? err.message : 'Save failed')
     } finally {
       setSaving(false)
     }
   }
 
-  async function onUpload(files: FileList | null) {
-    if (!files?.length || isNew || !property) {
-      toast.error('Save the property first, then upload images.')
+  async function runAutosave() {
+    if (!autosaveReady.current || creatingDraft.current || saving) return
+    const latest = formRef.current
+    if (!latest.title.trim()) return
+
+    const snapshot = JSON.stringify(latest)
+    if (snapshot === lastSavedJson.current) {
+      setAutosaveState((prev) => (prev === 'pending' ? 'idle' : prev))
       return
     }
+
+    setAutosaveState('saving')
+    setAutosaveError('')
     try {
-      for (const file of Array.from(files)) {
-        const row = await uploadPropertyImage(property.id, file)
+      if (isNew) {
+        creatingDraft.current = true
+        await persistForm(latest, {draft: true, quiet: true})
+        creatingDraft.current = false
+        setAutosaveState('saved')
+        return
+      }
+      // Keep current publish flags — only persist field changes.
+      await persistForm(latest, {quiet: true})
+      setAutosaveState('saved')
+    } catch (err) {
+      creatingDraft.current = false
+      setAutosaveState('error')
+      setAutosaveError(err instanceof Error ? err.message : 'Autosave failed')
+    }
+  }
+
+  useEffect(() => {
+    if (loading || !autosaveReady.current) return
+    if (!form.title.trim()) return
+    if (JSON.stringify(form) === lastSavedJson.current) return
+
+    setAutosaveState('pending')
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current)
+    autosaveTimer.current = setTimeout(() => {
+      void runAutosave()
+    }, 1600)
+
+    return () => {
+      if (autosaveTimer.current) clearTimeout(autosaveTimer.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- debounce on form only
+  }, [form, loading, isNew, id])
+
+  useEffect(() => {
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      if (autosaveState === 'pending' || autosaveState === 'saving') {
+        e.preventDefault()
+        e.returnValue = ''
+      } else if (form.title.trim() && JSON.stringify(form) !== lastSavedJson.current) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [autosaveState, form])
+
+  async function ensurePropertyForUpload(): Promise<string> {
+    if (property?.id) return property.id
+    if (!isNew && id) return id
+
+    creatingDraft.current = true
+    try {
+      const latest = formRef.current
+      const draftForm = latest.title.trim()
+        ? latest
+        : {
+            ...latest,
+            title: 'Untitled listing',
+            slug: latest.slug.trim() || slugify('Untitled listing'),
+          }
+      if (!latest.title.trim()) setForm(draftForm)
+
+      const created = await createProperty(
+        {...toPayload(draftForm), published: false},
+        user?.id,
+      )
+      lastSavedJson.current = JSON.stringify(draftForm)
+      moveEditorProgress(NEW_PROGRESS_KEY, String(created.id))
+      writeEditorProgress(String(created.id), {
+        form: draftForm,
+        listingStep: listingStepRef.current,
+        slugLocked: slugLockedRef.current,
+      })
+      setProperty(created)
+      setAutosaveState('saved')
+      return created.id
+    } finally {
+      creatingDraft.current = false
+    }
+  }
+
+  async function onUpload(files: File[]) {
+    if (!files.length || uploadingImages) return
+    const needsRedirect = isNew || !property
+    setUploadingImages(true)
+    try {
+      const propertyId = await ensurePropertyForUpload()
+      for (const file of files) {
+        const row = await uploadPropertyImage(propertyId, file)
         setImages((prev) => [...prev, row as PropertyImage])
       }
-      toast.success('Image uploaded')
+      toast.success(files.length === 1 ? 'Image uploaded' : `${files.length} images uploaded`)
+      if (needsRedirect) {
+        navigate(`/admin/properties/${propertyId}/edit`, {replace: true})
+      }
     } catch (err) {
+      console.error('[property images]', err)
       toast.error(err instanceof Error ? err.message : 'Image upload failed')
+    } finally {
+      setUploadingImages(false)
     }
   }
 
@@ -556,9 +899,31 @@ export default function AdminPropertyEditPage() {
             ) : null}
           </div>
           {isNew ? (
-            <p className="prop-edit__hint">Reference is assigned automatically when you save.</p>
+            <p className="prop-edit__hint">
+              Progress is kept as you go — leave and come back to continue on the same step.
+              Reference is assigned automatically when the draft saves.
+            </p>
           ) : null}
         </div>
+
+        {resumeBanner ? (
+          <div className="prop-edit__resume" role="status">
+            <p>
+              Continuing from <strong>{LISTING_STEPS.find((s) => s.id === resumeBanner.step)?.label ?? 'your last step'}</strong>
+              {resumeBanner.updatedAt
+                ? ` · saved ${new Date(resumeBanner.updatedAt).toLocaleString('en-GB', {
+                    day: 'numeric',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}`
+                : ''}
+            </p>
+            <button type="button" className="prop-edit__resume-discard" onClick={discardUnfinishedProgress}>
+              {isNew ? 'Discard & start over' : 'Reset to saved draft'}
+            </button>
+          </div>
+        ) : null}
       </header>
 
       <form
@@ -577,7 +942,7 @@ export default function AdminPropertyEditPage() {
                 key={step.id}
                 type="button"
                 className={`prop-edit__step${listingStep === step.id ? ' is-active' : ''}${done ? ' is-done' : ''}`}
-                onClick={() => setListingStep(step.id)}
+                onClick={() => goToStep(step.id)}
               >
                 <span className="prop-edit__step-index">{index + 1}</span>
                 <span className="prop-edit__step-label">{step.label.replace(/^\d+\.\s*/, '')}</span>
@@ -632,7 +997,7 @@ export default function AdminPropertyEditPage() {
               </div>
             </div>
             <div className="prop-edit__step-actions">
-              <button type="button" className="admin-btn admin-btn--gold" onClick={() => setListingStep('location')}>
+              <button type="button" className="admin-btn admin-btn--gold" onClick={() => goToStep('location')}>
                 Continue to location
               </button>
             </div>
@@ -679,7 +1044,7 @@ export default function AdminPropertyEditPage() {
               </div>
             </div>
             <div className="prop-edit__step-actions">
-              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setListingStep('category')}>
+              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => goToStep('category')}>
                 Back
               </button>
               <button
@@ -694,7 +1059,7 @@ export default function AdminPropertyEditPage() {
                       setField('longitude', String(coords.longitude))
                     }
                   }
-                  setListingStep('map')
+                  goToStep('map')
                 }}
               >
                 Continue to map
@@ -727,10 +1092,10 @@ export default function AdminPropertyEditPage() {
               }}
             />
             <div className="prop-edit__step-actions">
-              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setListingStep('location')}>
+              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => goToStep('location')}>
                 Back to location list
               </button>
-              <button type="button" className="admin-btn admin-btn--gold" onClick={() => setListingStep('details')}>
+              <button type="button" className="admin-btn admin-btn--gold" onClick={() => goToStep('details')}>
                 Continue
               </button>
             </div>
@@ -750,7 +1115,19 @@ export default function AdminPropertyEditPage() {
               </div>
               <div className="admin-field">
                 <label>URL slug</label>
-                <input value={form.slug} onChange={(e) => setField('slug', e.target.value)} />
+                <input
+                  value={form.slug}
+                  onChange={(e) => setField('slug', e.target.value)}
+                  placeholder="auto-filled-from-title"
+                />
+                <p className="prop-edit__field-hint">
+                  {slugLocked
+                    ? 'Custom slug locked. '
+                    : 'Auto-filled from the title. '}
+                  <button type="button" className="prop-edit__text-btn" onClick={resetSlugFromTitle}>
+                    Reset from title
+                  </button>
+                </p>
               </div>
               <div className="admin-field">
                 <label>Price (€)</label>
@@ -1061,10 +1438,10 @@ export default function AdminPropertyEditPage() {
             ) : null}
 
             <div className="prop-edit__step-actions">
-              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setListingStep('map')}>
+              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => goToStep('map')}>
                 Back
               </button>
-              <button type="button" className="admin-btn admin-btn--gold" onClick={() => setListingStep('media')}>
+              <button type="button" className="admin-btn admin-btn--gold" onClick={() => goToStep('media')}>
                 Continue to media
               </button>
             </div>
@@ -1081,15 +1458,22 @@ export default function AdminPropertyEditPage() {
               <div className="admin-field admin-file-upload">
                 <label htmlFor="property-images">Images</label>
                 <p className="admin-file-upload__hint">
-                  Hold Ctrl / Cmd to choose several photos. Formats: .jpg, .jpeg, .png, .webp, .gif
+                  Select one or many photos at once — they upload immediately.
+                  {uploadingImages ? ' Uploading…' : ''}
                 </p>
                 <input
                   id="property-images"
                   className="admin-file-input"
                   type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif,image/*"
+                  accept="image/*"
                   multiple
-                  onChange={(e) => void onUpload(e.target.files)}
+                  disabled={uploadingImages}
+                  onChange={(e) => {
+                    // Copy files before clearing — FileList is live and becomes empty when value is reset.
+                    const selected = e.target.files ? Array.from(e.target.files) : []
+                    e.target.value = ''
+                    void onUpload(selected)
+                  }}
                 />
               </div>
               <div className="admin-images">
@@ -1184,10 +1568,10 @@ export default function AdminPropertyEditPage() {
             </AdminFormSection>
 
             <div className="prop-edit__step-actions">
-              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setListingStep('details')}>
+              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => goToStep('details')}>
                 Back
               </button>
-              <button type="button" className="admin-btn admin-btn--gold" onClick={() => setListingStep('publish')}>
+              <button type="button" className="admin-btn admin-btn--gold" onClick={() => goToStep('publish')}>
                 Continue to publish
               </button>
             </div>
@@ -1312,7 +1696,7 @@ export default function AdminPropertyEditPage() {
             </AdminFormSection>
 
             <div className="prop-edit__step-actions">
-              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setListingStep('media')}>
+              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => goToStep('media')}>
                 Back
               </button>
             </div>
@@ -1321,6 +1705,26 @@ export default function AdminPropertyEditPage() {
 
         <div className="admin-form__toolbar prop-edit__save-toolbar">
           <div className="admin-form__toolbar-inner prop-edit__save-toolbar-inner">
+            <p
+              className={`prop-edit__autosave prop-edit__autosave--${autosaveState}`}
+              aria-live="polite"
+            >
+              {autosaveState === 'pending'
+                ? 'Unsaved changes — autosaving…'
+                : autosaveState === 'saving'
+                  ? isNew
+                    ? 'Saving draft…'
+                    : 'Autosaving…'
+                  : autosaveState === 'saved'
+                    ? isNew
+                      ? 'Draft saved'
+                      : 'All changes saved'
+                    : autosaveState === 'error'
+                      ? autosaveError || 'Autosave failed — try Save Draft'
+                      : form.title.trim()
+                        ? 'Autosave on'
+                        : 'Add a title to start autosaving as draft'}
+            </p>
             <div className="prop-edit__save-primary">
               <button
                 type="button"

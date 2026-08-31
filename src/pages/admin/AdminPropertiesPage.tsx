@@ -207,7 +207,7 @@ export default function AdminPropertiesPage() {
                       className="admin-btn admin-btn--gold props-admin__edit"
                       to={`/admin/properties/${p.id}/edit`}
                     >
-                      Edit
+                      {p.published ? 'Edit' : 'Continue'}
                     </Link>
                     {p.published && p.slug ? (
                       <a

@@ -1,25 +1,28 @@
 import {supabase} from '../supabase/client'
 
-const MAX_BYTES = 10 * 1024 * 1024
-const ALLOWED = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-
-export function validateImageFile(file: File): string | null {
-  if (!ALLOWED.has(file.type)) return 'Use JPG, PNG, WebP, or GIF images.'
-  if (file.size > MAX_BYTES) return 'Each image must be under 10 MB.'
+export function validateImageFile(_file: File): string | null {
   return null
+}
+
+function fileExtension(file: File): string {
+  const fromName = file.name.includes('.')
+    ? file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '')
+    : ''
+  if (fromName) return fromName
+  const subtype = file.type.split('/')[1]?.toLowerCase().replace(/[^a-z0-9]/g, '')
+  return subtype || 'bin'
 }
 
 export async function uploadPropertyImage(propertyId: string, file: File) {
   if (!supabase) throw new Error('Supabase is not configured')
-  const validationError = validateImageFile(file)
-  if (validationError) throw new Error(validationError)
 
-  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+  const ext = fileExtension(file)
   const path = `${propertyId}/${crypto.randomUUID()}.${ext}`
+  const contentType = file.type || 'application/octet-stream'
 
   const {error: uploadError} = await supabase.storage
     .from('properties')
-    .upload(path, file, {cacheControl: '3600', upsert: false, contentType: file.type})
+    .upload(path, file, {cacheControl: '3600', upsert: false, contentType})
 
   if (uploadError) throw new Error(uploadError.message)
 
