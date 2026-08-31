@@ -1,6 +1,16 @@
 import type {BazarakiAttrs} from './mapPropertyToListItem'
 import type {BazarakiListItem} from './mapPropertyToListItem'
 
+/** Escape XML special chars (needed for image URLs with & query params). */
+function escapeXml(text: string): string {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+}
+
 function renderGeometry(item: BazarakiListItem): string {
   if (item.latitude != null && item.longitude != null) {
     return `<geometry>
@@ -13,7 +23,7 @@ function renderGeometry(item: BazarakiListItem): string {
 
 function renderImages(urls: string[]): string {
   if (!urls.length) return '<images></images>'
-  const items = urls.map((url) => `<list-item>${url}</list-item>`).join('\n')
+  const items = urls.map((url) => `<list-item>${escapeXml(url)}</list-item>`).join('\n')
   return `<images>
 ${items}
 </images>`
@@ -21,7 +31,8 @@ ${items}
 
 function optionalTag(name: string, value: string | number | null | undefined): string {
   if (value == null || value === '') return ''
-  return `<${name}>${value}</${name}>`
+  const rendered = typeof value === 'string' ? escapeXml(value) : value
+  return `<${name}>${rendered}</${name}>`
 }
 
 function renderAttrs(attrs: BazarakiAttrs): string {
@@ -133,8 +144,8 @@ ${renderImages(item.imageUrls)}
 <exchange>${item.exchange}</exchange>
 ${renderAttrs(item.attrs)}
 ${renderGeometry(item)}
-<title>${item.title}</title>
-<whatsapp>${item.whatsapp}</whatsapp>
+<title>${escapeXml(item.title)}</title>
+<whatsapp>${escapeXml(item.whatsapp)}</whatsapp>
 </list-item>`
 }
 

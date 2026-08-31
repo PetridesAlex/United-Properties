@@ -107,6 +107,36 @@ assert('apartment rent rubric 3529', apartmentXml.includes('<rubric>3529</rubric
 assert('apartment type 5', apartmentXml.includes('<type>5</type>'))
 assert('apartment floor', apartmentXml.includes('<floor>20</floor>'))
 
+const imageAmpXml = generateBazarakiXml([
+  {
+    lastUpdate: '2026-08-26 23:00:00',
+    externalId: 'img-amp',
+    imageUrls: ['https://images.unsplash.com/photo-1?auto=format&fit=crop&w=1600&q=80'],
+    status: 'active',
+    rubric: 3528,
+    district: 5459,
+    description: 'Image amp test',
+    price: '100.00',
+    phoneHide: 0,
+    negotiablePrice: 0,
+    exchange: 0,
+    attrsSchema: 'other',
+    attrs: {schema: 'other', area: 50, condition: 20, postalcode: '4152'},
+    latitude: null,
+    longitude: null,
+    title: 'Amp test',
+    whatsapp: '',
+  },
+])
+
+assert(
+  'escapes ampersands in image URLs',
+  imageAmpXml.includes(
+    'https://images.unsplash.com/photo-1?auto=format&amp;fit=crop&amp;w=1600&amp;q=80',
+  ),
+)
+assert('escaped image XML has no raw query ampersands', !imageAmpXml.includes('format&fit='))
+
 const prefabXml = generateBazarakiXml([
   {
     lastUpdate: '2026-08-26 23:00:00',
