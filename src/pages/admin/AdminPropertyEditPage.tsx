@@ -20,7 +20,6 @@ import {
 import {completedFromActive, revertCompleted} from '../../lib/properties/mappers'
 import {slugify} from '../../lib/properties/slug'
 import {validatePropertyForBazaraki} from '../../lib/integrations/bazaraki/validatePropertyForBazaraki'
-import {toCmsLocationFields} from '../../lib/integrations/bazaraki/districts'
 import {
   BAZARAKI_MUST_HAVE_LABELS,
   COMMERCIAL_TYPE_LABELS,
@@ -31,6 +30,7 @@ import {
   isPlotsOfLandType,
   getBazarakiPropertyTypes,
   isPropertyTypeValidForStatus,
+  getDistrictCoordinates,
 } from '../../lib/integrations/bazaraki'
 import {
   LAND_TYPE_OPTIONS,
@@ -38,14 +38,25 @@ import {
   SHARE_OPTIONS,
 } from '../../lib/integrations/bazaraki/landMappings'
 import {DEFAULT_BAZARAKI_RUBRICS} from '../../lib/integrations/bazaraki/rubricMappings'
-import BazarakiDistrictPicker from '../../components/admin/BazarakiDistrictPicker'
 import BazarakiLocationPicker from '../../components/admin/BazarakiLocationPicker'
+import PropertyMapPinPicker from '../../components/admin/PropertyMapPinPicker'
 import AdminToggle from '../../components/admin/AdminToggle'
 import AdminFormSection from '../../components/admin/AdminFormSection'
 import {supabase} from '../../lib/supabase/client'
 import type {Property, PropertyImage, PropertyStatus, SiteSettings} from '../../types/cms'
 import '../../components/admin/AdminShell.css'
 import './AdminPropertyEditPage.css'
+
+const LISTING_STEPS = [
+  {id: 'category', label: '1. Category', title: 'Choose a category'},
+  {id: 'location', label: '2. Location', title: 'Select location'},
+  {id: 'map', label: '3. Map', title: 'Location on the map'},
+  {id: 'details', label: '4. Details', title: 'Property details'},
+  {id: 'media', label: '5. Media', title: 'Images & description'},
+  {id: 'publish', label: '6. Publish', title: 'Publishing'},
+] as const
+
+type ListingStepId = (typeof LISTING_STEPS)[number]['id']
 
 const LEGACY_PROPERTY_TYPES = [
   'Apartment',
@@ -78,6 +89,8 @@ type FormState = {
   city: string
   area: string
   address: string
+  latitude: string
+  longitude: string
   bedrooms: string
   bathrooms: string
   internal_area: string
@@ -130,6 +143,8 @@ const emptyForm: FormState = {
   city: 'Limassol',
   area: '',
   address: '',
+  latitude: '',
+  longitude: '',
   bedrooms: '',
   bathrooms: '',
   internal_area: '',
@@ -183,6 +198,8 @@ function toForm(property: Property): FormState {
     city: property.city || '',
     area: property.area || '',
     address: property.address || '',
+    latitude: property.latitude != null ? String(property.latitude) : '',
+    longitude: property.longitude != null ? String(property.longitude) : '',
     bedrooms: property.bedrooms != null ? String(property.bedrooms) : '',
     bathrooms: property.bathrooms != null ? String(property.bathrooms) : '',
     internal_area: property.internal_area != null ? String(property.internal_area) : '',
@@ -252,6 +269,8 @@ function toPayload(form: FormState) {
     city: form.city.trim() || null,
     area: form.area.trim() || null,
     address: form.address.trim() || null,
+    latitude: num(form.latitude),
+    longitude: num(form.longitude),
     bedrooms: num(form.bedrooms),
     bathrooms: num(form.bathrooms),
     internal_area: num(form.internal_area),
@@ -309,6 +328,7 @@ export default function AdminPropertyEditPage() {
   const [saving, setSaving] = useState(false)
   const [showMoreActions, setShowMoreActions] = useState(false)
   const [confirmAction, setConfirmAction] = useState<string | null>(null)
+  const [listingStep, setListingStep] = useState<ListingStepId>('category')
   const [bazarakiSettings, setBazarakiSettings] = useState<SiteSettings>({
     id: 1,
     company_name: 'United Properties',
@@ -542,457 +562,215 @@ export default function AdminPropertyEditPage() {
       </header>
 
       <form
-        className="admin-form prop-edit__form"
+        className="admin-form prop-edit__form prop-edit__form--wizard"
         onSubmit={(e: FormEvent) => {
           e.preventDefault()
           void save()
         }}
       >
-        <AdminFormSection
-          eyebrow="Listing"
-          title="Basic information"
-          lede="Core identity, pricing, and listing classification."
-        >
-          <div className="admin-form__grid">
-            <div className="admin-field admin-field--full">
-              <label>Property title</label>
-              <input value={form.title} onChange={(e) => setField('title', e.target.value)} required />
-            </div>
-            <div className="admin-field">
-              <label>URL slug</label>
-              <input value={form.slug} onChange={(e) => setField('slug', e.target.value)} />
-            </div>
-            <div className="admin-field">
-              <label>Property type</label>
-              <select
-                value={form.property_type}
-                onChange={(e) => setField('property_type', e.target.value)}
+        <nav className="prop-edit__steps" aria-label="Listing steps">
+          {LISTING_STEPS.map((step, index) => {
+            const activeIndex = LISTING_STEPS.findIndex((s) => s.id === listingStep)
+            const done = index < activeIndex
+            return (
+              <button
+                key={step.id}
+                type="button"
+                className={`prop-edit__step${listingStep === step.id ? ' is-active' : ''}${done ? ' is-done' : ''}`}
+                onClick={() => setListingStep(step.id)}
               >
+                <span className="prop-edit__step-index">{index + 1}</span>
+                <span className="prop-edit__step-label">{step.label.replace(/^\d+\.\s*/, '')}</span>
+              </button>
+            )
+          })}
+        </nav>
+
+        {listingStep === 'category' ? (
+          <AdminFormSection
+            eyebrow="Step 1"
+            title="Choose a category"
+            lede="Same as Bazaraki: pick sale or rent, then the property category."
+          >
+            <div className="prop-edit__category-board">
+              <div className="prop-edit__category-col">
+                <p className="prop-edit__category-heading">Listing purpose</p>
+                {(
+                  [
+                    ['for_sale', 'Real Estate for sale'],
+                    ['for_rent', 'Real Estate to rent'],
+                    ['sold', 'Sold'],
+                    ['rented', 'Rented'],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`prop-edit__category-option${form.status === value ? ' is-selected' : ''}`}
+                    onClick={() => setField('status', value)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="prop-edit__category-col">
+                <p className="prop-edit__category-heading">Property type</p>
                 {propertyTypeOptions.map((t) => (
-                  <option key={t} value={t}>
+                  <button
+                    key={t}
+                    type="button"
+                    className={`prop-edit__category-option${form.property_type === t ? ' is-selected' : ''}`}
+                    onClick={() => setField('property_type', t)}
+                  >
                     {t}
                     {LEGACY_PROPERTY_TYPES.includes(t as (typeof LEGACY_PROPERTY_TYPES)[number]) &&
                     !getBazarakiPropertyTypes(form.status).includes(t)
                       ? ' (legacy)'
                       : ''}
-                  </option>
+                  </button>
                 ))}
-              </select>
-            </div>
-            <div className="admin-field">
-              <label>For Sale / For Rent</label>
-              <select
-                value={form.status}
-                onChange={(e) => setField('status', e.target.value as PropertyStatus)}
-              >
-                <option value="for_sale">For Sale</option>
-                <option value="for_rent">For Rent</option>
-                <option value="sold">Sold</option>
-                <option value="rented">Rented</option>
-              </select>
-            </div>
-            <div className="admin-field">
-              <label>Price</label>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={form.price}
-                onChange={(e) => setField('price', e.target.value)}
-              />
-            </div>
-            <div className="admin-field">
-              <label>Currency</label>
-              <input value={form.currency} onChange={(e) => setField('currency', e.target.value)} />
-            </div>
-          </div>
-        </AdminFormSection>
-
-        <AdminFormSection eyebrow="Location" title="Location" lede="Where the property is situated on the website and in feeds.">
-          <BazarakiLocationPicker
-            value={{
-              district: form.district,
-              city: form.city,
-              area: form.area,
-              bazarakiDistrictId: form.bazaraki_district_id,
-            }}
-            onChange={({district, city, area, bazarakiDistrictId, postalCode}) => {
-              setField('district', district)
-              setField('city', city)
-              setField('area', area)
-              setField('bazaraki_district_id', bazarakiDistrictId)
-              if (postalCode && !form.postal_code.trim()) setField('postal_code', postalCode)
-            }}
-          />
-        </AdminFormSection>
-
-        <AdminFormSection
-          eyebrow="Specifications"
-          title="Property details"
-          lede="Rooms, areas, condition, and land-specific attributes when applicable."
-        >
-          <div className="admin-form__grid">
-            {(
-              [
-                ['bedrooms', 'Bedrooms'],
-                ['bathrooms', 'Bathrooms'],
-                ['internal_area', 'Internal area'],
-                ['covered_area', 'Covered area'],
-                ['plot_size', 'Plot size'],
-                ['floor', 'Floor'],
-                ['floors_total', 'Floors total'],
-                ['year_built', 'Year built'],
-                ['parking_spaces', 'Parking'],
-              ] as const
-            ).map(([key, label]) => (
-              <div className="admin-field" key={key}>
-                <label>{label}</label>
-                <input
-                  type="number"
-                  value={form[key]}
-                  onChange={(e) => setField(key, e.target.value)}
-                />
               </div>
-            ))}
-            <div className="admin-field">
-              <label>Furnishing</label>
-              <select value={form.furnishing} onChange={(e) => setField('furnishing', e.target.value)}>
-                <option value="">—</option>
-                {FURNISHING_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
             </div>
-            <div className="admin-field">
-              <label>Condition</label>
-              <select value={form.condition} onChange={(e) => setField('condition', e.target.value)}>
-                <option value="">—</option>
-                {CONDITION_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
+            <div className="prop-edit__step-actions">
+              <button type="button" className="admin-btn admin-btn--gold" onClick={() => setListingStep('location')}>
+                Continue to location
+              </button>
             </div>
-            <div className="admin-field">
-              <label>Energy efficiency</label>
-              <select
-                value={form.energy_efficiency}
-                onChange={(e) => setField('energy_efficiency', e.target.value)}
-              >
-                <option value="">—</option>
-                {ENERGY_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {form.property_type === 'Houses' ? (
+          </AdminFormSection>
+        ) : null}
+
+        {listingStep === 'location' ? (
+          <AdminFormSection
+            eyebrow="Step 2"
+            title="Select location"
+            lede="One location for the website and Bazaraki — district, then area. Next you’ll place the pin on the map."
+          >
+            <BazarakiLocationPicker
+              value={{
+                district: form.district,
+                city: form.city,
+                area: form.area,
+                bazarakiDistrictId: form.bazaraki_district_id,
+              }}
+              onChange={({district, city, area, bazarakiDistrictId, postalCode}) => {
+                setField('district', district)
+                setField('city', city)
+                setField('area', area)
+                setField('bazaraki_district_id', bazarakiDistrictId)
+                if (postalCode && !form.postal_code.trim()) setField('postal_code', postalCode)
+                const coords = getDistrictCoordinates(bazarakiDistrictId)
+                if (coords) {
+                  setField('latitude', String(coords.latitude))
+                  setField('longitude', String(coords.longitude))
+                } else if (bazarakiDistrictId == null) {
+                  setField('latitude', '')
+                  setField('longitude', '')
+                }
+              }}
+            />
+            <div className="admin-form__grid" style={{marginTop: '0.85rem'}}>
               <div className="admin-field">
-                <label>House type (Bazaraki)</label>
-                <select
-                  value={form.bazaraki_house_type}
-                  onChange={(e) => setField('bazaraki_house_type', e.target.value)}
-                >
-                  <option value="">Select house type</option>
-                  {Object.entries(BAZARAKI_HOUSE_TYPE_LABELS).map(([key, label]) => (
-                    <option key={key} value={key}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : null}
-            {isPlotsOfLandType(form.property_type) ? (
-              <>
-                <div className="admin-field">
-                  <label>Land type</label>
-                  <select
-                    value={form.land_type}
-                    onChange={(e) => setField('land_type', e.target.value)}
-                  >
-                    <option value="">Select land type</option>
-                    {LAND_TYPE_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="admin-field">
-                  <label>Plot type</label>
-                  <select
-                    value={form.plot_type}
-                    onChange={(e) => setField('plot_type', e.target.value)}
-                  >
-                    <option value="">Select plot type</option>
-                    {PLOT_TYPE_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="admin-field">
-                  <label>Share</label>
-                  <select value={form.share} onChange={(e) => setField('share', e.target.value)}>
-                    <option value="">—</option>
-                    {SHARE_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="admin-field">
-                  <label>Coverage</label>
-                  <input
-                    value={form.coverage}
-                    onChange={(e) => setField('coverage', e.target.value)}
-                  />
-                </div>
-                <div className="admin-field">
-                  <label>Building density</label>
-                  <input
-                    value={form.building_density}
-                    onChange={(e) => setField('building_density', e.target.value)}
-                  />
-                </div>
-                <div className="admin-field">
-                  <label>Planning zone</label>
-                  <input
-                    value={form.planning_zone}
-                    onChange={(e) => setField('planning_zone', e.target.value)}
-                  />
-                </div>
-                <div className="admin-field">
-                  <label>Parcel number</label>
-                  <input
-                    value={form.parcel_number}
-                    onChange={(e) => setField('parcel_number', e.target.value)}
-                  />
-                </div>
-                <div className="admin-field">
-                  <label>Registration block</label>
-                  <input
-                    type="number"
-                    value={form.registration_block}
-                    onChange={(e) => setField('registration_block', e.target.value)}
-                  />
-                </div>
-                <div className="admin-field">
-                  <label>Registration number</label>
-                  <input
-                    type="number"
-                    value={form.registration_number}
-                    onChange={(e) => setField('registration_number', e.target.value)}
-                  />
-                </div>
-              </>
-            ) : null}
-          </div>
-        </AdminFormSection>
-
-        <AdminFormSection eyebrow="Content" title="Description" lede="Short summary for cards and full listing copy.">
-          <div className="admin-field">
-            <label>Short description</label>
-            <textarea
-              value={form.short_description}
-              onChange={(e) => setField('short_description', e.target.value)}
-            />
-          </div>
-          <div className="admin-field">
-            <label>Full description</label>
-            <textarea
-              className="admin-textarea--tall"
-              value={form.description}
-              onChange={(e) => setField('description', e.target.value)}
-            />
-          </div>
-        </AdminFormSection>
-
-        <AdminFormSection eyebrow="Amenities" title="Features" lede="Comma-separated highlights shown on the property page.">
-          <div className="admin-field">
-            <label>Comma-separated features</label>
-            <textarea
-              value={form.featuresText}
-              onChange={(e) => setField('featuresText', e.target.value)}
-              placeholder="Pool, Sea view, Covered parking"
-            />
-          </div>
-        </AdminFormSection>
-
-        <AdminFormSection eyebrow="Media" title="Images" lede="Upload gallery images. Set a main image and drag order with the arrow controls.">
-          <div className="admin-field admin-file-upload">
-            <label htmlFor="property-images">Upload images</label>
-            <p className="admin-file-upload__hint">
-              Tap to choose photos from your gallery or take new ones with your camera.
-            </p>
-            <input
-              id="property-images"
-              className="admin-file-input"
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif,image/*"
-              multiple
-              onChange={(e) => void onUpload(e.target.files)}
-            />
-          </div>
-          <div className="admin-images">
-            {images.map((img, index) => (
-              <div className="admin-image-tile" key={img.id}>
-                <img src={img.image_url} alt={img.alt_text || ''} />
-                <div className="admin-image-tile__actions">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      void setFeaturedImage(img.property_id, img.id).then(() => {
-                        setImages((prev) =>
-                          prev.map((row) => ({...row, is_featured: row.id === img.id})),
-                        )
-                        toast.success('Featured image updated')
-                      })
-                    }
-                  >
-                    {img.is_featured ? 'Main' : 'Set main'}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={index === 0}
-                    onClick={() => {
-                      const next = [...images]
-                      ;[next[index - 1], next[index]] = [next[index], next[index - 1]]
-                      setImages(next)
-                      void reorderPropertyImages(
-                        next.map((row, position) => ({id: row.id, position})),
-                      )
-                    }}
-                  >
-                    ←
-                  </button>
-                  <button
-                    type="button"
-                    disabled={index === images.length - 1}
-                    onClick={() => {
-                      const next = [...images]
-                      ;[next[index + 1], next[index]] = [next[index], next[index + 1]]
-                      setImages(next)
-                      void reorderPropertyImages(
-                        next.map((row, position) => ({id: row.id, position})),
-                      )
-                    }}
-                  >
-                    →
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      void deletePropertyImage(img.id, img.storage_path).then(() => {
-                        setImages((prev) => prev.filter((row) => row.id !== img.id))
-                        toast.success('Image removed')
-                      })
-                    }
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </AdminFormSection>
-
-        <AdminFormSection
-          className="admin-publish-section"
-          eyebrow="Distribution"
-          title="Publishing"
-          lede="Control website visibility and Bazaraki syndication."
-        >
-          <div className="admin-toggle-group">
-            <AdminToggle
-              label="Publish on Website"
-              description="List this property on unitedproperties.eu"
-              checked={form.published}
-              onChange={(checked) => setField('published', checked)}
-            />
-            <AdminToggle
-              label="Featured Property"
-              description="Highlight on the homepage and featured modules"
-              checked={form.featured}
-              onChange={(checked) => setField('featured', checked)}
-            />
-            <AdminToggle
-              label="Publish to Bazaraki"
-              description="Include in the XML feed when readiness checks pass"
-              checked={form.publish_to_bazaraki}
-              onChange={(checked) => setField('publish_to_bazaraki', checked)}
-            />
-          </div>
-
-          {form.publish_to_bazaraki ? (
-            <div className="admin-publish-bazaraki">
-              <BazarakiDistrictPicker
-                value={form.bazaraki_district_id}
-                onChange={(districtId, district) => {
-                  setField('bazaraki_district_id', districtId)
-                  if (district) {
-                    const cms = toCmsLocationFields(district)
-                    setField('district', cms.district)
-                    setField('city', cms.city)
-                    setField('area', cms.area)
-                  }
-                }}
-                onPostalCodeSuggest={(code) => {
-                  if (!form.postal_code.trim()) setField('postal_code', code)
-                }}
-              />
-              <div className="admin-field">
-                <label>Postal code (Bazaraki)</label>
+                <label>Postal code</label>
                 <input
                   value={form.postal_code}
                   onChange={(e) => setField('postal_code', e.target.value)}
                   placeholder="e.g. 4152"
                 />
               </div>
-              {bazarakiSchema ? (
-                <p className="admin-bazaraki-schema">
-                  <span className="admin-bazaraki-schema__label">Schema</span>
-                  <strong>{bazaraki.attrsSchema ?? 'Unknown'}</strong>
-                  {bazaraki.rubricCategory ? <span>{bazaraki.rubricCategory}</span> : null}
-                  {bazaraki.rubricId ? (
-                    <span className="admin-bazaraki-schema__rubric">Rubric {bazaraki.rubricId}</span>
-                  ) : null}
-                </p>
-              ) : (
-                <p className="admin-login__error">
-                  This property type and status cannot be exported to Bazaraki.
-                </p>
-              )}
-              {bazarakiSchema === 'commercial' ? (
-                <div className="admin-field">
-                  <label>Commercial type (Bazaraki)</label>
-                  <select
-                    value={form.bazaraki_commercial_type}
-                    onChange={(e) => setField('bazaraki_commercial_type', e.target.value)}
-                  >
-                    <option value="">Select type</option>
-                    {Object.entries(COMMERCIAL_TYPE_LABELS).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ) : null}
+            </div>
+            <div className="prop-edit__step-actions">
+              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setListingStep('category')}>
+                Back
+              </button>
+              <button
+                type="button"
+                className="admin-btn admin-btn--gold"
+                disabled={!form.bazaraki_district_id}
+                onClick={() => {
+                  if (!form.latitude || !form.longitude) {
+                    const coords = getDistrictCoordinates(form.bazaraki_district_id)
+                    if (coords) {
+                      setField('latitude', String(coords.latitude))
+                      setField('longitude', String(coords.longitude))
+                    }
+                  }
+                  setListingStep('map')
+                }}
+              >
+                Continue to map
+              </button>
+            </div>
+          </AdminFormSection>
+        ) : null}
+
+        {listingStep === 'map' ? (
+          <AdminFormSection
+            eyebrow="Step 3"
+            title="Location on the map"
+            lede="Drag the pin to the exact spot — same as posting on Bazaraki."
+          >
+            <PropertyMapPinPicker
+              latitude={num(form.latitude)}
+              longitude={num(form.longitude)}
+              label={
+                form.district && form.area
+                  ? `${form.district} — ${form.area}`
+                  : form.district || undefined
+              }
+              defaultCenter={(() => {
+                const coords = getDistrictCoordinates(form.bazaraki_district_id)
+                return coords ? {lat: coords.latitude, lng: coords.longitude} : null
+              })()}
+              onChange={({latitude, longitude}) => {
+                setField('latitude', String(latitude))
+                setField('longitude', String(longitude))
+              }}
+            />
+            <div className="prop-edit__step-actions">
+              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setListingStep('location')}>
+                Back to location list
+              </button>
+              <button type="button" className="admin-btn admin-btn--gold" onClick={() => setListingStep('details')}>
+                Continue
+              </button>
+            </div>
+          </AdminFormSection>
+        ) : null}
+
+        {listingStep === 'details' ? (
+          <AdminFormSection
+            eyebrow="Step 4"
+            title="Property details"
+            lede="Fields follow the Bazaraki listing form order for this category."
+          >
+            <div className="admin-form__grid">
+              <div className="admin-field admin-field--full">
+                <label>Title</label>
+                <input value={form.title} onChange={(e) => setField('title', e.target.value)} required />
+              </div>
+              <div className="admin-field">
+                <label>URL slug</label>
+                <input value={form.slug} onChange={(e) => setField('slug', e.target.value)} />
+              </div>
+              <div className="admin-field">
+                <label>Price (€)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={form.price}
+                  onChange={(e) => setField('price', e.target.value)}
+                />
+              </div>
+
               {bazarakiSchema === 'houses' ? (
                 <div className="admin-field">
-                  <label>House type (Bazaraki)</label>
+                  <label>Type</label>
                   <select
                     value={form.bazaraki_house_type}
                     onChange={(e) => setField('bazaraki_house_type', e.target.value)}
                   >
-                    <option value="">Select house type</option>
+                    <option value="">Choose one…</option>
                     {Object.entries(BAZARAKI_HOUSE_TYPE_LABELS).map(([key, label]) => (
                       <option key={key} value={key}>
                         {label}
@@ -1001,19 +779,41 @@ export default function AdminPropertyEditPage() {
                   </select>
                 </div>
               ) : null}
+
+              {bazarakiSchema === 'commercial' ? (
+                <div className="admin-field">
+                  <label>Property type</label>
+                  <select
+                    value={form.bazaraki_commercial_type}
+                    onChange={(e) => setField('bazaraki_commercial_type', e.target.value)}
+                  >
+                    <option value="">Choose one…</option>
+                    {Object.entries(COMMERCIAL_TYPE_LABELS).map(([key, label]) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
+
               {bazarakiSchema === 'houses' || bazarakiSchema === 'apartment' ? (
-                <div className="admin-form__grid">
+                <>
                   <div className="admin-field">
-                    <label>Air conditioning</label>
-                    <select
-                      value={form.bazaraki_air_conditioning}
-                      onChange={(e) => setField('bazaraki_air_conditioning', e.target.value)}
-                    >
-                      <option value="">Auto from features</option>
-                      <option value="1">Full, all rooms</option>
-                      <option value="2">Partly</option>
-                      <option value="3">No</option>
-                    </select>
+                    <label>Bedrooms</label>
+                    <input
+                      type="number"
+                      value={form.bedrooms}
+                      onChange={(e) => setField('bedrooms', e.target.value)}
+                    />
+                  </div>
+                  <div className="admin-field">
+                    <label>Bathrooms</label>
+                    <input
+                      type="number"
+                      value={form.bathrooms}
+                      onChange={(e) => setField('bathrooms', e.target.value)}
+                    />
                   </div>
                   <div className="admin-field">
                     <label>Parking</label>
@@ -1021,26 +821,119 @@ export default function AdminPropertyEditPage() {
                       value={form.bazaraki_parking}
                       onChange={(e) => setField('bazaraki_parking', e.target.value)}
                     >
-                      <option value="">Auto from property</option>
+                      <option value="">Choose one…</option>
                       <option value="1">Covered</option>
                       <option value="2">Uncovered</option>
                       <option value="3">No</option>
                     </select>
                   </div>
                   <div className="admin-field">
-                    <label>Pets</label>
-                    <select
-                      value={form.bazaraki_pets}
-                      onChange={(e) => setField('bazaraki_pets', e.target.value)}
-                    >
-                      <option value="1">Allowed</option>
-                      <option value="2">Not allowed</option>
+                    <label>Furnishing</label>
+                    <select value={form.furnishing} onChange={(e) => setField('furnishing', e.target.value)}>
+                      <option value="">Choose one…</option>
+                      {FURNISHING_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
                     </select>
                   </div>
+                  <div className="admin-field">
+                    <label>Air conditioning</label>
+                    <select
+                      value={form.bazaraki_air_conditioning}
+                      onChange={(e) => setField('bazaraki_air_conditioning', e.target.value)}
+                    >
+                      <option value="">Choose one…</option>
+                      <option value="1">Full, all rooms</option>
+                      <option value="2">Partly</option>
+                      <option value="3">No</option>
+                    </select>
+                  </div>
+                </>
+              ) : null}
+
+              <div className="admin-field">
+                <label>Condition</label>
+                <select value={form.condition} onChange={(e) => setField('condition', e.target.value)}>
+                  <option value="">Choose one…</option>
+                  {CONDITION_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="admin-field">
+                <label>Construction year</label>
+                <input
+                  type="number"
+                  value={form.year_built}
+                  onChange={(e) => setField('year_built', e.target.value)}
+                />
+              </div>
+              <div className="admin-field">
+                <label>Property area (m²)</label>
+                <input
+                  type="number"
+                  value={form.internal_area}
+                  onChange={(e) => setField('internal_area', e.target.value)}
+                />
+              </div>
+              <div className="admin-field">
+                <label>Covered area (m²)</label>
+                <input
+                  type="number"
+                  value={form.covered_area}
+                  onChange={(e) => setField('covered_area', e.target.value)}
+                />
+              </div>
+              <div className="admin-field">
+                <label>Plot area (m²)</label>
+                <input
+                  type="number"
+                  value={form.plot_size}
+                  onChange={(e) => setField('plot_size', e.target.value)}
+                />
+              </div>
+
+              {bazarakiSchema === 'apartment' ? (
+                <div className="admin-field">
+                  <label>Floor</label>
+                  <input type="number" value={form.floor} onChange={(e) => setField('floor', e.target.value)} />
                 </div>
               ) : null}
-              {bazarakiSchema === 'residentialBuildings' ? (
-                <div className="admin-form__grid">
+
+              <div className="admin-field">
+                <label>Energy efficiency</label>
+                <select
+                  value={form.energy_efficiency}
+                  onChange={(e) => setField('energy_efficiency', e.target.value)}
+                >
+                  <option value="">Choose one…</option>
+                  {ENERGY_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {bazarakiSchema === 'houses' || bazarakiSchema === 'apartment' ? (
+                <div className="admin-field">
+                  <label>Pets</label>
+                  <select
+                    value={form.bazaraki_pets}
+                    onChange={(e) => setField('bazaraki_pets', e.target.value)}
+                  >
+                    <option value="1">Allowed</option>
+                    <option value="2">Not allowed</option>
+                  </select>
+                </div>
+              ) : null}
+
+              {(bazarakiSchema === 'residentialBuildings' || isPlotsOfLandType(form.property_type)) && (
+                <>
                   <div className="admin-field">
                     <label>Registration block</label>
                     <input
@@ -1057,96 +950,374 @@ export default function AdminPropertyEditPage() {
                       onChange={(e) => setField('registration_number', e.target.value)}
                     />
                   </div>
-                </div>
+                </>
+              )}
+
+              {isPlotsOfLandType(form.property_type) ? (
+                <>
+                  <div className="admin-field">
+                    <label>Land type</label>
+                    <select value={form.land_type} onChange={(e) => setField('land_type', e.target.value)}>
+                      <option value="">Choose one…</option>
+                      {LAND_TYPE_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="admin-field">
+                    <label>Plot type</label>
+                    <select value={form.plot_type} onChange={(e) => setField('plot_type', e.target.value)}>
+                      <option value="">Choose one…</option>
+                      {PLOT_TYPE_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="admin-field">
+                    <label>Share</label>
+                    <select value={form.share} onChange={(e) => setField('share', e.target.value)}>
+                      <option value="">—</option>
+                      {SHARE_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="admin-field">
+                    <label>Coverage</label>
+                    <input value={form.coverage} onChange={(e) => setField('coverage', e.target.value)} />
+                  </div>
+                  <div className="admin-field">
+                    <label>Building density</label>
+                    <input
+                      value={form.building_density}
+                      onChange={(e) => setField('building_density', e.target.value)}
+                    />
+                  </div>
+                  <div className="admin-field">
+                    <label>Planning zone</label>
+                    <input
+                      value={form.planning_zone}
+                      onChange={(e) => setField('planning_zone', e.target.value)}
+                    />
+                  </div>
+                  <div className="admin-field">
+                    <label>Parcel number</label>
+                    <input
+                      value={form.parcel_number}
+                      onChange={(e) => setField('parcel_number', e.target.value)}
+                    />
+                  </div>
+                </>
               ) : null}
-              {bazarakiSchema &&
-              bazarakiSchema !== 'prefabricatedHouses' &&
-              bazarakiSchema !== 'other' ? (
+            </div>
+
+            {bazarakiSchema &&
+            bazarakiSchema !== 'prefabricatedHouses' &&
+            bazarakiSchema !== 'other' &&
+            bazarakiSchema !== 'plotsOfLand' ? (
+              <div className="admin-field admin-field--full" style={{marginTop: '0.85rem'}}>
+                <label>Included</label>
+                <div className="admin-chip-grid">
+                  {(bazarakiSchema === 'commercial' || bazarakiSchema === 'residentialBuildings'
+                    ? MUST_HAVES_WITH_PARKING
+                    : MUST_HAVES_WITHOUT_PARKING
+                  ).map((id) => (
+                    <AdminToggle
+                      key={id}
+                      variant="chip"
+                      label={BAZARAKI_MUST_HAVE_LABELS[id]}
+                      checked={form.bazaraki_must_haves.includes(id)}
+                      onChange={(checked) => {
+                        setForm((prev) => ({
+                          ...prev,
+                          bazaraki_must_haves: checked
+                            ? [...prev.bazaraki_must_haves, id]
+                            : prev.bazaraki_must_haves.filter((item) => item !== id),
+                        }))
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {bazarakiSchema &&
+            bazarakiSchema !== 'prefabricatedHouses' &&
+            bazarakiSchema !== 'other' ? (
+              <div style={{marginTop: '0.85rem'}}>
                 <AdminToggle
-                  label="Online viewing available"
+                  label="Online viewing"
+                  description="Available for online viewing"
                   checked={form.bazaraki_online_viewing}
                   onChange={(checked) => setField('bazaraki_online_viewing', checked)}
                 />
-              ) : null}
-              {bazarakiSchema &&
-              bazarakiSchema !== 'prefabricatedHouses' &&
-              bazarakiSchema !== 'other' &&
-              bazarakiSchema !== 'plotsOfLand' ? (
-                <div className="admin-field admin-field--full">
-                  <label>Must-haves (Bazaraki)</label>
-                  <div className="admin-chip-grid">
-                    {(bazarakiSchema === 'commercial' || bazarakiSchema === 'residentialBuildings'
-                      ? MUST_HAVES_WITH_PARKING
-                      : MUST_HAVES_WITHOUT_PARKING
-                    ).map((id) => (
-                      <AdminToggle
-                        key={id}
-                        variant="chip"
-                        label={BAZARAKI_MUST_HAVE_LABELS[id]}
-                        checked={form.bazaraki_must_haves.includes(id)}
-                        onChange={(checked) => {
-                          setForm((prev) => ({
-                            ...prev,
-                            bazaraki_must_haves: checked
-                              ? [...prev.bazaraki_must_haves, id]
-                              : prev.bazaraki_must_haves.filter((item) => item !== id),
-                          }))
+              </div>
+            ) : null}
+
+            <div className="prop-edit__step-actions">
+              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setListingStep('map')}>
+                Back
+              </button>
+              <button type="button" className="admin-btn admin-btn--gold" onClick={() => setListingStep('media')}>
+                Continue to media
+              </button>
+            </div>
+          </AdminFormSection>
+        ) : null}
+
+        {listingStep === 'media' ? (
+          <>
+            <AdminFormSection
+              eyebrow="Step 5"
+              title="Images"
+              lede="Ads with good photos get more attention. First image is the title image."
+            >
+              <div className="admin-field admin-file-upload">
+                <label htmlFor="property-images">Images</label>
+                <p className="admin-file-upload__hint">
+                  Hold Ctrl / Cmd to choose several photos. Formats: .jpg, .jpeg, .png, .webp, .gif
+                </p>
+                <input
+                  id="property-images"
+                  className="admin-file-input"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif,image/*"
+                  multiple
+                  onChange={(e) => void onUpload(e.target.files)}
+                />
+              </div>
+              <div className="admin-images">
+                {images.map((img, index) => (
+                  <div className="admin-image-tile" key={img.id}>
+                    <img src={img.image_url} alt={img.alt_text || ''} />
+                    <div className="admin-image-tile__actions">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          void setFeaturedImage(img.property_id, img.id).then(() => {
+                            setImages((prev) =>
+                              prev.map((row) => ({...row, is_featured: row.id === img.id})),
+                            )
+                            toast.success('Featured image updated')
+                          })
+                        }
+                      >
+                        {img.is_featured ? 'Main' : 'Set main'}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={index === 0}
+                        onClick={() => {
+                          const next = [...images]
+                          ;[next[index - 1], next[index]] = [next[index], next[index - 1]]
+                          setImages(next)
+                          void reorderPropertyImages(
+                            next.map((row, position) => ({id: row.id, position})),
+                          )
                         }}
-                      />
-                    ))}
+                      >
+                        ←
+                      </button>
+                      <button
+                        type="button"
+                        disabled={index === images.length - 1}
+                        onClick={() => {
+                          const next = [...images]
+                          ;[next[index + 1], next[index]] = [next[index], next[index + 1]]
+                          setImages(next)
+                          void reorderPropertyImages(
+                            next.map((row, position) => ({id: row.id, position})),
+                          )
+                        }}
+                      >
+                        →
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          void deletePropertyImage(img.id, img.storage_path).then(() => {
+                            setImages((prev) => prev.filter((row) => row.id !== img.id))
+                            toast.success('Image removed')
+                          })
+                        }
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
+                ))}
+              </div>
+            </AdminFormSection>
+
+            <AdminFormSection eyebrow="Content" title="Description" lede="Describe the property. Contact details are not allowed in the description on Bazaraki.">
+              <div className="admin-field">
+                <label>Short description</label>
+                <textarea
+                  value={form.short_description}
+                  onChange={(e) => setField('short_description', e.target.value)}
+                />
+              </div>
+              <div className="admin-field">
+                <label>Description</label>
+                <textarea
+                  className="admin-textarea--tall"
+                  value={form.description}
+                  onChange={(e) => setField('description', e.target.value)}
+                  maxLength={10000}
+                />
+                <p className="admin-file-upload__hint">{10000 - form.description.length} chars left</p>
+              </div>
+              <div className="admin-field">
+                <label>Website features (comma-separated)</label>
+                <textarea
+                  value={form.featuresText}
+                  onChange={(e) => setField('featuresText', e.target.value)}
+                  placeholder="Pool, Sea view, Covered parking"
+                />
+              </div>
+            </AdminFormSection>
+
+            <div className="prop-edit__step-actions">
+              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setListingStep('details')}>
+                Back
+              </button>
+              <button type="button" className="admin-btn admin-btn--gold" onClick={() => setListingStep('publish')}>
+                Continue to publish
+              </button>
+            </div>
+          </>
+        ) : null}
+
+        {listingStep === 'publish' ? (
+          <>
+            <AdminFormSection
+              className="admin-publish-section"
+              eyebrow="Step 6"
+              title="Publishing"
+              lede="Location and map pin are already set — they feed both the website and Bazaraki."
+            >
+              <div className="admin-toggle-group">
+                <AdminToggle
+                  label="Publish on Website"
+                  description="List this property on unitedproperties.eu"
+                  checked={form.published}
+                  onChange={(checked) => setField('published', checked)}
+                />
+                <AdminToggle
+                  label="Featured Property"
+                  description="Highlight on the homepage and featured modules"
+                  checked={form.featured}
+                  onChange={(checked) => setField('featured', checked)}
+                />
+                <AdminToggle
+                  label="Publish to Bazaraki"
+                  description="Include in the XML feed when readiness checks pass"
+                  checked={form.publish_to_bazaraki}
+                  onChange={(checked) => setField('publish_to_bazaraki', checked)}
+                />
+              </div>
+
+              {form.bazaraki_district_id != null ? (
+                <p className="admin-location-picker__meta" style={{marginTop: '0.85rem'}}>
+                  <span>Location for feed</span>
+                  <strong>
+                    {form.district}
+                    {form.area ? ` · ${form.area}` : ''}
+                  </strong>
+                  <span className="admin-district-picker__meta-value">ID {form.bazaraki_district_id}</span>
+                  {form.latitude && form.longitude ? (
+                    <span className="admin-district-picker__meta-value">
+                      {Number(form.latitude).toFixed(5)}, {Number(form.longitude).toFixed(5)}
+                    </span>
+                  ) : null}
+                </p>
+              ) : (
+                <p className="admin-bazaraki-status__warning" style={{marginTop: '0.85rem'}}>
+                  No location selected yet — go back to step 2.
+                </p>
+              )}
+
+              {form.publish_to_bazaraki ? (
+                <div className="admin-publish-bazaraki">
+                  {bazarakiSchema ? (
+                    <p className="admin-bazaraki-schema">
+                      <span className="admin-bazaraki-schema__label">Schema</span>
+                      <strong>{bazaraki.attrsSchema ?? 'Unknown'}</strong>
+                      {bazaraki.rubricCategory ? <span>{bazaraki.rubricCategory}</span> : null}
+                      {bazaraki.rubricId ? (
+                        <span className="admin-bazaraki-schema__rubric">Rubric {bazaraki.rubricId}</span>
+                      ) : null}
+                    </p>
+                  ) : (
+                    <p className="admin-login__error">
+                      This property type and status cannot be exported to Bazaraki.
+                    </p>
+                  )}
                 </div>
               ) : null}
-            </div>
-          ) : null}
-          <div
-            className={`admin-bazaraki-status${bazaraki.ready ? ' admin-bazaraki-status--ready' : ' admin-bazaraki-status--pending'}`}
-          >
-            <div className="admin-bazaraki-status__head">
-              <span className="admin-bazaraki-status__dot" aria-hidden />
-              <strong>{bazaraki.ready ? 'Ready for Bazaraki' : 'Not ready for Bazaraki'}</strong>
-            </div>
-            {bazaraki.missingFields.length ? (
-              <p className="admin-bazaraki-status__missing">
-                Missing: {bazaraki.missingFields.join(', ')}
-              </p>
-            ) : null}
-            {bazaraki.errors.map((msg: string) => (
-              <p key={msg} className="admin-bazaraki-status__error">
-                {msg}
-              </p>
-            ))}
-            {bazaraki.warnings.map((msg: string) => (
-              <p key={msg} className="admin-bazaraki-status__warning">
-                {msg}
-              </p>
-            ))}
-          </div>
-        </AdminFormSection>
 
-        <AdminFormSection eyebrow="Search" title="SEO" lede="Optional overrides for search engines and social previews.">
-          <div className="admin-field">
-            <label>SEO title</label>
-            <input value={form.seo_title} onChange={(e) => setField('seo_title', e.target.value)} />
-          </div>
-          <div className="admin-field">
-            <label>SEO description</label>
-            <textarea
-              value={form.seo_description}
-              onChange={(e) => setField('seo_description', e.target.value)}
-            />
-          </div>
-        </AdminFormSection>
+              <div
+                className={`admin-bazaraki-status${bazaraki.ready ? ' admin-bazaraki-status--ready' : ' admin-bazaraki-status--pending'}`}
+              >
+                <div className="admin-bazaraki-status__head">
+                  <span className="admin-bazaraki-status__dot" aria-hidden />
+                  <strong>{bazaraki.ready ? 'Ready for Bazaraki' : 'Not ready for Bazaraki'}</strong>
+                </div>
+                {bazaraki.missingFields.length ? (
+                  <p className="admin-bazaraki-status__missing">
+                    Missing: {bazaraki.missingFields.join(', ')}
+                  </p>
+                ) : null}
+                {bazaraki.errors.map((msg: string) => (
+                  <p key={msg} className="admin-bazaraki-status__error">
+                    {msg}
+                  </p>
+                ))}
+                {bazaraki.warnings.map((msg: string) => (
+                  <p key={msg} className="admin-bazaraki-status__warning">
+                    {msg}
+                  </p>
+                ))}
+              </div>
+            </AdminFormSection>
 
-        <AdminFormSection eyebrow="Staff only" title="Internal" lede="Private notes for your team. Never shown publicly.">
-          <div className="admin-field">
-            <label>Internal notes (never shown publicly)</label>
-            <textarea
-              value={form.internal_notes}
-              onChange={(e) => setField('internal_notes', e.target.value)}
-            />
-          </div>
-        </AdminFormSection>
+            <AdminFormSection eyebrow="Search" title="SEO" lede="Optional overrides for search engines and social previews.">
+              <div className="admin-field">
+                <label>SEO title</label>
+                <input value={form.seo_title} onChange={(e) => setField('seo_title', e.target.value)} />
+              </div>
+              <div className="admin-field">
+                <label>SEO description</label>
+                <textarea
+                  value={form.seo_description}
+                  onChange={(e) => setField('seo_description', e.target.value)}
+                />
+              </div>
+            </AdminFormSection>
+
+            <AdminFormSection eyebrow="Staff only" title="Internal" lede="Private notes for your team. Never shown publicly.">
+              <div className="admin-field">
+                <label>Internal notes (never shown publicly)</label>
+                <textarea
+                  value={form.internal_notes}
+                  onChange={(e) => setField('internal_notes', e.target.value)}
+                />
+              </div>
+            </AdminFormSection>
+
+            <div className="prop-edit__step-actions">
+              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setListingStep('media')}>
+                Back
+              </button>
+            </div>
+          </>
+        ) : null}
 
         <div className="admin-form__toolbar prop-edit__save-toolbar">
           <div className="admin-form__toolbar-inner prop-edit__save-toolbar-inner">
@@ -1382,6 +1553,8 @@ function toPayloadSafe(form: FormState) {
         .map((s) => s.trim())
         .filter(Boolean),
       address: form.address,
+      latitude: num(form.latitude),
+      longitude: num(form.longitude),
       bazaraki_district_id: form.bazaraki_district_id,
       postal_code: form.postal_code || null,
       bazaraki_must_haves: form.bazaraki_must_haves,

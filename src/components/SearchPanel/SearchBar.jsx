@@ -1,6 +1,10 @@
 import { Search } from 'lucide-react'
 
-function SearchBar({ value, onChange }) {
+function SearchBar({
+  value,
+  onChange,
+  placeholder = 'Search properties, locations, featured...',
+}) {
   return (
     <div className="search-panel__searchbar">
       <span className="search-panel__searchbar-icon" aria-hidden="true">
@@ -11,7 +15,7 @@ function SearchBar({ value, onChange }) {
         enterKeyHint="search"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Search properties, locations, featured..."
+        placeholder={placeholder}
         aria-label="Search properties and locations"
         autoComplete="off"
       />

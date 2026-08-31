@@ -4,12 +4,16 @@ function formatPrice(value) {
   return new Intl.NumberFormat('en-US').format(value)
 }
 
-function DiscoveryResults({ properties }) {
+function DiscoveryResults({
+  properties,
+  emptyTitle = 'No matches',
+  emptyHint = 'Relax a filter or clear the search to see more listings.',
+}) {
   if (!properties.length) {
     return (
       <div className="search-panel__empty">
-        <p className="search-panel__empty-title">No matches</p>
-        <p className="search-panel__empty-hint">Relax a filter or clear the search to see more listings.</p>
+        <p className="search-panel__empty-title">{emptyTitle}</p>
+        <p className="search-panel__empty-hint">{emptyHint}</p>
       </div>
     )
   }

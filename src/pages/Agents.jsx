@@ -3,9 +3,11 @@ import { useMemo, useState } from 'react'
 import SectionHeader from '../components/SectionHeader/SectionHeader'
 import AgentCard from '../components/AgentCard/AgentCard'
 import { agents } from '../data/agents'
+import { useSiteContent } from '../hooks/useSiteContent'
 import './Agents.css'
 
 function Agents() {
+  const { get } = useSiteContent()
   const [specialty, setSpecialty] = useState('')
 
   const specialties = useMemo(() => {
@@ -25,27 +27,33 @@ function Agents() {
 
       <section className="page-hero">
         <div className="container">
-          <p>Advisory Team</p>
-          <h1>Meet Our Real Estate Professionals</h1>
+          <p>{get('agents', 'hero', 'eyebrow', 'Advisory Team')}</p>
+          <h1>{get('agents', 'hero', 'heading', 'Meet Our Real Estate Professionals')}</h1>
           <p>
-            Specialists in luxury homes, investments, portfolio strategy, and international
-            client guidance across Cyprus.
+            {get(
+              'agents',
+              'hero',
+              'description',
+              'Specialists in luxury homes, investments, portfolio strategy, and international client guidance across Cyprus.',
+            )}
           </p>
         </div>
       </section>
 
       <section className="section section--light">
         <div className="container">
-          <SectionHeader title="Advisors by Specialization" />
+          <SectionHeader title={get('agents', 'list', 'heading', 'Advisors by Specialization')} />
           <label htmlFor="specialty-filter" className="agents-filter">
-            <span className="agents-filter__label">Filter by specialty</span>
+            <span className="agents-filter__label">
+              {get('agents', 'list', 'filter_label', 'Filter by specialty')}
+            </span>
             <select
               className="agents-filter__select"
               id="specialty-filter"
               value={specialty}
               onChange={(event) => setSpecialty(event.target.value)}
             >
-              <option value="">All specialties</option>
+              <option value="">{get('agents', 'list', 'filter_all', 'All specialties')}</option>
               {specialties.map((item) => (
                 <option key={item} value={item}>
                   {item}

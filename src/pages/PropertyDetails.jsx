@@ -26,6 +26,7 @@ import SectionHeader from '../components/SectionHeader/SectionHeader'
 import PropertyCard from '../components/PropertyCard/PropertyCard'
 import { agents } from '../data/agents'
 import { useMergedProperties } from '../hooks/useMergedProperties'
+import { useSiteContent } from '../hooks/useSiteContent'
 import './Properties.css'
 import './PropertyDetails.css'
 
@@ -71,6 +72,7 @@ function pickSimilarProperties(all, current, max = SIMILAR_MAX) {
 
 function PropertyDetails() {
   const { slug } = useParams()
+  const { get } = useSiteContent()
   const { list: allProperties, loading } = useMergedProperties()
   const [descriptionExpanded, setDescriptionExpanded] = useState(false)
 
@@ -95,7 +97,9 @@ function PropertyDetails() {
           </Helmet>
           <section className="section section--light">
             <div className="container">
-              <p className="property-details__loading">Loading property…</p>
+              <p className="property-details__loading">
+                {get('property', 'not_found', 'loading', 'Loading property…')}
+              </p>
             </div>
           </section>
         </>
@@ -109,10 +113,17 @@ function PropertyDetails() {
         </Helmet>
         <section className="section section--light">
           <div className="container property-details property-details--not-found">
-            <h1>Property not found</h1>
-            <p>This listing may have been removed or the link is incorrect.</p>
+            <h1>{get('property', 'not_found', 'heading', 'Property not found')}</h1>
+            <p>
+              {get(
+                'property',
+                'not_found',
+                'body',
+                'This listing may have been removed or the link is incorrect.',
+              )}
+            </p>
             <Link to="/buy" className="btn btn-gold">
-              Browse properties
+              {get('property', 'not_found', 'cta', 'Browse properties')}
             </Link>
           </div>
         </section>
@@ -121,6 +132,8 @@ function PropertyDetails() {
   }
 
   const featureList = Array.isArray(property.features) ? property.features : []
+  const floorplanHeading = get('property', 'info_tiles', 'floorplan_heading', 'Floor plan')
+  const locationHeading = get('property', 'info_tiles', 'location_heading', 'Location')
 
   return (
     <>
@@ -169,7 +182,7 @@ function PropertyDetails() {
                 <span>
                   {property.brochureFilename
                     ? `Download ${property.brochureFilename}`
-                    : 'Download brochure (PDF)'}
+                    : get('property', 'actions', 'brochure_fallback', 'Download brochure (PDF)')}
                 </span>
               </a>
             </div>
@@ -191,7 +204,9 @@ function PropertyDetails() {
                       {property.price.toLocaleString()}
                     </span>
                     {property.status === 'For Rent' ? (
-                      <span className="property-details__price-period">/ month</span>
+                      <span className="property-details__price-period">
+                        {get('property', 'stats', 'price_period', '/ month')}
+                      </span>
                     ) : null}
                   </span>
                 </h2>
@@ -206,8 +221,12 @@ function PropertyDetails() {
                   <WhatsAppBrandIcon size={18} className="property-details__whatsapp-brandIcon" />
                 </span>
                 <span className="property-details__whatsapp-text">
-                  <span className="property-details__whatsapp-title">Chat on WhatsApp</span>
-                  <span className="property-details__whatsapp-sub">FAST REPLY · SAME DAY</span>
+                  <span className="property-details__whatsapp-title">
+                    {get('property', 'actions', 'whatsapp_title', 'Chat on WhatsApp')}
+                  </span>
+                  <span className="property-details__whatsapp-sub">
+                    {get('property', 'actions', 'whatsapp_sub', 'FAST REPLY · SAME DAY')}
+                  </span>
                 </span>
                 <ChevronRight className="property-details__whatsapp-chevron" size={20} strokeWidth={2.25} aria-hidden />
               </a>
@@ -217,22 +236,28 @@ function PropertyDetails() {
 
           <div className="property-details__overview">
             <span className="property-details__stat">
-              <BedDouble size={16} /> {property.bedrooms} Bedrooms
+              <BedDouble size={16} /> {property.bedrooms}{' '}
+              {get('property', 'stats', 'label_bedrooms', 'Bedrooms')}
             </span>
             <span className="property-details__stat property-details__stat--bath">
-              <Bath size={16} /> {property.bathrooms} Bathrooms
+              <Bath size={16} /> {property.bathrooms}{' '}
+              {get('property', 'stats', 'label_bathrooms', 'Bathrooms')}
             </span>
             <span className="property-details__stat">
-              <Ruler size={16} /> {property.sqm} sqm internal area
+              <Ruler size={16} /> {property.sqm}{' '}
+              {get('property', 'stats', 'label_sqm', 'sqm internal area')}
             </span>
             <span className="property-details__stat">
-              <LandPlot size={16} /> {property.plotSize || 'N/A'} sqm plot size
+              <LandPlot size={16} /> {property.plotSize || 'N/A'}{' '}
+              {get('property', 'stats', 'label_plot', 'sqm plot size')}
             </span>
             <span className="property-details__stat">
-              <Car size={16} /> {property.parking} Parking
+              <Car size={16} /> {property.parking}{' '}
+              {get('property', 'stats', 'label_parking', 'Parking')}
             </span>
             <span className="property-details__stat">
-              <CalendarClock size={16} /> Built in {property.yearBuilt}
+              <CalendarClock size={16} /> {get('property', 'stats', 'label_built', 'Built in')}{' '}
+              {property.yearBuilt}
             </span>
           </div>
 
@@ -241,10 +266,10 @@ function PropertyDetails() {
               <header className="property-details__description-header">
                 <span className="property-details__description-eyebrow">
                   <Sparkles size={14} strokeWidth={2.2} aria-hidden />
-                  Listing
+                  {get('property', 'description', 'eyebrow', 'Listing')}
                 </span>
                 <h3 id="property-description-title" className="property-details__description-title">
-                  Description
+                  {get('property', 'description', 'heading', 'Description')}
                 </h3>
               </header>
 
@@ -262,7 +287,9 @@ function PropertyDetails() {
                   aria-expanded={descriptionExpanded}
                   aria-controls="property-description-body"
                 >
-                  {descriptionExpanded ? 'Show less' : 'Read full description'}
+                  {descriptionExpanded
+                    ? get('property', 'description', 'show_less', 'Show less')
+                    : get('property', 'description', 'read_more', 'Read full description')}
                 </button>
               ) : null}
 
@@ -271,7 +298,9 @@ function PropertyDetails() {
                   className="property-details__amenities-section"
                   aria-labelledby="amenities-heading"
                 >
-                  <h4 id="amenities-heading">Amenities &amp; features</h4>
+                  <h4 id="amenities-heading">
+                    {get('property', 'description', 'amenities_heading', 'Amenities & features')}
+                  </h4>
                   <ul className="property-details__amenities-list">
                     {featureList.map((feature) => (
                       <li key={feature}>{feature}</li>
@@ -284,13 +313,17 @@ function PropertyDetails() {
                 <div
                   className={`property-details__info-tile ${property.floorPlanUrl ? 'property-details__info-tile--has-plan' : ''}`}
                   role="group"
-                  aria-label={property.floorPlanUrl ? 'Floor plan' : 'Floor plan — available on request'}
+                  aria-label={
+                    property.floorPlanUrl
+                      ? floorplanHeading
+                      : `${floorplanHeading} — available on request`
+                  }
                 >
                   <span className="property-details__info-tile-icon" aria-hidden="true">
                     <LayoutTemplate size={22} strokeWidth={2} />
                   </span>
                   <div className="property-details__info-tile-copy">
-                    <h4>Floor plan</h4>
+                    <h4>{floorplanHeading}</h4>
                     {property.floorPlanUrl ? (
                       <div className="property-details__floorplan-thumbWrap">
                         <img
@@ -302,26 +335,44 @@ function PropertyDetails() {
                         />
                       </div>
                     ) : (
-                      <p>Detailed layout available on request from our team.</p>
+                      <p>
+                        {get(
+                          'property',
+                          'info_tiles',
+                          'floorplan_empty',
+                          'Detailed layout available on request from our team.',
+                        )}
+                      </p>
                     )}
                   </div>
                   <span className="property-details__info-tile-hint">
-                    {property.floorPlanUrl ? 'Listing' : 'Request'}
+                    {property.floorPlanUrl
+                      ? get('property', 'info_tiles', 'floorplan_hint_has', 'Listing')
+                      : get('property', 'info_tiles', 'floorplan_hint_request', 'Request')}
                   </span>
                 </div>
                 <div
                   className="property-details__info-tile"
                   role="group"
-                  aria-label="Location map — coming soon"
+                  aria-label={`${locationHeading} map — coming soon`}
                 >
                   <span className="property-details__info-tile-icon" aria-hidden="true">
                     <Map size={22} strokeWidth={2} />
                   </span>
                   <div className="property-details__info-tile-copy">
-                    <h4>Location</h4>
-                    <p>Map and neighbourhood context — integration in progress.</p>
+                    <h4>{locationHeading}</h4>
+                    <p>
+                      {get(
+                        'property',
+                        'info_tiles',
+                        'location_body',
+                        'Map and neighbourhood context — integration in progress.',
+                      )}
+                    </p>
                   </div>
-                  <span className="property-details__info-tile-hint">Soon</span>
+                  <span className="property-details__info-tile-hint">
+                    {get('property', 'info_tiles', 'location_hint', 'Soon')}
+                  </span>
                 </div>
               </div>
             </article>
@@ -332,7 +383,7 @@ function PropertyDetails() {
                   <div className="property-details__agent-head">
                     <span className="property-details__agent-eyebrow">
                       <UserRound size={14} aria-hidden />
-                      Your property consultant
+                      {get('property', 'agent', 'eyebrow', 'Your property consultant')}
                     </span>
                   </div>
 
@@ -371,7 +422,7 @@ function PropertyDetails() {
                     </div>
 
                     <Link to="/agents" className="property-details__agent-cta">
-                      View agent profile
+                      {get('property', 'agent', 'profile_cta', 'View agent profile')}
                       <ArrowUpRight size={17} aria-hidden />
                     </Link>
                   </div>
@@ -397,21 +448,26 @@ function PropertyDetails() {
               <div className="property-details__similar-heading__copy">
                 <SectionHeader
                   className="property-details__similar-header"
-                  eyebrow="Curated for you"
-                  title="Similar Properties"
-                  description="More listings that fit this home—matched by area, status, or price band. Open any card for the full story."
+                  eyebrow={get('property', 'similar', 'eyebrow', 'Curated for you')}
+                  title={get('property', 'similar', 'heading', 'Similar Properties')}
+                  description={get(
+                    'property',
+                    'similar',
+                    'description',
+                    'More listings that fit this home—matched by area, status, or price band. Open any card for the full story.',
+                  )}
                 />
               </div>
             </div>
             <Link className="property-details__similar-viewall" to="/buy">
-              View all in Limassol
+              {get('property', 'similar', 'view_all', 'View all in Limassol')}
               <ChevronRight size={17} strokeWidth={2.1} aria-hidden />
             </Link>
           </div>
           <ul className="property-details__similar-match-hints" aria-label="Matching criteria">
-            <li>Area &amp; district</li>
-            <li>Status</li>
-            <li>Price band</li>
+            <li>{get('property', 'similar', 'hint_area', 'Area & district')}</li>
+            <li>{get('property', 'similar', 'hint_status', 'Status')}</li>
+            <li>{get('property', 'similar', 'hint_price', 'Price band')}</li>
           </ul>
           {similarProperties.length > 0 ? (
             <div className="grid-3 property-details__similar-grid">
@@ -421,7 +477,10 @@ function PropertyDetails() {
             </div>
           ) : (
             <p className="property-details__similar-empty">
-              <Link to="/buy">Browse all properties</Link> to discover more listings.
+              <Link to="/buy">
+                {get('property', 'similar', 'empty_prefix', 'Browse all properties')}
+              </Link>
+              {get('property', 'similar', 'empty_suffix', ' to discover more listings.')}
             </p>
           )}
         </div>

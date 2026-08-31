@@ -39,6 +39,40 @@ export function formatBazarakiPrice(price: number | null | undefined): string {
   return n.toFixed(2)
 }
 
+/**
+ * Bazaraki "Reference number" = external_id.
+ * Prefer a stable 7-digit code from our CMS reference (never the UUID).
+ * Legacy UP-0001 → 1000001.
+ */
+export function toBazarakiExternalId(
+  referenceNumber: string | null | undefined,
+  fallbackId: string,
+): string {
+  const ref = referenceNumber?.trim() ?? ''
+
+  if (/^\d{7}$/.test(ref)) return ref
+
+  const up = /^UP-0*(\d+)$/i.exec(ref)
+  if (up) {
+    const n = Number(up[1])
+    if (Number.isFinite(n) && n > 0) {
+      return String(1_000_000 + n)
+    }
+  }
+
+  const digits = ref.replace(/\D/g, '')
+  if (digits.length >= 7) return digits.slice(-7)
+  if (digits.length > 0) return digits.padStart(7, '0')
+
+  const hex = fallbackId.replace(/-/g, '').replace(/\D/g, '') || fallbackId.replace(/-/g, '')
+  const parsed = Number.parseInt(hex.slice(0, 8), 16)
+  if (Number.isFinite(parsed)) {
+    return String((Math.abs(parsed) % 9_000_000) + 1_000_000)
+  }
+
+  return '1000001'
+}
+
 /** Format as yyyy-mm-dd h:m:s (Bazaraki last_update). */
 export function formatLastUpdate(isoDate: string | null | undefined): string {
   const d = isoDate ? new Date(isoDate) : new Date()

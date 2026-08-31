@@ -1,8 +1,8 @@
-function CityFilters({ cities, activeCity, onSelect }) {
+function CityFilters({ cities, activeCity, onSelect, locationLabel = 'Location' }) {
   return (
     <div className="search-panel__filter-block search-panel__filter-block--sidebar search-panel__filter-block--cities">
       <p className="search-panel__filter-label" id="search-panel-city-label">
-        Location
+        {locationLabel}
       </p>
       <div
         className="search-panel__chip-row search-panel__chip-row--cities"

@@ -1,0 +1,429 @@
+.bazaraki-admin {
+  gap: 1.2rem;
+}
+
+.bazaraki-admin__eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--admin-gold);
+}
+
+.bazaraki-admin__header h1 {
+  letter-spacing: -0.03em;
+}
+
+.bazaraki-admin__header .admin-actions .admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.bazaraki-admin__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.bazaraki-admin__stat {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(244, 239, 230, 0.1);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.04), transparent 55%),
+    rgba(14, 26, 42, 0.88);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
+}
+
+.bazaraki-admin__stat-label {
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 230, 0.52);
+}
+
+.bazaraki-admin__stat strong {
+  font-size: 1.65rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--admin-cream);
+}
+
+.bazaraki-admin__stat--ready {
+  border-color: rgba(120, 180, 130, 0.28);
+  background:
+    linear-gradient(160deg, rgba(120, 180, 130, 0.12), transparent 55%),
+    rgba(14, 26, 42, 0.88);
+}
+
+.bazaraki-admin__stat--fix {
+  border-color: rgba(220, 160, 90, 0.28);
+  background:
+    linear-gradient(160deg, rgba(220, 160, 90, 0.1), transparent 55%),
+    rgba(14, 26, 42, 0.88);
+}
+
+.bazaraki-admin__stat--on strong {
+  color: #9fd4a8;
+}
+
+.bazaraki-admin__stat--off strong {
+  color: rgba(244, 239, 230, 0.45);
+}
+
+.bazaraki-admin__feed-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: end;
+  padding: 1.15rem 1.25rem;
+  border-radius: 18px;
+  border: 1px solid rgba(191, 152, 117, 0.28);
+  background:
+    linear-gradient(125deg, rgba(191, 152, 117, 0.12), transparent 42%),
+    rgba(14, 26, 42, 0.92);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+.bazaraki-admin__feed-copy h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+  color: var(--admin-cream);
+}
+
+.bazaraki-admin__feed-copy p:last-child {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: rgba(244, 239, 230, 0.58);
+}
+
+.bazaraki-admin__feed-url {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.bazaraki-admin__feed-url input {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.65rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid rgba(244, 239, 230, 0.12);
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--admin-cream);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+}
+
+.bazaraki-admin__panel {
+  border-radius: 22px;
+  border: 1px solid rgba(244, 239, 230, 0.12);
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.045), transparent 40%),
+    rgba(14, 26, 42, 0.88);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+.bazaraki-admin__panel-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem 1rem;
+  border-bottom: 1px solid rgba(244, 239, 230, 0.08);
+}
+
+.bazaraki-admin__panel-head h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+  color: var(--admin-cream);
+}
+
+.bazaraki-admin__count {
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: rgba(244, 239, 230, 0.5);
+}
+
+.bazaraki-admin__empty {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: rgba(244, 239, 230, 0.55);
+}
+
+.bazaraki-admin__empty p {
+  margin: 0;
+}
+
+.bazaraki-admin__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bazaraki-admin__card {
+  display: grid;
+  grid-template-columns: 148px minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: stretch;
+  padding: 1rem 1.15rem;
+  border-bottom: 1px solid rgba(244, 239, 230, 0.07);
+  transition: background 0.16s ease;
+}
+
+.bazaraki-admin__card:last-child {
+  border-bottom: 0;
+}
+
+.bazaraki-admin__card:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.bazaraki-admin__card.is-ready {
+  box-shadow: inset 3px 0 0 rgba(120, 180, 130, 0.75);
+}
+
+.bazaraki-admin__card.is-pending {
+  box-shadow: inset 3px 0 0 rgba(220, 160, 90, 0.7);
+}
+
+.bazaraki-admin__media {
+  position: relative;
+  width: 148px;
+  min-height: 112px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(244, 239, 230, 0.08);
+}
+
+.bazaraki-admin__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bazaraki-admin__media-fallback {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  min-height: 112px;
+  font-size: 0.85rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  color: rgba(244, 239, 230, 0.35);
+}
+
+.bazaraki-admin__feed-pill {
+  position: absolute;
+  left: 0.45rem;
+  top: 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.28rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(8px);
+}
+
+.bazaraki-admin__feed-pill.is-ready {
+  background: rgba(28, 58, 36, 0.88);
+  color: #b8efc2;
+}
+
+.bazaraki-admin__feed-pill.is-pending {
+  background: rgba(62, 42, 18, 0.9);
+  color: #ffd9a8;
+}
+
+.bazaraki-admin__body {
+  min-width: 0;
+  display: grid;
+  gap: 0.4rem;
+  align-content: start;
+}
+
+.bazaraki-admin__meta-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.bazaraki-admin__ref {
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--admin-gold);
+}
+
+.bazaraki-admin__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(244, 239, 230, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.7rem;
+  font-weight: 650;
+  color: rgba(244, 239, 230, 0.72);
+}
+
+.bazaraki-admin__title {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.bazaraki-admin__title a {
+  color: var(--admin-cream);
+  text-decoration: none;
+}
+
+.bazaraki-admin__title a:hover {
+  color: var(--admin-gold);
+}
+
+.bazaraki-admin__location {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.84rem;
+  color: rgba(244, 239, 230, 0.58);
+}
+
+.bazaraki-admin__location em {
+  font-style: normal;
+  color: rgba(244, 239, 230, 0.4);
+}
+
+.bazaraki-admin__location svg {
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.bazaraki-admin__meta-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+  align-items: baseline;
+  font-size: 0.78rem;
+  color: rgba(244, 239, 230, 0.5);
+}
+
+.bazaraki-admin__price {
+  font-size: 0.95rem;
+  letter-spacing: -0.02em;
+  color: var(--admin-cream);
+}
+
+.bazaraki-admin__meta-bottom .is-on {
+  color: #9fd4a8;
+}
+
+.bazaraki-admin__meta-bottom .is-off {
+  color: rgba(220, 160, 90, 0.9);
+}
+
+.bazaraki-admin__issues {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0;
+}
+
+.bazaraki-admin__issues li {
+  max-width: 100%;
+  padding: 0.28rem 0.55rem;
+  border-radius: 8px;
+  background: rgba(220, 160, 90, 0.12);
+  border: 1px solid rgba(220, 160, 90, 0.22);
+  color: #f0d2a8;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.bazaraki-admin__ok {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: #9fd4a8;
+}
+
+.bazaraki-admin__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  justify-content: center;
+  min-width: 8.5rem;
+}
+
+.bazaraki-admin__actions .admin-btn {
+  justify-content: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 980px) {
+  .bazaraki-admin__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bazaraki-admin__feed-card {
+    grid-template-columns: 1fr;
+  }
+
+  .bazaraki-admin__card {
+    grid-template-columns: 120px minmax(0, 1fr);
+  }
+
+  .bazaraki-admin__actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    min-width: 0;
+  }
+
+  .bazaraki-admin__actions .admin-btn {
+    flex: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .bazaraki-admin__stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bazaraki-admin__card {
+    grid-template-columns: 1fr;
+  }
+
+  .bazaraki-admin__media {
+    width: 100%;
+    min-height: 160px;
+  }
+
+  .bazaraki-admin__panel-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

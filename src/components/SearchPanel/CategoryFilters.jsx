@@ -1,12 +1,19 @@
-function CategoryFilters({ categories, activeCategory, onSelect, onReset }) {
+function CategoryFilters({
+  categories,
+  activeCategory,
+  onSelect,
+  onReset,
+  categoryLabel = 'Listing type',
+  clearLabel = 'Clear all',
+}) {
   return (
     <div className="search-panel__filter-block search-panel__filter-block--sidebar search-panel__filter-block--categories">
       <div className="search-panel__filter-toolbar">
         <p className="search-panel__filter-label" id="search-panel-category-label">
-          Listing type
+          {categoryLabel}
         </p>
         <button type="button" className="search-panel__reset search-panel__reset--alt" onClick={onReset}>
-          Clear all
+          {clearLabel}
         </button>
       </div>
       <div

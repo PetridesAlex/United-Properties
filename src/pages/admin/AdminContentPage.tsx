@@ -1,87 +1,87 @@
-import {useEffect, useState} from 'react'
+import {useEffect, useMemo, useState} from 'react'
+import {ArrowLeft, ExternalLink, FileText, Save} from 'lucide-react'
 import toast from 'react-hot-toast'
-import {supabase} from '../../lib/supabase/client'
 import {useAdminAuth} from '../../lib/auth/AdminAuthProvider'
-import type {SiteContentRow} from '../../types/cms'
+import {fetchSiteContentMap, savePageContent} from '../../lib/content/api'
+import {
+  CONTENT_PAGES,
+  contentKey,
+  countPageFields,
+  getContentPage,
+  getDefaultContentMap,
+  type ContentPageDef,
+} from '../../lib/content/schema'
 import '../../components/admin/AdminShell.css'
-
-type FieldDef = {
-  page: string
-  section: string
-  content_key: string
-  label: string
-  content_type: 'text' | 'textarea'
-}
-
-const FIELDS: FieldDef[] = [
-  {page: 'home', section: 'hero', content_key: 'heading', label: 'Hero heading', content_type: 'text'},
-  {page: 'home', section: 'hero', content_key: 'subtitle', label: 'Hero subtitle', content_type: 'text'},
-  {page: 'home', section: 'hero', content_key: 'paragraph', label: 'Hero paragraph', content_type: 'textarea'},
-  {page: 'home', section: 'hero', content_key: 'cta_text', label: 'CTA text', content_type: 'text'},
-  {page: 'home', section: 'hero', content_key: 'cta_link', label: 'CTA link', content_type: 'text'},
-  {page: 'home', section: 'featured', content_key: 'heading', label: 'Featured section heading', content_type: 'text'},
-  {page: 'home', section: 'featured', content_key: 'description', label: 'Featured section description', content_type: 'textarea'},
-  {page: 'about', section: 'main', content_key: 'heading', label: 'About heading', content_type: 'text'},
-  {page: 'about', section: 'main', content_key: 'intro', label: 'About intro', content_type: 'textarea'},
-  {page: 'about', section: 'main', content_key: 'story', label: 'About story', content_type: 'textarea'},
-  {page: 'contact', section: 'main', content_key: 'heading', label: 'Contact heading', content_type: 'text'},
-  {page: 'contact', section: 'main', content_key: 'description', label: 'Contact description', content_type: 'textarea'},
-]
-
-function keyOf(f: FieldDef) {
-  return `${f.page}.${f.section}.${f.content_key}`
-}
+import './AdminContentPage.css'
 
 export default function AdminContentPage() {
   const {user} = useAdminAuth()
   const [values, setValues] = useState<Record<string, string>>({})
+  const [savedSnapshot, setSavedSnapshot] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [activePageId, setActivePageId] = useState<string | null>(null)
+
+  const defaults = useMemo(() => getDefaultContentMap(), [])
+  const activePage = activePageId ? getContentPage(activePageId) : undefined
 
   useEffect(() => {
     let cancelled = false
     async function load() {
-      if (!supabase) {
-        setLoading(false)
-        return
-      }
-      const {data, error} = await supabase.from('site_content').select('*')
-      if (error) {
-        toast.error(error.message)
-        setLoading(false)
-        return
-      }
+      const map = await fetchSiteContentMap()
       if (cancelled) return
-      const map: Record<string, string> = {}
-      for (const row of (data ?? []) as SiteContentRow[]) {
-        map[`${row.page}.${row.section}.${row.content_key}`] = row.value
-      }
-      setValues(map)
+      const merged = {...defaults, ...map}
+      setValues(merged)
+      setSavedSnapshot(merged)
       setLoading(false)
     }
     void load()
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [defaults])
 
-  async function onSave() {
-    if (!supabase) return
+  const dirty = useMemo(() => {
+    if (!activePage) return false
+    for (const section of activePage.sections) {
+      for (const field of section.fields) {
+        const key = contentKey(activePage.id, section.id, field.key)
+        if ((values[key] ?? '') !== (savedSnapshot[key] ?? '')) return true
+      }
+    }
+    return false
+  }, [activePage, values, savedSnapshot])
+
+  function setField(pageId: string, sectionId: string, fieldKey: string, next: string) {
+    const key = contentKey(pageId, sectionId, fieldKey)
+    setValues((prev) => ({...prev, [key]: next}))
+  }
+
+  function filledCount(page: ContentPageDef) {
+    let filled = 0
+    for (const section of page.sections) {
+      for (const field of section.fields) {
+        const key = contentKey(page.id, section.id, field.key)
+        if ((values[key] ?? '').trim()) filled += 1
+      }
+    }
+    return filled
+  }
+
+  async function onSavePage() {
+    if (!activePage) return
     setSaving(true)
     try {
-      const rows = FIELDS.map((f) => ({
-        page: f.page,
-        section: f.section,
-        content_key: f.content_key,
-        content_type: f.content_type,
-        value: values[keyOf(f)] ?? '',
-        updated_by: user?.id ?? null,
-      }))
-      const {error} = await supabase
-        .from('site_content')
-        .upsert(rows, {onConflict: 'page,section,content_key'})
-      if (error) throw new Error(error.message)
-      toast.success('Website content updated')
+      await savePageContent(activePage, values, user?.id)
+      const nextSnapshot = {...savedSnapshot}
+      for (const section of activePage.sections) {
+        for (const field of section.fields) {
+          const key = contentKey(activePage.id, section.id, field.key)
+          nextSnapshot[key] = values[key] ?? ''
+        }
+      }
+      setSavedSnapshot(nextSnapshot)
+      toast.success(`${activePage.title} updated — live on the website`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Save failed')
     } finally {
@@ -89,97 +89,208 @@ export default function AdminContentPage() {
     }
   }
 
-  if (loading) return <p className="admin-empty">Loading content…</p>
+  if (loading) return <p className="admin-empty">Loading website content…</p>
+
+  if (!activePage) {
+    const websitePages = [
+      'home',
+      'about',
+      'contact',
+      'services',
+      'sell',
+      'properties',
+      'agents',
+      'property',
+      'not-found',
+    ] as const
+    const siteWidePages = ['inquiry', 'navbar', 'footer', 'search'] as const
+    const totalFields = CONTENT_PAGES.reduce((sum, page) => sum + countPageFields(page), 0)
+
+    return (
+      <div className="admin-page content-admin content-admin--catalog">
+        <header className="content-admin__hero">
+          <div className="content-admin__hero-copy">
+            <p className="content-admin__eyebrow">Website copy</p>
+            <h1>Edit by page</h1>
+            <p className="content-admin__lede">
+              Choose a page, update the text section by section, then save. Changes go live on the
+              website immediately.
+            </p>
+          </div>
+          <div className="content-admin__hero-meta" aria-label="Content overview">
+            <div>
+              <span>Pages</span>
+              <strong>{CONTENT_PAGES.length}</strong>
+            </div>
+            <div>
+              <span>Editable fields</span>
+              <strong>{totalFields}</strong>
+            </div>
+          </div>
+        </header>
+
+        <div className="content-admin__catalog">
+          {(
+            [
+              {
+                title: 'Website pages',
+                blurb: 'Marketing pages your visitors see first.',
+                ids: websitePages,
+              },
+              {
+                title: 'Site-wide & forms',
+                blurb: 'Shared navigation, footer, search, and enquiry copy.',
+                ids: siteWidePages,
+              },
+            ] as const
+          ).map((group) => (
+            <section key={group.title} className="content-admin__group">
+              <header className="content-admin__group-head">
+                <div>
+                  <h2 className="content-admin__group-title">{group.title}</h2>
+                  <p className="content-admin__group-blurb">{group.blurb}</p>
+                </div>
+                <span className="content-admin__group-count">
+                  {group.ids.length} area{group.ids.length === 1 ? '' : 's'}
+                </span>
+              </header>
+              <div className="content-admin__pages">
+                {group.ids.map((id) => {
+                  const page = CONTENT_PAGES.find((p) => p.id === id)
+                  if (!page) return null
+                  const total = countPageFields(page)
+                  const filled = filledCount(page)
+                  return (
+                    <button
+                      key={page.id}
+                      type="button"
+                      className="content-admin__page-card"
+                      onClick={() => setActivePageId(page.id)}
+                    >
+                      <span className="content-admin__page-icon" aria-hidden>
+                        <FileText size={18} />
+                      </span>
+                      <span className="content-admin__page-body">
+                        <strong>{page.title}</strong>
+                        <span>{page.description}</span>
+                        <em>
+                          {filled}/{total} fields · {page.path}
+                        </em>
+                      </span>
+                      <span className="content-admin__page-cta">Edit</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="admin-page">
-      <header className="admin-page__header">
-        <div>
-          <h1>Website Content</h1>
-          <p className="admin-page__lede">Edit key website copy without touching code.</p>
+    <div className="admin-page content-admin">
+      <header className="admin-page__header content-admin__header">
+        <div className="content-admin__editor-intro">
+          <button
+            type="button"
+            className="content-admin__back"
+            onClick={() => {
+              if (dirty && !window.confirm('You have unsaved changes. Leave this page?')) return
+              setActivePageId(null)
+            }}
+          >
+            <ArrowLeft size={16} aria-hidden />
+            All pages
+          </button>
+          <p className="content-admin__eyebrow">Editing</p>
+          <h1>{activePage.title}</h1>
+          <p className="content-admin__lede">{activePage.description}</p>
         </div>
+        <div className="admin-actions content-admin__actions">
+          {dirty ? <span className="content-admin__dirty">Unsaved changes</span> : null}
+          <a
+            className="admin-btn admin-btn--ghost"
+            href={activePage.path}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <ExternalLink size={15} aria-hidden />
+            Preview
+          </a>
+          <button
+            type="button"
+            className="admin-btn admin-btn--gold"
+            disabled={saving || !dirty}
+            onClick={() => void onSavePage()}
+          >
+            <Save size={15} aria-hidden />
+            {saving ? 'Saving…' : 'Save this page'}
+          </button>
+        </div>
+      </header>
+
+      <div className="content-admin__sections">
+        {activePage.sections.map((section, index) => (
+          <section key={section.id} className="content-admin__section">
+            <header className="content-admin__section-head">
+              <span className="content-admin__section-index">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <div>
+                <h2>{section.title}</h2>
+                <p>{section.description}</p>
+              </div>
+            </header>
+
+            <div className="content-admin__fields">
+              {section.fields.map((field) => {
+                const key = contentKey(activePage.id, section.id, field.key)
+                const value = values[key] ?? ''
+                return (
+                  <div className="admin-field content-admin__field" key={key}>
+                    <label htmlFor={key}>{field.label}</label>
+                    {field.help ? <p className="content-admin__help">{field.help}</p> : null}
+                    {field.type === 'textarea' ? (
+                      <textarea
+                        id={key}
+                        rows={field.rows ?? 4}
+                        value={value}
+                        placeholder={field.defaultValue}
+                        onChange={(e) =>
+                          setField(activePage.id, section.id, field.key, e.target.value)
+                        }
+                      />
+                    ) : (
+                      <input
+                        id={key}
+                        value={value}
+                        placeholder={field.defaultValue}
+                        onChange={(e) =>
+                          setField(activePage.id, section.id, field.key, e.target.value)
+                        }
+                      />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <div className="content-admin__footer-bar">
+        <p>Changes go live on the website as soon as you save.</p>
         <button
           type="button"
           className="admin-btn admin-btn--gold"
-          disabled={saving}
-          onClick={() => void onSave()}
+          disabled={saving || !dirty}
+          onClick={() => void onSavePage()}
         >
-          Save content
+          {saving ? 'Saving…' : 'Save this page'}
         </button>
-      </header>
-
-      <section className="admin-card admin-form__section">
-        <h2>Homepage Hero</h2>
-        {FIELDS.filter((f) => f.page === 'home' && f.section === 'hero').map((f) => (
-          <div className="admin-field" key={keyOf(f)}>
-            <label>{f.label}</label>
-            {f.content_type === 'textarea' ? (
-              <textarea
-                value={values[keyOf(f)] ?? ''}
-                onChange={(e) => setValues((v) => ({...v, [keyOf(f)]: e.target.value}))}
-              />
-            ) : (
-              <input
-                value={values[keyOf(f)] ?? ''}
-                onChange={(e) => setValues((v) => ({...v, [keyOf(f)]: e.target.value}))}
-              />
-            )}
-          </div>
-        ))}
-      </section>
-
-      <section className="admin-card admin-form__section">
-        <h2>Featured property section</h2>
-        {FIELDS.filter((f) => f.page === 'home' && f.section === 'featured').map((f) => (
-          <div className="admin-field" key={keyOf(f)}>
-            <label>{f.label}</label>
-            {f.content_type === 'textarea' ? (
-              <textarea
-                value={values[keyOf(f)] ?? ''}
-                onChange={(e) => setValues((v) => ({...v, [keyOf(f)]: e.target.value}))}
-              />
-            ) : (
-              <input
-                value={values[keyOf(f)] ?? ''}
-                onChange={(e) => setValues((v) => ({...v, [keyOf(f)]: e.target.value}))}
-              />
-            )}
-          </div>
-        ))}
-      </section>
-
-      <section className="admin-card admin-form__section">
-        <h2>About</h2>
-        {FIELDS.filter((f) => f.page === 'about').map((f) => (
-          <div className="admin-field" key={keyOf(f)}>
-            <label>{f.label}</label>
-            <textarea
-              value={values[keyOf(f)] ?? ''}
-              onChange={(e) => setValues((v) => ({...v, [keyOf(f)]: e.target.value}))}
-            />
-          </div>
-        ))}
-      </section>
-
-      <section className="admin-card admin-form__section">
-        <h2>Contact</h2>
-        {FIELDS.filter((f) => f.page === 'contact').map((f) => (
-          <div className="admin-field" key={keyOf(f)}>
-            <label>{f.label}</label>
-            {f.content_type === 'textarea' ? (
-              <textarea
-                value={values[keyOf(f)] ?? ''}
-                onChange={(e) => setValues((v) => ({...v, [keyOf(f)]: e.target.value}))}
-              />
-            ) : (
-              <input
-                value={values[keyOf(f)] ?? ''}
-                onChange={(e) => setValues((v) => ({...v, [keyOf(f)]: e.target.value}))}
-              />
-            )}
-          </div>
-        ))}
-      </section>
+      </div>
     </div>
   )
 }

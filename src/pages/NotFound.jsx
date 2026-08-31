@@ -1,7 +1,10 @@
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
+import { useSiteContent } from '../hooks/useSiteContent'
 
 function NotFound() {
+  const { get } = useSiteContent()
+
   return (
     <>
       <Helmet>
@@ -9,11 +12,18 @@ function NotFound() {
       </Helmet>
       <section className="page-hero page-hero--404">
         <div className="container" style={{ textAlign: 'center' }}>
-          <p>404</p>
-          <h1>Page Not Found</h1>
-          <p>The page you are looking for does not exist or has moved.</p>
+          <p>{get('not-found', 'hero', 'code', '404')}</p>
+          <h1>{get('not-found', 'hero', 'heading', 'Page Not Found')}</h1>
+          <p>
+            {get(
+              'not-found',
+              'hero',
+              'description',
+              'The page you are looking for does not exist or has moved.',
+            )}
+          </p>
           <Link to="/" className="btn btn-gold">
-            Back to Home
+            {get('not-found', 'hero', 'cta', 'Back to Home')}
           </Link>
         </div>
       </section>

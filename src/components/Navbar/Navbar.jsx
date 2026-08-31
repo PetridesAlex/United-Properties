@@ -1,37 +1,34 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ChevronDown, Search } from 'lucide-react'
 import StaggeredMenu from '../StaggeredMenu/StaggeredMenu'
 import { TELEGRAM_CHAT_URL, WHATSAPP_CHAT_URL } from '../../config/externalLinks'
+import { useSiteContent } from '../../hooks/useSiteContent'
 import './Navbar.css'
 
-/** Center nav — Montserrat via variables / Google Fonts in index.html */
-const CENTER_NAV_LINKS = [
-  { label: 'Buy', to: '/buy' },
-  { label: 'Rent', to: '/rent' },
-  { label: 'United Services', to: '/services' },
-  { label: 'About', to: '/about' },
-  { label: 'Contact', to: '/contact' },
+const CENTER_NAV_ROUTES = [
+  { key: 'buy', to: '/buy', fallback: 'Buy' },
+  { key: 'rent', to: '/rent', fallback: 'Rent' },
+  { key: 'services', to: '/services', fallback: 'United Services' },
+  { key: 'about', to: '/about', fallback: 'About' },
+  { key: 'contact', to: '/contact', fallback: 'Contact' },
 ]
 
-const SERVICES_DROPDOWN_LINKS = [
-  { label: 'Sell with us', to: '/sell-with-us' },
-  { label: 'Invest with us', to: '/services#invest-with-us' },
-  { label: 'Property Management', to: '/services#property-management' },
-  { label: 'Rent your property', to: '/services#rent-your-property' },
-  { label: 'Concierge', to: '/concierge' },
+const SERVICES_DROPDOWN_ROUTES = [
+  { key: 'sell', to: '/sell-with-us', fallback: 'Sell with us' },
+  { key: 'invest', to: '/services#invest-with-us', fallback: 'Invest with us' },
+  { key: 'management', to: '/services#property-management', fallback: 'Property Management' },
+  { key: 'rent_property', to: '/services#rent-your-property', fallback: 'Rent your property' },
+  { key: 'concierge', to: '/concierge', fallback: 'Concierge' },
 ]
 
-/** Hamburger menu — mirrors United Services dropdown links under one heading */
-const STAGGERED_MENU_ITEMS = [
-  { label: 'Buy', link: '/buy' },
-  { label: 'Rent', link: '/rent' },
-  {
-    label: 'United Services',
-    subItems: SERVICES_DROPDOWN_LINKS.map((s) => ({ label: s.label, link: s.to })),
-  },
-  { label: 'About', link: '/about' },
-  { label: 'Contact', link: '/contact' },
+const TICKER_FALLBACKS = [
+  'Luxury sales & long-term lettings',
+  'Private valuations & viewings',
+  'Investment & relocation advisory',
+  'Featured listings & signature collection',
+  'International private clients',
+  'Concierge property management',
 ]
 
 function isCenterNavActive(pathname, hash, to) {
@@ -45,23 +42,53 @@ function isCenterNavActive(pathname, hash, to) {
   return pathname === to
 }
 
-/** Premium services strip above the main nav (duplicated in DOM for seamless loop). */
-const PREMIUM_SERVICES_TICKER = [
-  'Luxury sales & long-term lettings',
-  'Private valuations & viewings',
-  'Investment & relocation advisory',
-  'Featured listings & signature collection',
-  'International private clients',
-  'Concierge property management',
-]
-
 function Navbar() {
+  const { get } = useSiteContent()
   const [isScrolled, setIsScrolled] = useState(false)
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false)
   const servicesDropdownRef = useRef(null)
   const location = useLocation()
   const navigate = useNavigate()
   const isHome = location.pathname === '/'
+
+  const premiumServicesTicker = useMemo(
+    () =>
+      TICKER_FALLBACKS.map((fallback, index) =>
+        get('navbar', 'ticker', `item${index + 1}`, fallback),
+      ),
+    [get],
+  )
+
+  const centerNavLinks = useMemo(
+    () =>
+      CENTER_NAV_ROUTES.map((item) => ({
+        to: item.to,
+        label: get('navbar', 'nav', item.key, item.fallback),
+      })),
+    [get],
+  )
+
+  const servicesDropdownLinks = useMemo(
+    () =>
+      SERVICES_DROPDOWN_ROUTES.map((item) => ({
+        to: item.to,
+        label: get('navbar', 'services_dropdown', item.key, item.fallback),
+      })),
+    [get],
+  )
+
+  const staggeredMenuItems = useMemo(
+    () =>
+      centerNavLinks.map((item) =>
+        item.to === '/services'
+          ? {
+              label: item.label,
+              subItems: servicesDropdownLinks.map((s) => ({ label: s.label, link: s.to })),
+            }
+          : { label: item.label, link: item.to },
+      ),
+    [centerNavLinks, servicesDropdownLinks],
+  )
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 40)
@@ -107,14 +134,14 @@ function Navbar() {
         <div className="navbar__ticker-viewport">
           <div className="navbar__ticker-track" aria-hidden="true">
             <div className="navbar__ticker-row">
-              {PREMIUM_SERVICES_TICKER.map((label, index) => (
+              {premiumServicesTicker.map((label, index) => (
                 <span key={`ticker-a-${index}`} className="navbar__ticker-chip">
                   {label}
                 </span>
               ))}
             </div>
             <div className="navbar__ticker-row">
-              {PREMIUM_SERVICES_TICKER.map((label, index) => (
+              {premiumServicesTicker.map((label, index) => (
                 <span key={`ticker-b-${index}`} className="navbar__ticker-chip">
                   {label}
                 </span>
@@ -131,7 +158,7 @@ function Navbar() {
 
         <nav className="navbar__center" aria-label="Main navigation">
           <ul className="navbar__center-list">
-            {CENTER_NAV_LINKS.map((item) => {
+            {centerNavLinks.map((item) => {
               const active = isCenterNavActive(location.pathname, location.hash, item.to)
               const isServicesItem = item.to === '/services'
               return (
@@ -164,7 +191,7 @@ function Navbar() {
                       </Link>
 
                       <div className="navbar__center-dropdown-menu" role="menu" aria-label="United Services links">
-                        {SERVICES_DROPDOWN_LINKS.map((serviceLink) => {
+                        {servicesDropdownLinks.map((serviceLink) => {
                           const serviceActive = isCenterNavActive(
                             location.pathname,
                             location.hash,
@@ -215,7 +242,7 @@ function Navbar() {
             <StaggeredMenu
               className="navbar__staggered"
               position="right"
-              items={STAGGERED_MENU_ITEMS}
+              items={staggeredMenuItems}
               socialItems={[
                 { label: 'Instagram', link: '#' },
                 { label: 'LinkedIn', link: '#' },

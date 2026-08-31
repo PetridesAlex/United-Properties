@@ -4,9 +4,12 @@ import SectionHeader from '../components/SectionHeader/SectionHeader'
 import AgentCard from '../components/AgentCard/AgentCard'
 import CTASection from '../components/CTASection/CTASection'
 import { agents } from '../data/agents'
+import { useSiteContent } from '../hooks/useSiteContent'
 import './About.css'
 
 function About() {
+  const { get } = useSiteContent()
+
   return (
     <>
       <Helmet>
@@ -15,12 +18,9 @@ function About() {
 
       <section className="page-hero">
         <div className="container">
-          <p>About United Properties</p>
-          <h1>Trusted Cyprus Real Estate Advisory</h1>
-          <p>
-            We combine local expertise, international perspective, and private-client
-            service to deliver clear property decisions.
-          </p>
+          <p>{get('about', 'hero', 'eyebrow')}</p>
+          <h1>{get('about', 'hero', 'heading')}</h1>
+          <p>{get('about', 'hero', 'description')}</p>
         </div>
       </section>
 
@@ -31,18 +31,17 @@ function About() {
             alt="United Properties office lounge"
           />
           <div>
-            <SectionHeader eyebrow="Brand Story" title="Precision, Trust, and Market Insight" />
-            <p>
-              Our firm was built to elevate how clients navigate Cyprus property. Every
-              recommendation is grounded in market data, location dynamics, and personal
-              objectives.
-            </p>
-            <h3>Mission</h3>
-            <p>Deliver premium real estate outcomes through tailored advisory and execution excellence.</p>
-            <h3>Values</h3>
-            <p>Integrity, discretion, strategic clarity, and long-term relationships.</p>
+            <SectionHeader
+              eyebrow={get('about', 'story', 'eyebrow')}
+              title={get('about', 'story', 'heading')}
+            />
+            <p>{get('about', 'story', 'body')}</p>
+            <h3>{get('about', 'story', 'mission_heading')}</h3>
+            <p>{get('about', 'story', 'mission')}</p>
+            <h3>{get('about', 'story', 'values_heading')}</h3>
+            <p>{get('about', 'story', 'values')}</p>
             <Link to="/contact" className="btn btn-outline-dark">
-              Book a Consultation
+              {get('about', 'story', 'cta_label', 'Book a Consultation')}
             </Link>
           </div>
         </div>
@@ -51,21 +50,21 @@ function About() {
       <section className="section section--alt">
         <div className="container">
           <SectionHeader
-            title="Why Choose Us"
-            description="Local market mastery, international buyer support, and premium transaction guidance."
+            title={get('about', 'why', 'heading')}
+            description={get('about', 'why', 'description')}
           />
           <div className="grid-3">
             <article className="card-luxury about-point">
-              <h3>Prime Market Access</h3>
-              <p>Curated inventory in Cyprus locations with strong lifestyle and value fundamentals.</p>
+              <h3>{get('about', 'why', 'point1_title')}</h3>
+              <p>{get('about', 'why', 'point1_body')}</p>
             </article>
             <article className="card-luxury about-point">
-              <h3>Global Buyer Expertise</h3>
-              <p>Structured support for overseas investors, expats, and relocation clients.</p>
+              <h3>{get('about', 'why', 'point2_title')}</h3>
+              <p>{get('about', 'why', 'point2_body')}</p>
             </article>
             <article className="card-luxury about-point">
-              <h3>End-to-End Advisory</h3>
-              <p>From search strategy to completion, every detail is managed with precision.</p>
+              <h3>{get('about', 'why', 'point3_title')}</h3>
+              <p>{get('about', 'why', 'point3_body')}</p>
             </article>
           </div>
         </div>
@@ -73,7 +72,7 @@ function About() {
 
       <section className="section section--light">
         <div className="container">
-          <SectionHeader title="Leadership and Advisory Team" />
+          <SectionHeader title={get('about', 'team', 'heading')} />
           <div className="grid-3">
             {agents.map((agent) => (
               <AgentCard key={agent.id} agent={agent} />
@@ -82,7 +81,7 @@ function About() {
         </div>
       </section>
 
-      <CTASection title="Work With a Team That Understands Prestige Real Estate" />
+      <CTASection title={get('about', 'cta', 'heading')} />
     </>
   )
 }

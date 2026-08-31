@@ -1,5 +1,6 @@
 import {useEffect, useMemo, useState} from 'react'
 import {Link} from 'react-router-dom'
+import {CheckCircle2, CircleAlert, Copy, ExternalLink, MapPin, Radio} from 'lucide-react'
 import toast from 'react-hot-toast'
 import {fetchAdminProperties} from '../../lib/properties/api'
 import {supabase} from '../../lib/supabase/client'
@@ -8,8 +9,9 @@ import {DEFAULT_BAZARAKI_RUBRICS} from '../../lib/integrations/bazaraki/rubricMa
 import {resolveBazarakiRubric} from '../../lib/integrations/bazaraki/rubricMappings'
 import {validatePropertyForBazaraki} from '../../lib/integrations/bazaraki/validatePropertyForBazaraki'
 import {getBazarakiDistrictById} from '../../lib/integrations/bazaraki/districts'
-import type {Property, SiteSettings} from '../../types/cms'
+import {PROPERTY_STATUS_LABELS, type Property, type PropertyStatus, type SiteSettings} from '../../types/cms'
 import '../../components/admin/AdminShell.css'
+import './AdminBazarakiPage.css'
 
 const defaultSettings: SiteSettings = {
   id: 1,
@@ -51,6 +53,39 @@ const defaultSettings: SiteSettings = {
   updated_by: null,
 }
 
+function thumb(property: Property) {
+  const images = [...(property.property_images ?? [])].sort((a, b) => a.position - b.position)
+  return images.find((i) => i.is_featured)?.image_url || images[0]?.image_url || ''
+}
+
+function formatPrice(property: Property) {
+  if (property.price == null) return 'Price on request'
+  const amount = Number(property.price).toLocaleString('en-GB')
+  const suffix = property.status === 'for_rent' || property.status === 'rented' ? ' / mo' : ''
+  return `€${amount}${suffix}`
+}
+
+function statusBadgeClass(status: PropertyStatus) {
+  if (status === 'for_sale') return 'admin-badge--sale'
+  if (status === 'for_rent') return 'admin-badge--rent'
+  if (status === 'sold') return 'admin-badge--sold'
+  return 'admin-badge--rented'
+}
+
+function schemaLabel(schema: string | null | undefined) {
+  if (!schema) return null
+  const map: Record<string, string> = {
+    apartment: 'Apartments, flats',
+    houses: 'Houses',
+    commercial: 'Commercial',
+    plotsOfLand: 'Plots of land',
+    residentialBuildings: 'Residential buildings',
+    prefabricatedHouses: 'Prefabricated houses',
+    other: 'Other',
+  }
+  return map[schema] ?? schema
+}
+
 export default function AdminBazarakiPage() {
   const [rows, setRows] = useState<Property[]>([])
   const [settings, setSettings] = useState<SiteSettings>(defaultSettings)
@@ -77,16 +112,30 @@ export default function AdminBazarakiPage() {
     }
   }, [])
 
+  const enriched = useMemo(
+    () =>
+      rows.map((p) => {
+        const validation = validatePropertyForBazaraki(p, settings)
+        const district = getBazarakiDistrictById(p.bazaraki_district_id)
+        const rubric =
+          p.status === 'for_sale' || p.status === 'for_rent'
+            ? resolveBazarakiRubric(p.property_type, p.status, settings)
+            : null
+        const issues = [...validation.missingFields, ...validation.errors, ...validation.warnings]
+        return {property: p, validation, district, rubric, issues}
+      }),
+    [rows, settings],
+  )
+
   const stats = useMemo(() => {
     let ready = 0
     let notReady = 0
-    for (const p of rows) {
-      const v = validatePropertyForBazaraki(p, settings)
-      if (v.ready) ready += 1
+    for (const row of enriched) {
+      if (row.validation.ready) ready += 1
       else notReady += 1
     }
-    return {ready, notReady, total: rows.length}
-  }, [rows, settings])
+    return {ready, notReady, total: enriched.length}
+  }, [enriched])
 
   function copyFeedUrl() {
     void navigator.clipboard.writeText(BAZARAKI_FEED_URL).then(() => {
@@ -95,17 +144,19 @@ export default function AdminBazarakiPage() {
   }
 
   return (
-    <div className="admin-page">
-      <header className="admin-page__header">
+    <div className="admin-page bazaraki-admin">
+      <header className="admin-page__header bazaraki-admin__header">
         <div>
-          <h1>Bazaraki</h1>
+          <p className="bazaraki-admin__eyebrow">Syndication</p>
+          <h1>Bazaraki listings</h1>
           <p className="admin-page__lede">
-            XML feed for Bazaraki integration. Only published, active listings marked for Bazaraki
-            and passing readiness checks appear in the feed.
+            Premium view of every listing marked for Bazaraki — readiness, district, and feed status
+            at a glance.
           </p>
         </div>
         <div className="admin-actions">
           <button type="button" className="admin-btn admin-btn--ghost" onClick={copyFeedUrl}>
+            <Copy size={15} aria-hidden />
             Copy feed URL
           </button>
           <a
@@ -114,90 +165,175 @@ export default function AdminBazarakiPage() {
             target="_blank"
             rel="noreferrer"
           >
+            <ExternalLink size={15} aria-hidden />
             Open feed
           </a>
         </div>
       </header>
 
-      <div className="admin-bazaraki-stats">
-        <div className="admin-bazaraki-stats__card">
+      <div className="bazaraki-admin__stats" role="list">
+        <div className="bazaraki-admin__stat bazaraki-admin__stat--ready" role="listitem">
+          <span className="bazaraki-admin__stat-label">In the live feed</span>
           <strong>{stats.ready}</strong>
-          <span>Ready for feed</span>
         </div>
-        <div className="admin-bazaraki-stats__card">
+        <div className="bazaraki-admin__stat bazaraki-admin__stat--fix" role="listitem">
+          <span className="bazaraki-admin__stat-label">Need attention</span>
           <strong>{stats.notReady}</strong>
-          <span>Need fixes</span>
         </div>
-        <div className="admin-bazaraki-stats__card">
+        <div className="bazaraki-admin__stat" role="listitem">
+          <span className="bazaraki-admin__stat-label">Marked for Bazaraki</span>
           <strong>{stats.total}</strong>
-          <span>Marked for Bazaraki</span>
         </div>
-        <div className="admin-bazaraki-stats__card">
+        <div
+          className={`bazaraki-admin__stat ${settings.bazaraki_feed_enabled ? 'bazaraki-admin__stat--on' : 'bazaraki-admin__stat--off'}`}
+          role="listitem"
+        >
+          <span className="bazaraki-admin__stat-label">Feed switch</span>
           <strong>{settings.bazaraki_feed_enabled ? 'On' : 'Off'}</strong>
-          <span>Feed status</span>
         </div>
       </div>
 
-      <div className="admin-card admin-field admin-field--full" style={{marginBottom: '1rem'}}>
-        <label>Feed URL (register in Bazaraki settings)</label>
-        <div className="admin-feed-url">
-          <input readOnly value={BAZARAKI_FEED_URL} />
+      <section className="bazaraki-admin__feed-card">
+        <div className="bazaraki-admin__feed-copy">
+          <p className="bazaraki-admin__eyebrow">XML feed</p>
+          <h2>Register this URL in Bazaraki</h2>
+          <p>Paste it under your Bazaraki XML feed settings. Only ready listings are exported.</p>
+        </div>
+        <div className="bazaraki-admin__feed-url">
+          <input readOnly value={BAZARAKI_FEED_URL} aria-label="Bazaraki feed URL" />
           <button type="button" className="admin-btn admin-btn--ghost" onClick={copyFeedUrl}>
             Copy
           </button>
         </div>
-      </div>
+      </section>
 
-      <div className="admin-card admin-table-wrap">
+      <section className="bazaraki-admin__panel" aria-live="polite">
+        <div className="bazaraki-admin__panel-head">
+          <div>
+            <p className="bazaraki-admin__eyebrow">Catalogue</p>
+            <h2>How listings appear for Bazaraki</h2>
+          </div>
+          <span className="bazaraki-admin__count">{stats.total} listing{stats.total === 1 ? '' : 's'}</span>
+        </div>
+
         {loading ? (
-          <p className="admin-empty">Loading…</p>
-        ) : rows.length === 0 ? (
-          <p className="admin-empty">No properties marked for Bazaraki.</p>
+          <p className="admin-empty">Loading Bazaraki listings…</p>
+        ) : enriched.length === 0 ? (
+          <div className="bazaraki-admin__empty">
+            <Radio size={22} aria-hidden />
+            <p>No properties marked for Bazaraki yet.</p>
+            <Link className="admin-btn admin-btn--gold" to="/admin/properties">
+              Browse listings
+            </Link>
+          </div>
         ) : (
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Property</th>
-                <th>Status</th>
-                <th>Schema</th>
-                <th>District</th>
-                <th>Rubric</th>
-                <th>Feed</th>
-                <th>Issues</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((p) => {
-                const v = validatePropertyForBazaraki(p, settings)
-                const district = getBazarakiDistrictById(p.bazaraki_district_id)
-                const rubric =
-                  p.status === 'for_sale' || p.status === 'for_rent'
-                    ? resolveBazarakiRubric(p.property_type, p.status, settings)
-                    : null
-                return (
-                  <tr key={p.id}>
-                    <td>
-                      <Link to={`/admin/properties/${p.id}/edit`}>
-                        {p.reference_number} — {p.title}
-                      </Link>
-                    </td>
-                    <td>{p.status}</td>
-                    <td>{v.attrsSchema ?? '—'}</td>
-                    <td>
-                      {district ? `${district.name} (${p.bazaraki_district_id})` : '—'}
-                    </td>
-                    <td>{rubric ?? '—'}</td>
-                    <td>{v.ready ? 'In feed' : 'Excluded'}</td>
-                    <td>
-                      {[...v.missingFields, ...v.errors, ...v.warnings].join(' · ') || '—'}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+          <ul className="bazaraki-admin__list">
+            {enriched.map(({property: p, validation, district, rubric, issues}) => {
+              const image = thumb(p)
+              const location =
+                district?.areaName ||
+                [p.area, p.city || p.district].filter(Boolean).join(', ') ||
+                'Location TBC'
+              return (
+                <li
+                  key={p.id}
+                  className={`bazaraki-admin__card${validation.ready ? ' is-ready' : ' is-pending'}`}
+                >
+                  <div className="bazaraki-admin__media">
+                    {image ? (
+                      <img src={image} alt="" />
+                    ) : (
+                      <div className="bazaraki-admin__media-fallback" aria-hidden>
+                        UP
+                      </div>
+                    )}
+                    <span
+                      className={`bazaraki-admin__feed-pill${validation.ready ? ' is-ready' : ' is-pending'}`}
+                    >
+                      {validation.ready ? (
+                        <>
+                          <CheckCircle2 size={13} aria-hidden /> In feed
+                        </>
+                      ) : (
+                        <>
+                          <CircleAlert size={13} aria-hidden /> Excluded
+                        </>
+                      )}
+                    </span>
+                  </div>
+
+                  <div className="bazaraki-admin__body">
+                    <div className="bazaraki-admin__meta-top">
+                      <span className="bazaraki-admin__ref">{p.reference_number}</span>
+                      <span className={`admin-badge ${statusBadgeClass(p.status)}`}>
+                        {PROPERTY_STATUS_LABELS[p.status]}
+                      </span>
+                      {schemaLabel(validation.attrsSchema) ? (
+                        <span className="bazaraki-admin__chip">{schemaLabel(validation.attrsSchema)}</span>
+                      ) : null}
+                    </div>
+
+                    <h3 className="bazaraki-admin__title">
+                      <Link to={`/admin/properties/${p.id}/edit`}>{p.title}</Link>
+                    </h3>
+
+                    <p className="bazaraki-admin__location">
+                      <MapPin size={14} aria-hidden />
+                      <span>
+                        {location}
+                        {p.bazaraki_district_id != null ? (
+                          <em> · ID {p.bazaraki_district_id}</em>
+                        ) : null}
+                      </span>
+                    </p>
+
+                    <div className="bazaraki-admin__meta-bottom">
+                      <strong className="bazaraki-admin__price">{formatPrice(p)}</strong>
+                      <span>{p.property_type || 'Property'}</span>
+                      {rubric != null ? <span>Rubric {rubric}</span> : <span>No rubric</span>}
+                      {p.latitude != null && p.longitude != null ? (
+                        <span className="is-on">Map pin set</span>
+                      ) : (
+                        <span className="is-off">No map pin</span>
+                      )}
+                    </div>
+
+                    {issues.length ? (
+                      <ul className="bazaraki-admin__issues">
+                        {issues.slice(0, 4).map((issue) => (
+                          <li key={issue}>{issue}</li>
+                        ))}
+                        {issues.length > 4 ? <li>+{issues.length - 4} more</li> : null}
+                      </ul>
+                    ) : (
+                      <p className="bazaraki-admin__ok">All checks passed — included in the XML feed.</p>
+                    )}
+                  </div>
+
+                  <div className="bazaraki-admin__actions">
+                    <Link
+                      className="admin-btn admin-btn--gold"
+                      to={`/admin/properties/${p.id}/edit`}
+                    >
+                      Edit listing
+                    </Link>
+                    {p.published && p.slug ? (
+                      <a
+                        className="admin-btn admin-btn--ghost"
+                        href={`/properties/${p.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        View site
+                      </a>
+                    ) : null}
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
         )}
-      </div>
+      </section>
     </div>
   )
 }

@@ -7,6 +7,7 @@ import {
   formatBazarakiPrice,
   formatBazarakiTitle,
   formatLastUpdate,
+  toBazarakiExternalId,
 } from './formatters'
 import {buildHousesAttrs, type HousesAttrs} from './housesMappings'
 import {buildPlotsOfLandAttrs, type PlotsOfLandAttrs} from './landMappings'
@@ -96,7 +97,7 @@ export function mapPropertyToListItem(
 
   return {
     lastUpdate: formatLastUpdate(property.updated_at),
-    externalId: property.id,
+    externalId: toBazarakiExternalId(property.reference_number, property.id),
     imageUrls: images,
     status: 'active',
     rubric,

@@ -11,33 +11,43 @@ const contactMethodVariants = ['whatsapp', 'email', 'call']
 import InquiryForm from '../components/InquiryForm/InquiryForm'
 import { TelegramBrandIcon } from '../components/Navbar/SocialBrandIcons'
 import { TELEGRAM_CHAT_URL, WHATSAPP_CHAT_URL } from '../config/externalLinks'
+import { useSiteContent } from '../hooks/useSiteContent'
 import './Contact.css'
 
-const contactMethods = [
-  {
-    icon: MessageCircle,
-    title: 'WhatsApp',
-    subtitle: 'Fast answers from our team',
-    href: WHATSAPP_CHAT_URL,
-    external: true,
-  },
-  {
-    icon: Mail,
-    title: 'Email us',
-    subtitle: 'info@unitedproperties.eu',
-    href: 'mailto:info@unitedproperties.eu',
-    external: false,
-  },
-  {
-    icon: Phone,
-    title: 'Call us',
-    subtitle: '+357 25 123 456',
-    href: 'tel:+35725123456',
-    external: false,
-  },
-]
-
 function Contact() {
+  const { get } = useSiteContent()
+
+  const officeAddress = get('contact', 'office', 'address', '18 Marina Avenue, Limassol, Cyprus')
+  const officePhone = get('contact', 'office', 'phone', '+357 25 123 456')
+  const officeEmail = get('contact', 'office', 'email', 'info@unitedproperties.eu')
+  const officeHours = get('contact', 'office', 'hours', 'Mon - Fri: 9:00 - 18:00')
+  const phoneHref = `tel:${officePhone.replace(/\s+/g, '')}`
+  const emailHref = `mailto:${officeEmail}`
+
+  const contactMethods = [
+    {
+      icon: MessageCircle,
+      title: get('contact', 'methods', 'whatsapp_title', 'WhatsApp'),
+      subtitle: get('contact', 'methods', 'whatsapp_subtitle', 'Fast answers from our team'),
+      href: WHATSAPP_CHAT_URL,
+      external: true,
+    },
+    {
+      icon: Mail,
+      title: get('contact', 'methods', 'email_title', 'Email us'),
+      subtitle: get('contact', 'methods', 'email_subtitle', 'info@unitedproperties.eu'),
+      href: emailHref,
+      external: false,
+    },
+    {
+      icon: Phone,
+      title: get('contact', 'methods', 'call_title', 'Call us'),
+      subtitle: get('contact', 'methods', 'call_subtitle', '+357 25 123 456'),
+      href: phoneHref,
+      external: false,
+    },
+  ]
+
   return (
     <>
       <Helmet>
@@ -46,12 +56,9 @@ function Contact() {
 
       <section className="page-hero page-hero--contact">
         <div className="container">
-          <p>Contact</p>
-          <h1>Start a Private Real Estate Consultation</h1>
-          <p>
-            Connect with our team for sales, rentals, relocation, and
-            investment strategy in Cyprus.
-          </p>
+          <p>{get('contact', 'hero', 'eyebrow')}</p>
+          <h1>{get('contact', 'hero', 'heading')}</h1>
+          <p>{get('contact', 'hero', 'description')}</p>
         </div>
       </section>
 
@@ -72,7 +79,7 @@ function Contact() {
               viewport={{ once: true, amount: 0.35 }}
               transition={{ duration: 0.45 }}
             >
-              Client concierge
+              {get('contact', 'intro', 'eyebrow')}
             </MotionP>
             <div className="contact-intro__rule" aria-hidden />
             <MotionH2
@@ -82,7 +89,7 @@ function Contact() {
               viewport={{ once: true, amount: 0.35 }}
               transition={{ duration: 0.48, delay: 0.06 }}
             >
-              Get in touch
+              {get('contact', 'intro', 'heading')}
             </MotionH2>
             <MotionP
               className="contact-intro__subtitle"
@@ -91,8 +98,7 @@ function Contact() {
               viewport={{ once: true, amount: 0.35 }}
               transition={{ duration: 0.48, delay: 0.12 }}
             >
-              Choose how you would like to reach United Properties — we respond during business hours
-              and on WhatsApp when possible.
+              {get('contact', 'intro', 'description')}
             </MotionP>
           </MotionHeader>
 
@@ -102,7 +108,7 @@ function Contact() {
               const variant = contactMethodVariants[index] ?? 'call'
               return (
                 <MotionA
-                  key={method.title}
+                  key={`${variant}-${method.title}`}
                   href={method.href}
                   className={`contact-method-card contact-method-card--${variant}`}
                   initial={{ opacity: 0, y: 22 }}
@@ -135,25 +141,36 @@ function Contact() {
         <div className="container contact-grid">
           <div className="contact-grid__details">
             <article className="card-luxury contact-card">
-              <h3>Office</h3>
+              <h3>{get('contact', 'office', 'heading', 'Office')}</h3>
               <p>
-                <MapPin size={16} aria-hidden /> 18 Marina Avenue, Limassol, Cyprus
+                <MapPin size={16} aria-hidden /> {officeAddress}
               </p>
               <p>
-                <Phone size={16} aria-hidden /> <a href="tel:+35725123456">+357 25 123 456</a>
+                <Phone size={16} aria-hidden /> <a href={phoneHref}>{officePhone}</a>
               </p>
               <p>
-                <Mail size={16} aria-hidden /> <a href="mailto:info@unitedproperties.eu">info@unitedproperties.eu</a>
+                <Mail size={16} aria-hidden /> <a href={emailHref}>{officeEmail}</a>
               </p>
               <p>
-                <Clock4 size={16} aria-hidden /> Mon - Fri: 9:00 - 18:00
+                <Clock4 size={16} aria-hidden /> {officeHours}
               </p>
             </article>
 
             <article className="card-luxury contact-card">
-              <h3>Telegram</h3>
-              <p>Continue the conversation on Telegram if you prefer.</p>
-              <div className="contact-card__messengers" role="group" aria-label="Telegram">
+              <h3>{get('contact', 'telegram', 'heading', 'Telegram')}</h3>
+              <p>
+                {get(
+                  'contact',
+                  'telegram',
+                  'body',
+                  'Continue the conversation on Telegram if you prefer.',
+                )}
+              </p>
+              <div
+                className="contact-card__messengers"
+                role="group"
+                aria-label={get('contact', 'telegram', 'heading', 'Telegram')}
+              >
                 <a
                   href={TELEGRAM_CHAT_URL}
                   target="_blank"
@@ -162,29 +179,29 @@ function Contact() {
                   aria-label="Open Telegram chat"
                 >
                   <TelegramBrandIcon size={28} />
-                  <span>Telegram</span>
+                  <span>{get('contact', 'telegram', 'link_label', 'Telegram')}</span>
                 </a>
               </div>
             </article>
 
             <article className="card-luxury contact-card contact-card--map">
-              <h3>Map</h3>
+              <h3>{get('contact', 'map', 'heading', 'Map')}</h3>
               <div className="contact-card__map">
                 <iframe
-                  title="United Properties — 18 Marina Avenue, Limassol"
+                  title={`United Properties — ${officeAddress}`}
                   className="contact-card__map-frame"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  src="https://maps.google.com/maps?q=18+Marina+Avenue,+Limassol,+Cyprus&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(officeAddress)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                 />
               </div>
               <p className="contact-card__map-caption">
                 <a
-                  href="https://www.google.com/maps/search/?api=1&query=18+Marina+Avenue,+Limassol,+Cyprus"
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(officeAddress)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Open in Google Maps
+                  {get('contact', 'map', 'open_maps_label', 'Open in Google Maps')}
                 </a>
               </p>
             </article>

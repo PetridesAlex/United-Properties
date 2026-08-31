@@ -1,5 +1,5 @@
 import { motion, useMotionValue, useMotionValueEvent, useTransform } from 'framer-motion'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Calculator,
   DraftingCompass,
@@ -8,44 +8,41 @@ import {
   Scale,
   TrendingUp,
 } from 'lucide-react'
+import { useSiteContent } from '../../hooks/useSiteContent'
 import './InvestHowItWorksTimeline.css'
 
-const STEPS = [
+const STEP_ICONS = [MapPinned, DraftingCompass, Calculator, TrendingUp, Scale, Handshake]
+
+const STEP_DEFAULTS = [
   {
     title: 'We discover the right plot',
     copy:
       'We source and evaluate land in locations with real demand and long‑term potential, checking planning zones, density and access so the foundations are right from day one.',
-    icon: MapPinned,
   },
   {
     title: 'We shape the concept with our partners',
     copy:
       'Working closely with our architects and engineers, we define what should be built on the plot – from unit mix to overall design – ensuring it fits both regulations and future buyers or tenants.',
-    icon: DraftingCompass,
   },
   {
     title: 'We build a realistic budget',
     copy:
       'With input from our construction partners, we translate the concept into a detailed cost plan, including construction, professional fees, permits and contingencies, so you see the full picture of what the project will require.',
-    icon: Calculator,
   },
   {
     title: 'We map the market and returns',
     copy:
       'Using local comparables and current demand, we estimate selling prices or rentals and project the potential income of the finished development, including expected ROI and time horizon.',
-    icon: TrendingUp,
   },
   {
     title: 'We design the investment structure',
     copy:
       'Together with our legal partners, we propose a structure that suits your profile – whether that is a private investment, joint venture or dedicated SPV – always with clarity around roles, responsibilities and exit.',
-    icon: Scale,
   },
   {
     title: 'We coordinate the journey, together',
     copy:
       'Once you decide to move forward, United Properties stands at the centre, coordinating legal, technical and construction teams and keeping everyone aligned. All key partners are united under one boutique umbrella, so your path from land to completed asset is as smooth and transparent as possible.',
-    icon: Handshake,
   },
 ]
 
@@ -127,11 +124,25 @@ function TimelineCard({ step, side }) {
 }
 
 export default function InvestHowItWorksTimeline() {
+  const { get } = useSiteContent()
   const ref = useRef(null)
   const firstNodeRef = useRef(null)
   const lastNodeRef = useRef(null)
   const scrollYProgress = useMotionValue(0)
   const [lineBounds, setLineBounds] = useState({ top: 0, height: 0 })
+
+  const steps = useMemo(
+    () =>
+      STEP_DEFAULTS.map((fallback, index) => {
+        const n = index + 1
+        return {
+          title: get('services', 'invest_process', `step${n}_title`, fallback.title),
+          copy: get('services', 'invest_process', `step${n}_body`, fallback.copy),
+          icon: STEP_ICONS[index],
+        }
+      }),
+    [get],
+  )
 
   useEffect(() => {
     const el = ref.current
@@ -173,7 +184,7 @@ export default function InvestHowItWorksTimeline() {
   }, [scrollYProgress])
 
   const lineScale = useTransform(scrollYProgress, [0, 1], [0, 1])
-  const maxIndex = Math.max(1, STEPS.length - 1)
+  const maxIndex = Math.max(1, steps.length - 1)
 
   return (
     <div className="invest-how-it-works" aria-labelledby="invest-how-heading">
@@ -184,7 +195,7 @@ export default function InvestHowItWorksTimeline() {
         transition={{ duration: 0.4 }}
         className="invest-how-it-works__eyebrow"
       >
-        Process
+        {get('services', 'invest_process', 'eyebrow', 'Process')}
       </motion.p>
 
       <motion.h2
@@ -195,7 +206,7 @@ export default function InvestHowItWorksTimeline() {
         transition={{ duration: 0.5 }}
         className="invest-how-it-works__title"
       >
-        How it works
+        {get('services', 'invest_process', 'heading', 'How it works')}
       </motion.h2>
 
       <motion.p
@@ -205,7 +216,12 @@ export default function InvestHowItWorksTimeline() {
         transition={{ duration: 0.5, delay: 0.08 }}
         className="invest-how-it-works__lead"
       >
-        From land sourcing to coordinated delivery—six deliberate stages with one boutique team at the centre.
+        {get(
+          'services',
+          'invest_process',
+          'lead',
+          'From land sourcing to coordinated delivery—six deliberate stages with one boutique team at the centre.',
+        )}
       </motion.p>
 
       <div ref={ref} className="invest-how-it-works__track">
@@ -226,13 +242,13 @@ export default function InvestHowItWorksTimeline() {
         />
 
         <div className="invest-how-it-works__steps">
-          {STEPS.map((step, i) => {
+          {steps.map((step, i) => {
             const side = i % 2 === 0 ? 'left' : 'right'
             const at = i / maxIndex
             const isFirst = i === 0
-            const isLast = i === STEPS.length - 1
+            const isLast = i === steps.length - 1
             return (
-              <div key={step.title} className="invest-how-it-works__step-row">
+              <div key={`invest-step-${i}`} className="invest-how-it-works__step-row">
                 <div
                   ref={isFirst ? firstNodeRef : isLast ? lastNodeRef : undefined}
                   className="invest-how-it-works__step-node"

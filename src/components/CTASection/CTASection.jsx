@@ -1,23 +1,33 @@
 import { Link } from 'react-router-dom'
 import { MessageCircle } from 'lucide-react'
+import { useSiteContent } from '../../hooks/useSiteContent'
 import './CTASection.css'
 
-function CTASection({
-  title = 'Ready to Find Your Ideal Property in Cyprus?',
-  description = 'Connect with our advisors for a tailored strategy across premium Cyprus locations.',
-}) {
+function CTASection({ title, description }) {
+  const { get } = useSiteContent()
+  const resolvedTitle =
+    title ?? get('home', 'cta', 'heading', 'Ready to Find Your Ideal Property in Cyprus?')
+  const resolvedDescription =
+    description ??
+    get(
+      'home',
+      'cta',
+      'description',
+      'Connect with our advisors for a tailored strategy across premium Cyprus locations.',
+    )
+
   return (
     <section className="cta-section section">
       <div className="container">
         <div className="cta-section__panel">
-          <h2>{title}</h2>
-          <p>{description}</p>
+          <h2>{resolvedTitle}</h2>
+          <p>{resolvedDescription}</p>
           <div className="cta-section__actions">
             <Link to="/properties" className="btn btn-gold">
-              View Listings
+              {get('home', 'cta', 'btn_listings', 'View Listings')}
             </Link>
             <Link to="/contact" className="btn btn-outline-light">
-              Contact Our Team
+              {get('home', 'cta', 'btn_contact', 'Contact Our Team')}
             </Link>
             <a
               href="https://wa.me/35700000000"
@@ -25,7 +35,7 @@ function CTASection({
               rel="noreferrer"
               className="btn btn-outline-light"
             >
-              <MessageCircle size={16} /> WhatsApp
+              <MessageCircle size={16} /> {get('home', 'cta', 'btn_whatsapp', 'WhatsApp')}
             </a>
           </div>
         </div>

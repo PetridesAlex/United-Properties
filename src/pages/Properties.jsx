@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async'
 import { useLocation } from 'react-router-dom'
 import PropertyCard from '../components/PropertyCard/PropertyCard'
 import { useMergedProperties } from '../hooks/useMergedProperties'
+import { useSiteContent } from '../hooks/useSiteContent'
 import { matchesListingLocation } from '../lib/matchesListingLocation'
 import './Properties.css'
 
@@ -68,46 +69,68 @@ function getModeFromRoute(location) {
   return 'buy'
 }
 
-function getDiscoveryIntro(mode) {
+function getDiscoveryIntro(mode, get) {
   if (mode === 'rent') {
     return {
-      eyebrow: 'Limassol rentals',
-      title: 'Homes & apartments to lease',
-      description:
+      eyebrow: get('properties', 'discovery_rent', 'eyebrow', 'Limassol rentals'),
+      title: get('properties', 'discovery_rent', 'title', 'Homes & apartments to lease'),
+      description: get(
+        'properties',
+        'discovery_rent',
+        'description',
         'Long-term and seasonal lets across prime Limassol districts — curated by our team.',
+      ),
     }
   }
   if (mode === 'sold') {
     return {
-      eyebrow: 'Completed sales',
-      title: 'Recently sold properties',
-      description: 'A selection of homes successfully placed by United Properties.',
+      eyebrow: get('properties', 'discovery_sold', 'eyebrow', 'Completed sales'),
+      title: get('properties', 'discovery_sold', 'title', 'Recently sold properties'),
+      description: get(
+        'properties',
+        'discovery_sold',
+        'description',
+        'A selection of homes successfully placed by United Properties.',
+      ),
     }
   }
   if (mode === 'rented') {
     return {
-      eyebrow: 'Let by United Properties',
-      title: 'Recently rented properties',
-      description: 'Homes and apartments successfully leased through our team.',
+      eyebrow: get('properties', 'discovery_rented', 'eyebrow', 'Let by United Properties'),
+      title: get('properties', 'discovery_rented', 'title', 'Recently rented properties'),
+      description: get(
+        'properties',
+        'discovery_rented',
+        'description',
+        'Homes and apartments successfully leased through our team.',
+      ),
     }
   }
   return {
-    eyebrow: 'United Properties · Limassol',
-    title: 'Browse listings',
-    description:
+    eyebrow: get('properties', 'discovery_buy', 'eyebrow', 'United Properties · Limassol'),
+    title: get('properties', 'discovery_buy', 'title', 'Browse listings'),
+    description: get(
+      'properties',
+      'discovery_buy',
+      'description',
       'Apartments, villas, and investment homes in Limassol and surrounding neighbourhoods we serve.',
+    ),
   }
 }
 
-function getHeroContent(mode, status) {
+function getHeroContent(mode, status, get) {
   if (mode === 'rent' || status === 'For Rent') {
     return {
       modeClass: 'properties-hero--rent',
-      eyebrow: 'Rent in Limassol',
-      lead: 'Flexible luxury leasing on the coast and in the city.',
-      title: 'Exclusive Rental Homes',
-      description:
+      eyebrow: get('properties', 'hero_rent', 'eyebrow', 'Rent in Limassol'),
+      title: get('properties', 'hero_rent', 'title', 'Exclusive Rental Homes'),
+      description: get(
+        'properties',
+        'hero_rent',
+        'description',
         'Browse premium apartments, villas, and furnished residences in Limassol — short and long-term.',
+      ),
+      jumpCta: get('properties', 'hero_rent', 'jump_cta', 'Jump to Listings'),
       pageTitle: 'Rent Properties | United Properties',
     }
   }
@@ -115,10 +138,15 @@ function getHeroContent(mode, status) {
   if (mode === 'sold' || status === 'Sold') {
     return {
       modeClass: 'properties-hero--buy',
-      eyebrow: 'Sold by United Properties',
-      lead: 'Completed transactions.',
-      title: 'Sold Properties',
-      description: 'Homes successfully sold through United Properties.',
+      eyebrow: get('properties', 'hero_sold', 'eyebrow', 'Sold by United Properties'),
+      title: get('properties', 'hero_sold', 'title', 'Sold Properties'),
+      description: get(
+        'properties',
+        'hero_sold',
+        'description',
+        'Homes successfully sold through United Properties.',
+      ),
+      jumpCta: get('properties', 'hero_sold', 'jump_cta', 'Jump to Listings'),
       pageTitle: 'Sold Properties | United Properties',
     }
   }
@@ -126,36 +154,46 @@ function getHeroContent(mode, status) {
   if (mode === 'rented' || status === 'Rented') {
     return {
       modeClass: 'properties-hero--rent',
-      eyebrow: 'Let by United Properties',
-      lead: 'Successfully placed rentals.',
-      title: 'Rented Properties',
-      description: 'Homes and apartments successfully leased through our team.',
+      eyebrow: get('properties', 'hero_rented', 'eyebrow', 'Let by United Properties'),
+      title: get('properties', 'hero_rented', 'title', 'Rented Properties'),
+      description: get(
+        'properties',
+        'hero_rented',
+        'description',
+        'Homes and apartments successfully leased through our team.',
+      ),
+      jumpCta: get('properties', 'hero_rented', 'jump_cta', 'Jump to Listings'),
       pageTitle: 'Rented Properties | United Properties',
     }
   }
 
   return {
     modeClass: 'properties-hero--buy',
-    eyebrow: 'Buy in Limassol',
-    lead: 'Find your next address in Limassol.',
-    title: 'Your New Home Awaits',
-    description:
+    eyebrow: get('properties', 'hero_buy', 'eyebrow', 'Buy in Limassol'),
+    title: get('properties', 'hero_buy', 'title', 'Your New Home Awaits'),
+    description: get(
+      'properties',
+      'hero_buy',
+      'description',
       'Explore curated residences in Limassol — from seafront apartments to family villas and investment opportunities.',
+    ),
+    jumpCta: get('properties', 'hero_buy', 'jump_cta', 'Jump to Listings'),
     pageTitle: 'Properties | United Properties',
   }
 }
 
 function Properties() {
   const routeLocation = useLocation()
+  const { get } = useSiteContent()
   const { list: allProperties } = useMergedProperties()
   const [filters, setFilters] = useState(() => getFiltersFromLocation(routeLocation))
   const [visibleCount, setVisibleCount] = useState(6)
   const mode = useMemo(() => getModeFromRoute(routeLocation), [routeLocation])
   const heroContent = useMemo(
-    () => getHeroContent(mode, filters.status),
-    [mode, filters.status],
+    () => getHeroContent(mode, filters.status, get),
+    [mode, filters.status, get],
   )
-  const discoveryIntro = useMemo(() => getDiscoveryIntro(mode), [mode])
+  const discoveryIntro = useMemo(() => getDiscoveryIntro(mode, get), [mode, get])
 
   useEffect(() => {
     setFilters(getFiltersFromLocation(routeLocation))
@@ -212,7 +250,7 @@ function Properties() {
           <h1>{heroContent.title}</h1>
           <p className="properties-hero__description">{heroContent.description}</p>
           <a href="#properties-discovery" className="btn btn-gold properties-hero__jump">
-            Jump to Listings
+            {heroContent.jumpCta}
           </a>
         </div>
       </section>
@@ -226,7 +264,10 @@ function Properties() {
           </header>
 
           <div className="properties-results-zone">
-            <p className="properties__result-count">{filtered.length} matching properties</p>
+            <p className="properties__result-count">
+              {filtered.length}{' '}
+              {get('properties', 'results', 'count_suffix', 'matching properties')}
+            </p>
 
             {visibleProperties.length ? (
               <>
@@ -238,15 +279,22 @@ function Properties() {
                 {visibleCount < filtered.length && (
                   <div className="properties__loadmore">
                     <button className="btn btn-outline-dark" onClick={() => setVisibleCount((count) => count + 3)}>
-                      Load More
+                      {get('properties', 'results', 'load_more', 'Load More')}
                     </button>
                   </div>
                 )}
               </>
             ) : (
               <div className="properties__empty card-luxury">
-                <h3>No properties match your filters</h3>
-                <p>Adjust your criteria to discover more listings.</p>
+                <h3>{get('properties', 'results', 'empty_heading', 'No properties match your filters')}</h3>
+                <p>
+                  {get(
+                    'properties',
+                    'results',
+                    'empty_body',
+                    'Adjust your criteria to discover more listings.',
+                  )}
+                </p>
               </div>
             )}
           </div>

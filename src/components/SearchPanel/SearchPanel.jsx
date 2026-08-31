@@ -5,6 +5,7 @@ import {
   searchCities,
   searchDiscoveryProperties,
 } from '../../data/searchDiscoveryProperties'
+import { useSiteContent } from '../../hooks/useSiteContent'
 import SearchBar from './SearchBar'
 import CityFilters from './CityFilters'
 import CategoryFilters from './CategoryFilters'
@@ -13,6 +14,7 @@ import SearchMap from './SearchMap'
 import './SearchPanel.css'
 
 function SearchPanel({ open, onClose, seed = null, seedKey = 0 }) {
+  const { get } = useSiteContent()
   const [query, setQuery] = useState('')
   const [activeCity, setActiveCity] = useState('All Cyprus')
   const [activeCategory, setActiveCategory] = useState('All Listings')
@@ -102,6 +104,11 @@ function SearchPanel({ open, onClose, seed = null, seedKey = 0 }) {
 
   if (!open) return null
 
+  const matchLabel =
+    filteredBase.length === 1
+      ? get('search', 'stat', 'match_singular', 'match')
+      : get('search', 'stat', 'match_plural', 'matches')
+
   return (
     <div
       className="search-panel-overlay"
@@ -117,12 +124,19 @@ function SearchPanel({ open, onClose, seed = null, seedKey = 0 }) {
         </button>
 
         <header className="search-panel__head">
-          <p className="search-panel__eyebrow">United Properties · Search</p>
+          <p className="search-panel__eyebrow">
+            {get('search', 'head', 'eyebrow', 'United Properties · Search')}
+          </p>
           <h2 id="search-panel-title" className="search-panel__title">
-            Explore listings
+            {get('search', 'head', 'heading', 'Explore listings')}
           </h2>
           <p className="search-panel__sub">
-            Narrow your criteria in the filter column — results and map update as you go.
+            {get(
+              'search',
+              'head',
+              'description',
+              'Narrow your criteria in the filter column — results and map update as you go.',
+            )}
           </p>
         </header>
 
@@ -132,14 +146,30 @@ function SearchPanel({ open, onClose, seed = null, seedKey = 0 }) {
             id="search-panel-filters"
             aria-label="Search filters"
           >
-            <SearchBar value={query} onChange={setQuery} />
+            <SearchBar
+              value={query}
+              onChange={setQuery}
+              placeholder={get(
+                'search',
+                'filters',
+                'search_placeholder',
+                'Search properties, locations, featured...',
+              )}
+            />
 
-            <CityFilters cities={searchCities} activeCity={activeCity} onSelect={setActiveCity} />
+            <CityFilters
+              cities={searchCities}
+              activeCity={activeCity}
+              onSelect={setActiveCity}
+              locationLabel={get('search', 'filters', 'location_label', 'Location')}
+            />
             <CategoryFilters
               categories={searchCategories}
               activeCategory={activeCategory}
               onSelect={setActiveCategory}
               onReset={resetFilters}
+              categoryLabel={get('search', 'filters', 'category_label', 'Listing type')}
+              clearLabel={get('search', 'filters', 'clear', 'Clear all')}
             />
           </aside>
 
@@ -150,14 +180,23 @@ function SearchPanel({ open, onClose, seed = null, seedKey = 0 }) {
               aria-live="polite"
             >
               <span className="search-panel__stat-value">{filteredBase.length}</span>
-              <span className="search-panel__stat-label">
-                {filteredBase.length === 1 ? 'match' : 'matches'}
-              </span>
+              <span className="search-panel__stat-label">{matchLabel}</span>
             </output>
-            <DiscoveryResults properties={filteredBase} />
+            <DiscoveryResults
+              properties={filteredBase}
+              emptyTitle={get('search', 'empty', 'title', 'No matches')}
+              emptyHint={get(
+                'search',
+                'empty',
+                'hint',
+                'Relax a filter or clear the search to see more listings.',
+              )}
+            />
 
             <div className="search-panel__map-wrap">
-              <p className="search-panel__section-title">Explore Cyprus on Map</p>
+              <p className="search-panel__section-title">
+                {get('search', 'map', 'heading', 'Explore Cyprus on Map')}
+              </p>
               <SearchMap properties={mapProperties} activeCity={activeCity} />
             </div>
           </div>

@@ -16,6 +16,7 @@ import { agents } from '../data/agents'
 import { testimonials } from '../data/testimonials'
 import { homeCenterFlowLinks } from '../data/homeCenterFlow'
 import { useMergedProperties } from '../hooks/useMergedProperties'
+import { useSiteContent } from '../hooks/useSiteContent'
 import './Home.css'
 
 const MotionDiv = motion.div
@@ -68,6 +69,7 @@ function isSignatureProperty(property) {
 
 function Home() {
   const { list: listingProperties } = useMergedProperties()
+  const { get } = useSiteContent()
   const featuredProperties = useMemo(
     () => takeFeaturedWithFill(listingProperties, FEATURED_MODAL_PREVIEW_COUNT),
     [listingProperties],
@@ -119,20 +121,27 @@ function Home() {
 
   const centerFlowNodeItems = useMemo(
     () =>
-      homeCenterFlowLinks.map((item) => ({
-        content: (
-          <Link
-            className="home-center-flow__node-link home-center-flow__node-link--rent"
-            to={item.to}
-            aria-label={`${item.title}: ${item.phrase}`}
-          >
-            <span className="home-center-flow__node-title">{item.title}</span>
-            <span className="home-center-flow__node-phrase">{item.phrase}</span>
-          </Link>
-        ),
-      })),
-    [],
+      homeCenterFlowLinks.map((item, index) => {
+        const n = index + 1
+        const title = get('home', 'network', `node${n}_title`, item.title)
+        const phrase = get('home', 'network', `node${n}_phrase`, item.phrase)
+        return {
+          content: (
+            <Link
+              className="home-center-flow__node-link home-center-flow__node-link--rent"
+              to={item.to}
+              aria-label={`${title}: ${phrase}`}
+            >
+              <span className="home-center-flow__node-title">{title}</span>
+              <span className="home-center-flow__node-phrase">{phrase}</span>
+            </Link>
+          ),
+        }
+      }),
+    [get],
   )
+
+  const signatureViewCta = get('home', 'signature', 'view_cta', 'View Property')
 
   useEffect(() => {
     document.title = 'United Properties | Luxury Real Estate in Cyprus'
@@ -150,9 +159,9 @@ function Home() {
           <SectionHeader
             center
             headingId="home-network-heading"
-            eyebrow="United Properties"
-            title="Connected expertise across every property service"
-            description="From acquisition and sales to rentals and property management—one team linking you to Cyprus’s luxury market with clarity and continuity."
+            eyebrow={get('home', 'network', 'eyebrow')}
+            title={get('home', 'network', 'heading')}
+            description={get('home', 'network', 'description')}
             className="section-header--center-flow"
           />
           <CenterFlow
@@ -197,9 +206,9 @@ function Home() {
       <section className="section section--light" id="featured-properties">
         <div className="container home-featured-container">
           <SectionHeader
-            eyebrow="Featured Properties"
-            title="Featured Properties"
-            description="Check out some of our most exclusive houses, apartments, townhomes, penthouses, and more."
+            eyebrow={get('home', 'featured', 'eyebrow')}
+            title={get('home', 'featured', 'heading')}
+            description={get('home', 'featured', 'description')}
             className="section-header--featured"
           />
           <ModalCards cards={featuredModalCards} className="home-featured-modal-cards" />
@@ -209,9 +218,9 @@ function Home() {
       <section className="section section--alt home-scroll-stack-section">
         <div className="container">
           <SectionHeader
-            eyebrow="Signature Collection"
-            title="Scroll Through Our Most Exclusive Addresses"
-            description="A cinematic stacked showcase powered by smooth motion interactions and premium storytelling."
+            eyebrow={get('home', 'signature', 'eyebrow')}
+            title={get('home', 'signature', 'heading')}
+            description={get('home', 'signature', 'description')}
           />
           <ScrollStack
             className="home-scroll-stack"
@@ -238,7 +247,7 @@ function Home() {
                   <h3>{property.title}</h3>
                   <span>EUR {property.price.toLocaleString()}</span>
                   <Link to={`/properties/${property.slug}`} className="btn btn-outline-light">
-                    View Property
+                    {signatureViewCta}
                   </Link>
                 </div>
               </ScrollStackItem>
@@ -250,9 +259,9 @@ function Home() {
       <section className="section section--light">
         <div className="container">
           <SectionHeader
-            eyebrow="Services"
-            title="Comprehensive Advisory and Property Services"
-            description="From acquisition strategy to relocation and portfolio management, every step is tailored."
+            eyebrow={get('home', 'services', 'eyebrow')}
+            title={get('home', 'services', 'heading')}
+            description={get('home', 'services', 'description')}
           />
           <div className="grid-4">
             {homeServices.map((service) => (
@@ -270,14 +279,9 @@ function Home() {
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.6 }}
           >
-            <p className="home-editorial__eyebrow">Editorial Perspective</p>
-            <h2>Coastal Living, Strategic Value, and Tailored Guidance</h2>
-            <p>
-              Cyprus offers a rare combination of Mediterranean lifestyle, long-term
-              growth fundamentals, and global buyer accessibility. Our advisors blend
-              market intelligence with private-client service to secure properties that
-              align with your ambitions.
-            </p>
+            <p className="home-editorial__eyebrow">{get('home', 'editorial', 'eyebrow')}</p>
+            <h2>{get('home', 'editorial', 'heading')}</h2>
+            <p>{get('home', 'editorial', 'body')}</p>
           </MotionDiv>
           <img
             src="https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1600&q=80"
@@ -289,9 +293,9 @@ function Home() {
       <section className="section section--light">
         <div className="container">
           <SectionHeader
-            eyebrow="Advisory Team"
-            title="Experienced Professionals"
-            description="Specialist consultants in prime residential, investment sales, and cross-border transactions."
+            eyebrow={get('home', 'team', 'eyebrow')}
+            title={get('home', 'team', 'heading')}
+            description={get('home', 'team', 'description')}
           />
           <div className="grid-3">
             {featuredAgents.map((agent) => (
@@ -304,8 +308,8 @@ function Home() {
       <section className="section section--alt home-testimonials">
         <div className="container home-testimonials__container">
           <SectionHeader
-            eyebrow="Client Testimonials"
-            title="Trusted by Local and International Clients"
+            eyebrow={get('home', 'testimonials', 'eyebrow')}
+            title={get('home', 'testimonials', 'heading')}
             className="home-testimonials__header"
           />
           <div className="grid-3 home-testimonials__grid">
@@ -316,7 +320,10 @@ function Home() {
         </div>
       </section>
 
-      <CTASection />
+      <CTASection
+        title={get('home', 'cta', 'heading')}
+        description={get('home', 'cta', 'description')}
+      />
     </>
   )
 }

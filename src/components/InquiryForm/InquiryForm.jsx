@@ -2,6 +2,7 @@ import {useState} from 'react'
 import {Clock, Lock, Send, Sparkles} from 'lucide-react'
 import {CONTACT_EMAIL, CONTACT_MAILTO_HREF} from '../../config/externalLinks'
 import {isSupabaseConfigured, supabase} from '../../lib/supabaseClient'
+import {useSiteContent} from '../../hooks/useSiteContent'
 import './InquiryForm.css'
 
 function openMailtoFallback(payload) {
@@ -21,8 +22,16 @@ function openMailtoFallback(payload) {
 }
 
 function InquiryForm({ className = '', propertyId = null, propertyInterestDefault = '' }) {
+  const {get} = useSiteContent()
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState({type: '', message: ''})
+
+  const successMessage = get(
+    'inquiry',
+    'form',
+    'success',
+    'Inquiry sent. Our team will contact you shortly.',
+  )
 
   async function onSubmit(event) {
     event.preventDefault()
@@ -35,7 +44,7 @@ function InquiryForm({ className = '', propertyId = null, propertyInterestDefaul
       form.reset()
       setResult({
         type: 'success',
-        message: 'Inquiry sent. Our team will contact you shortly.',
+        message: successMessage,
       })
       return
     }
@@ -77,7 +86,7 @@ function InquiryForm({ className = '', propertyId = null, propertyInterestDefaul
         form.reset()
         setResult({
           type: 'success',
-          message: 'Inquiry sent. Our team will contact you shortly.',
+          message: successMessage,
         })
         return
       }
@@ -110,20 +119,27 @@ function InquiryForm({ className = '', propertyId = null, propertyInterestDefaul
       <header className="inquiry-form__header">
         <span className="inquiry-form__eyebrow">
           <Sparkles size={14} aria-hidden />
-          Private inquiry
+          {get('inquiry', 'form', 'eyebrow', 'Private inquiry')}
         </span>
-        <h3 className="inquiry-form__title">Request a private consultation</h3>
+        <h3 className="inquiry-form__title">
+          {get('inquiry', 'form', 'heading', 'Request a private consultation')}
+        </h3>
         <p className="inquiry-form__lede">
-          Share a few details and we will respond with tailored guidance for your brief.
+          {get(
+            'inquiry',
+            'form',
+            'lede',
+            'Share a few details and we will respond with tailored guidance for your brief.',
+          )}
         </p>
         <ul className="inquiry-form__trust" aria-label="What to expect">
           <li>
             <Clock size={14} aria-hidden />
-            Reply within one business day
+            {get('inquiry', 'form', 'trust1', 'Reply within one business day')}
           </li>
           <li>
             <Lock size={14} aria-hidden />
-            Your details stay confidential
+            {get('inquiry', 'form', 'trust2', 'Your details stay confidential')}
           </li>
         </ul>
       </header>
@@ -131,24 +147,44 @@ function InquiryForm({ className = '', propertyId = null, propertyInterestDefaul
       <div className="inquiry-form__fields">
         <div className="inquiry-form__grid">
           <label className="inquiry-form__field">
-            <span className="inquiry-form__label">Full name</span>
+            <span className="inquiry-form__label">
+              {get('inquiry', 'form', 'label_name', 'Full name')}
+            </span>
             <input name="name" type="text" required autoComplete="name" />
           </label>
           <label className="inquiry-form__field">
-            <span className="inquiry-form__label">Email</span>
+            <span className="inquiry-form__label">
+              {get('inquiry', 'form', 'label_email', 'Email')}
+            </span>
             <input name="email" type="email" required autoComplete="email" />
           </label>
           <label className="inquiry-form__field">
-            <span className="inquiry-form__label">Phone</span>
+            <span className="inquiry-form__label">
+              {get('inquiry', 'form', 'label_phone', 'Phone')}
+            </span>
             <input name="phone" type="tel" autoComplete="tel" />
           </label>
           <label className="inquiry-form__field">
-            <span className="inquiry-form__label">Subject</span>
-            <input name="subject" type="text" placeholder="Buying / renting / investment" />
+            <span className="inquiry-form__label">
+              {get('inquiry', 'form', 'label_subject', 'Subject')}
+            </span>
+            <input
+              name="subject"
+              type="text"
+              placeholder={get(
+                'inquiry',
+                'form',
+                'placeholder_subject',
+                'Buying / renting / investment',
+              )}
+            />
           </label>
           <label className="inquiry-form__field inquiry-form__field--full">
             <span className="inquiry-form__label">
-              Interested property <span className="inquiry-form__optional">(optional)</span>
+              {get('inquiry', 'form', 'label_property', 'Interested property')}{' '}
+              <span className="inquiry-form__optional">
+                {get('inquiry', 'form', 'optional', '(optional)')}
+              </span>
             </span>
             <input
               name="propertyInterest"
@@ -157,11 +193,15 @@ function InquiryForm({ className = '', propertyId = null, propertyInterestDefaul
             />
           </label>
           <label className="inquiry-form__field">
-            <span className="inquiry-form__label">Preferred contact</span>
+            <span className="inquiry-form__label">
+              {get('inquiry', 'form', 'label_preferred', 'Preferred contact')}
+            </span>
             <select name="preferredContact" defaultValue="email">
-              <option value="email">Email</option>
-              <option value="phone">Phone</option>
-              <option value="whatsapp">WhatsApp</option>
+              <option value="email">{get('inquiry', 'form', 'option_email', 'Email')}</option>
+              <option value="phone">{get('inquiry', 'form', 'option_phone', 'Phone')}</option>
+              <option value="whatsapp">
+                {get('inquiry', 'form', 'option_whatsapp', 'WhatsApp')}
+              </option>
             </select>
           </label>
         </div>
@@ -176,13 +216,19 @@ function InquiryForm({ className = '', propertyId = null, propertyInterestDefaul
         />
 
         <label className="inquiry-form__field inquiry-form__field--full">
-          <span className="inquiry-form__label">Message</span>
+          <span className="inquiry-form__label">
+            {get('inquiry', 'form', 'label_message', 'Message')}
+          </span>
           <textarea name="message" rows={5} required />
         </label>
 
         <button type="submit" className="inquiry-form__submit" disabled={submitting}>
           <Send size={16} aria-hidden />
-          <span>{submitting ? 'Sending…' : 'Send inquiry'}</span>
+          <span>
+            {submitting
+              ? get('inquiry', 'form', 'submitting', 'Sending…')
+              : get('inquiry', 'form', 'submit', 'Send inquiry')}
+          </span>
         </button>
 
         {result.message ? (
@@ -194,7 +240,14 @@ function InquiryForm({ className = '', propertyId = null, propertyInterestDefaul
           </p>
         ) : null}
 
-        <p className="inquiry-form__footnote">No spam. We only use your details to respond to this request.</p>
+        <p className="inquiry-form__footnote">
+          {get(
+            'inquiry',
+            'form',
+            'footnote',
+            'No spam. We only use your details to respond to this request.',
+          )}
+        </p>
       </div>
     </form>
   )

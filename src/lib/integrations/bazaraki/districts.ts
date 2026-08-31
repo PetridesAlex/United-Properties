@@ -23,6 +23,13 @@ export interface BazarakiDistrict {
   regionId: number
   areaName: string
   postCodes: number[]
+  latitude: number | null
+  longitude: number | null
+}
+
+interface RawCoordinates {
+  latitude?: number
+  longitude?: number
 }
 
 interface RawCityDistrict {
@@ -30,7 +37,8 @@ interface RawCityDistrict {
   name: string
   slug: string
   post_codes?: number[]
-  city?: {name: string; id: number}
+  coordinates?: RawCoordinates
+  city?: {name: string; id: number; coordinates?: RawCoordinates}
 }
 
 interface RawCity {
@@ -52,6 +60,8 @@ function flattenDistricts(): BazarakiDistrict[] {
   for (const region of results) {
     for (const d of region.city_districts ?? []) {
       const cityName = d.city?.name ?? region.name
+      const lat = d.coordinates?.latitude ?? d.city?.coordinates?.latitude
+      const lng = d.coordinates?.longitude ?? d.city?.coordinates?.longitude
       out.push({
         id: d.id,
         name: d.name,
@@ -62,6 +72,8 @@ function flattenDistricts(): BazarakiDistrict[] {
         regionId: region.id,
         areaName: formatAreaName(d.name, cityName),
         postCodes: d.post_codes ?? [],
+        latitude: typeof lat === 'number' && Number.isFinite(lat) ? lat : null,
+        longitude: typeof lng === 'number' && Number.isFinite(lng) ? lng : null,
       })
     }
   }
@@ -198,3 +210,14 @@ export function toCmsLocationFields(d: BazarakiDistrict): {
     bazarakiDistrictId: d.id,
   }
 }
+
+export function getDistrictCoordinates(
+  districtId: number | null | undefined,
+): {latitude: number; longitude: number} | null {
+  const d = getBazarakiDistrictById(districtId)
+  if (d?.latitude == null || d.longitude == null) return null
+  return {latitude: d.latitude, longitude: d.longitude}
+}
+
+/** Cyprus fallback when an area has no coordinates in the feed. */
+export const CYPRUS_MAP_CENTER = {latitude: 35.1264, longitude: 33.4299} as const
