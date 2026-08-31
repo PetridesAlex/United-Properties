@@ -20,6 +20,7 @@ import {
 import {completedFromActive, revertCompleted} from '../../lib/properties/mappers'
 import {slugify} from '../../lib/properties/slug'
 import {validatePropertyForBazaraki} from '../../lib/integrations/bazaraki/validatePropertyForBazaraki'
+import {toCmsLocationFields} from '../../lib/integrations/bazaraki/districts'
 import {
   BAZARAKI_MUST_HAVE_LABELS,
   COMMERCIAL_TYPE_LABELS,
@@ -27,6 +28,9 @@ import {
   MUST_HAVES_WITHOUT_PARKING,
   MUST_HAVES_WITH_PARKING,
   resolveAttrsSchema,
+  isPlotsOfLandType,
+  getBazarakiPropertyTypes,
+  isPropertyTypeValidForStatus,
 } from '../../lib/integrations/bazaraki'
 import {
   LAND_TYPE_OPTIONS,
@@ -35,6 +39,7 @@ import {
 } from '../../lib/integrations/bazaraki/landMappings'
 import {DEFAULT_BAZARAKI_RUBRICS} from '../../lib/integrations/bazaraki/rubricMappings'
 import BazarakiDistrictPicker from '../../components/admin/BazarakiDistrictPicker'
+import BazarakiLocationPicker from '../../components/admin/BazarakiLocationPicker'
 import AdminToggle from '../../components/admin/AdminToggle'
 import AdminFormSection from '../../components/admin/AdminFormSection'
 import {supabase} from '../../lib/supabase/client'
@@ -42,7 +47,7 @@ import type {Property, PropertyImage, PropertyStatus, SiteSettings} from '../../
 import '../../components/admin/AdminShell.css'
 import './AdminPropertyEditPage.css'
 
-const PROPERTY_TYPES = [
+const LEGACY_PROPERTY_TYPES = [
   'Apartment',
   'Penthouse',
   'Villa',
@@ -55,9 +60,8 @@ const PROPERTY_TYPES = [
   'Prefabricated House',
   'Development Unit',
   'Commercial',
-  'Other',
   'Land',
-]
+] as const
 
 const ENERGY_OPTIONS = ['A', 'B+', 'B', 'C', 'D', 'E', 'F', 'G', 'N/A', 'In Progress']
 const CONDITION_OPTIONS = ['Brand new', 'Resale', 'Under construction']
@@ -118,7 +122,7 @@ type FormState = {
 const emptyForm: FormState = {
   title: '',
   slug: '',
-  property_type: 'Apartment',
+  property_type: 'Apartments, flats',
   status: 'for_sale',
   price: '',
   currency: 'EUR',
@@ -171,7 +175,7 @@ function toForm(property: Property): FormState {
   return {
     title: property.title,
     slug: property.slug,
-    property_type: property.property_type || 'Apartment',
+    property_type: property.property_type || 'Apartments, flats',
     status: property.status,
     price: property.price != null ? String(property.price) : '',
     currency: property.currency || 'EUR',
@@ -389,6 +393,19 @@ export default function AdminPropertyEditPage() {
     [form.property_type, form.status],
   )
 
+  const propertyTypeOptions = useMemo(() => {
+    const options = [...getBazarakiPropertyTypes(form.status)]
+    const current = form.property_type?.trim()
+    if (
+      current &&
+      !options.includes(current) &&
+      LEGACY_PROPERTY_TYPES.includes(current as (typeof LEGACY_PROPERTY_TYPES)[number])
+    ) {
+      options.push(current)
+    }
+    return options
+  }, [form.property_type, form.status])
+
   const bazaraki = useMemo(
     () =>
       validatePropertyForBazaraki(
@@ -409,6 +426,12 @@ export default function AdminPropertyEditPage() {
       const next = {...prev, [key]: value}
       if (key === 'title' && isNew && !prev.slug) {
         next.slug = slugify(String(value))
+      }
+      if (key === 'status') {
+        const status = value as PropertyStatus
+        if (!isPropertyTypeValidForStatus(prev.property_type, status)) {
+          next.property_type = getBazarakiPropertyTypes(status)[0]
+        }
       }
       return next
     })
@@ -545,9 +568,13 @@ export default function AdminPropertyEditPage() {
                 value={form.property_type}
                 onChange={(e) => setField('property_type', e.target.value)}
               >
-                {PROPERTY_TYPES.map((t) => (
+                {propertyTypeOptions.map((t) => (
                   <option key={t} value={t}>
                     {t}
+                    {LEGACY_PROPERTY_TYPES.includes(t as (typeof LEGACY_PROPERTY_TYPES)[number]) &&
+                    !getBazarakiPropertyTypes(form.status).includes(t)
+                      ? ' (legacy)'
+                      : ''}
                   </option>
                 ))}
               </select>
@@ -582,24 +609,21 @@ export default function AdminPropertyEditPage() {
         </AdminFormSection>
 
         <AdminFormSection eyebrow="Location" title="Location" lede="Where the property is situated on the website and in feeds.">
-          <div className="admin-form__grid">
-            <div className="admin-field">
-              <label>District</label>
-              <input value={form.district} onChange={(e) => setField('district', e.target.value)} />
-            </div>
-            <div className="admin-field">
-              <label>City</label>
-              <input value={form.city} onChange={(e) => setField('city', e.target.value)} />
-            </div>
-            <div className="admin-field">
-              <label>Area</label>
-              <input value={form.area} onChange={(e) => setField('area', e.target.value)} />
-            </div>
-            <div className="admin-field admin-field--full">
-              <label>Address</label>
-              <input value={form.address} onChange={(e) => setField('address', e.target.value)} />
-            </div>
-          </div>
+          <BazarakiLocationPicker
+            value={{
+              district: form.district,
+              city: form.city,
+              area: form.area,
+              bazarakiDistrictId: form.bazaraki_district_id,
+            }}
+            onChange={({district, city, area, bazarakiDistrictId, postalCode}) => {
+              setField('district', district)
+              setField('city', city)
+              setField('area', area)
+              setField('bazaraki_district_id', bazarakiDistrictId)
+              if (postalCode && !form.postal_code.trim()) setField('postal_code', postalCode)
+            }}
+          />
         </AdminFormSection>
 
         <AdminFormSection
@@ -666,7 +690,23 @@ export default function AdminPropertyEditPage() {
                 ))}
               </select>
             </div>
-            {form.property_type === 'Land' ? (
+            {form.property_type === 'Houses' ? (
+              <div className="admin-field">
+                <label>House type (Bazaraki)</label>
+                <select
+                  value={form.bazaraki_house_type}
+                  onChange={(e) => setField('bazaraki_house_type', e.target.value)}
+                >
+                  <option value="">Select house type</option>
+                  {Object.entries(BAZARAKI_HOUSE_TYPE_LABELS).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+            {isPlotsOfLandType(form.property_type) ? (
               <>
                 <div className="admin-field">
                   <label>Land type</label>
@@ -894,7 +934,15 @@ export default function AdminPropertyEditPage() {
             <div className="admin-publish-bazaraki">
               <BazarakiDistrictPicker
                 value={form.bazaraki_district_id}
-                onChange={(districtId) => setField('bazaraki_district_id', districtId)}
+                onChange={(districtId, district) => {
+                  setField('bazaraki_district_id', districtId)
+                  if (district) {
+                    const cms = toCmsLocationFields(district)
+                    setField('district', cms.district)
+                    setField('city', cms.city)
+                    setField('area', cms.area)
+                  }
+                }}
                 onPostalCodeSuggest={(code) => {
                   if (!form.postal_code.trim()) setField('postal_code', code)
                 }}
@@ -937,15 +985,14 @@ export default function AdminPropertyEditPage() {
                   </select>
                 </div>
               ) : null}
-              {bazarakiSchema === 'houses' &&
-              (form.property_type === 'Holiday Home' || form.property_type === 'Townhouse') ? (
+              {bazarakiSchema === 'houses' ? (
                 <div className="admin-field">
-                  <label>Bazaraki house type</label>
+                  <label>House type (Bazaraki)</label>
                   <select
                     value={form.bazaraki_house_type}
                     onChange={(e) => setField('bazaraki_house_type', e.target.value)}
                   >
-                    <option value="">Auto from property type</option>
+                    <option value="">Select house type</option>
                     {Object.entries(BAZARAKI_HOUSE_TYPE_LABELS).map(([key, label]) => (
                       <option key={key} value={key}>
                         {label}

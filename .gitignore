@@ -10,7 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-api/bazaraki.xml.js
+api/_bazaraki-feed.mjs
 *.local
 .env
 .env.*

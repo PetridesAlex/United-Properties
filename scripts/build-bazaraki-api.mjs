@@ -9,8 +9,8 @@ await esbuild.build({
   platform: 'node',
   target: 'node20',
   format: 'esm',
-  outfile: 'api/bazaraki.xml.js',
+  outfile: 'api/_bazaraki-feed.mjs',
   logLevel: 'info',
 })
 
-console.log('Built api/bazaraki.xml.js')
+console.log('Built api/_bazaraki-feed.mjs')

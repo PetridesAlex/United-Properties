@@ -7,4 +7,16 @@ export const BAZARAKI_FEED_PATH = '/api/bazaraki.xml'
 export const BAZARAKI_FEED_URL = 'https://www.unitedproperties.eu/api/bazaraki.xml'
 
 export {resolveAttrsSchema, isBazarakiMappableType, UNMAPPED_BAZARAKI_TYPES} from './schemaResolver'
-export {resolveBazarakiRubric, resolveRubricCategory, getRubricCategoryLabel} from './rubricMappings'
+export {
+  BAZARAKI_PROPERTY_TYPES,
+  BAZARAKI_PROPERTY_TYPES_SALE,
+  BAZARAKI_PROPERTY_TYPES_RENT,
+  getBazarakiPropertyTypes,
+  isPropertyTypeValidForStatus,
+  isRentListingStatus,
+  resolveBazarakiRubric,
+  resolveRubricCategory,
+  getRubricCategoryLabel,
+} from './rubricMappings'
+export type {BazarakiPropertyType} from './rubricMappings'
+export {isPlotsOfLandType, isBazarakiPropertyType} from './schemaResolver'

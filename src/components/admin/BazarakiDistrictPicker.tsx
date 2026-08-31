@@ -181,8 +181,10 @@ export default function BazarakiDistrictPicker({value, onChange, onPostalCodeSug
                         onClick={() => pick(d)}
                       >
                         <span className="admin-district-picker__item-main">
-                          <strong>{d.name}</strong>
-                          <span className="admin-district-picker__city">{d.cityName}</span>
+                          <strong>{d.areaName}</strong>
+                          <span className="admin-district-picker__city">
+                            {d.cityName}, {d.regionName}
+                          </span>
                         </span>
                         <span className="admin-district-picker__item-end">
                           {d.postCodes.length ? (

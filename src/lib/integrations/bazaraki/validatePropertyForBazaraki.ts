@@ -159,7 +159,9 @@ function validateSchemaFields(
       if (energy == null) missingFields.push('Energy efficiency')
       if (property.bedrooms == null) missingFields.push('Bedrooms')
       if (mapHouseType(property.property_type, property.bazaraki_house_type) == null) {
-        missingFields.push('Bazaraki house type')
+        missingFields.push(
+          property.property_type === 'Houses' ? 'House type (Bazaraki)' : 'Bazaraki house type',
+        )
       }
       if (property.property_type === 'Holiday Home' && property.bazaraki_house_type == null) {
         warnings.push('Holiday Home defaults to Detached house (type 1) unless Bazaraki house type is set.')

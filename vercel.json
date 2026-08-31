@@ -42,8 +42,17 @@
   ],
   "rewrites": [
     {
+      "source": "/api/bazaraki.xml",
+      "destination": "/api/bazaraki-xml"
+    },
+    {
       "source": "/((?!api).*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "functions": {
+    "api/bazaraki-xml.js": {
+      "maxDuration": 30
+    }
+  }
 }

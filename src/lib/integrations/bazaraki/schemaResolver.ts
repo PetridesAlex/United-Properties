@@ -1,4 +1,9 @@
 import type {PropertyStatus} from '../../../types/cms'
+import {
+  BAZARAKI_PROPERTY_TYPES_RENT,
+  BAZARAKI_PROPERTY_TYPES_SALE,
+  type BazarakiPropertyType,
+} from './rubricMappings'
 
 export type BazarakiAttrsSchema =
   | 'houses'
@@ -24,6 +29,34 @@ export const APARTMENT_PROPERTY_TYPES = ['Apartment', 'Penthouse'] as const
 
 export const UNMAPPED_BAZARAKI_TYPES = [] as const
 
+const BAZARAKI_TYPE_TO_SCHEMA: Record<string, BazarakiAttrsSchema> = {
+  Houses: 'houses',
+  'Apartments, flats': 'apartment',
+  'Commercial property': 'commercial',
+  'Plots of land': 'plotsOfLand',
+  'Residential buildings': 'residentialBuildings',
+  'Prefabricated houses': 'prefabricatedHouses',
+  'Rooms, flatmates': 'other',
+  'Short term': 'other',
+  Other: 'other',
+}
+
+const ALL_BAZARAKI_PROPERTY_TYPES = [
+  ...BAZARAKI_PROPERTY_TYPES_SALE,
+  ...BAZARAKI_PROPERTY_TYPES_RENT,
+] as const
+
+export function isBazarakiPropertyType(
+  propertyType: string | null | undefined,
+): propertyType is BazarakiPropertyType {
+  return (ALL_BAZARAKI_PROPERTY_TYPES as readonly string[]).includes(propertyType ?? '')
+}
+
+export function isPlotsOfLandType(propertyType: string | null | undefined): boolean {
+  const type = propertyType?.trim()
+  return type === 'Plots of land' || type === 'Land'
+}
+
 export function resolveAttrsSchema(
   propertyType: string | null | undefined,
   status: PropertyStatus,
@@ -31,10 +64,15 @@ export function resolveAttrsSchema(
   const type = propertyType?.trim()
   if (!type) return null
 
+  const bazarakiSchema = BAZARAKI_TYPE_TO_SCHEMA[type]
+  if (bazarakiSchema) {
+    if (bazarakiSchema === 'prefabricatedHouses' && status !== 'for_sale') return null
+    return bazarakiSchema
+  }
+
   if (type === 'Commercial') return 'commercial'
   if ((APARTMENT_PROPERTY_TYPES as readonly string[]).includes(type)) return 'apartment'
   if (type === 'Residential Building') return 'residentialBuildings'
-  if (type === 'Other') return 'other'
   if ((PREFAB_PROPERTY_TYPES as readonly string[]).includes(type)) {
     return status === 'for_sale' ? 'prefabricatedHouses' : null
   }

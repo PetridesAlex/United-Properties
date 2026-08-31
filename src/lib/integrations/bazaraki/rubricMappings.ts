@@ -22,12 +22,68 @@ export const DEFAULT_BAZARAKI_RUBRICS = {
   commercial_rent: 2408,
   plots_sale: 141,
   plots_rent: 3530,
+  rooms_flatmates_rent: 2191,
+  short_term_rent: 434,
 } as const
 
-const RUBRIC_CATEGORY_BY_TYPE: Record<
-  string,
-  {category: BazarakiRubricCategory; forSale: number; forRent: number | null}
-> = {
+/** Bazaraki → Real Estate for sale */
+export const BAZARAKI_PROPERTY_TYPES_SALE = [
+  'Houses',
+  'Apartments, flats',
+  'Commercial property',
+  'Plots of land',
+  'Residential buildings',
+  'Prefabricated houses',
+  'Other',
+] as const
+
+/** Bazaraki → Real Estate to rent */
+export const BAZARAKI_PROPERTY_TYPES_RENT = [
+  'Houses',
+  'Apartments, flats',
+  'Commercial property',
+  'Plots of land',
+  'Rooms, flatmates',
+  'Short term',
+  'Other',
+] as const
+
+/** @deprecated Use getBazarakiPropertyTypes(status) */
+export const BAZARAKI_PROPERTY_TYPES = BAZARAKI_PROPERTY_TYPES_SALE
+
+export type BazarakiPropertyTypeSale = (typeof BAZARAKI_PROPERTY_TYPES_SALE)[number]
+export type BazarakiPropertyTypeRent = (typeof BAZARAKI_PROPERTY_TYPES_RENT)[number]
+export type BazarakiPropertyType = BazarakiPropertyTypeSale | BazarakiPropertyTypeRent
+
+type RubricRow = {
+  category: BazarakiRubricCategory
+  forSale: number | null
+  forRent: number | null
+  /** When set, used instead of category-based rent rubric lookup */
+  rentRubricId?: number
+}
+
+const RUBRIC_CATEGORY_BY_TYPE: Record<string, RubricRow> = {
+  Houses: {category: 'houses', forSale: 678, forRent: 681},
+  'Apartments, flats': {category: 'apartments', forSale: 3528, forRent: 3529},
+  'Commercial property': {category: 'commercial', forSale: 2405, forRent: 2408},
+  'Plots of land': {category: 'plotsOfLand', forSale: 141, forRent: 3530},
+  'Residential buildings': {category: 'residentialBuildings', forSale: 2790, forRent: null},
+  'Prefabricated houses': {category: 'prefabricatedHouses', forSale: 3303, forRent: null},
+  'Rooms, flatmates': {
+    category: 'other',
+    forSale: null,
+    forRent: DEFAULT_BAZARAKI_RUBRICS.rooms_flatmates_rent,
+    rentRubricId: DEFAULT_BAZARAKI_RUBRICS.rooms_flatmates_rent,
+  },
+  'Short term': {
+    category: 'other',
+    forSale: null,
+    forRent: DEFAULT_BAZARAKI_RUBRICS.short_term_rent,
+    rentRubricId: DEFAULT_BAZARAKI_RUBRICS.short_term_rent,
+  },
+  Other: {category: 'other', forSale: 142, forRent: 3531},
+  // Legacy CMS types (existing listings)
   Apartment: {category: 'apartments', forSale: 3528, forRent: 3529},
   Penthouse: {category: 'apartments', forSale: 3528, forRent: 3529},
   Villa: {category: 'houses', forSale: 678, forRent: 681},
@@ -39,9 +95,27 @@ const RUBRIC_CATEGORY_BY_TYPE: Record<
   'Residential Building': {category: 'residentialBuildings', forSale: 2790, forRent: null},
   'Prefabricated House': {category: 'prefabricatedHouses', forSale: 3303, forRent: null},
   'Development Unit': {category: 'prefabricatedHouses', forSale: 3303, forRent: null},
-  Other: {category: 'other', forSale: 142, forRent: 3531},
   Commercial: {category: 'commercial', forSale: 2405, forRent: 2408},
   Land: {category: 'plotsOfLand', forSale: 141, forRent: 3530},
+}
+
+export function isRentListingStatus(status: PropertyStatus | null | undefined): boolean {
+  return status === 'for_rent' || status === 'rented'
+}
+
+export function getBazarakiPropertyTypes(
+  status: PropertyStatus | null | undefined,
+): readonly string[] {
+  return isRentListingStatus(status) ? BAZARAKI_PROPERTY_TYPES_RENT : BAZARAKI_PROPERTY_TYPES_SALE
+}
+
+export function isPropertyTypeValidForStatus(
+  propertyType: string | null | undefined,
+  status: PropertyStatus | null | undefined,
+): boolean {
+  const type = propertyType?.trim()
+  if (!type) return false
+  return getBazarakiPropertyTypes(status).includes(type)
 }
 
 export type BazarakiRubricSettings = Pick<
@@ -139,6 +213,10 @@ export function resolveBazarakiRubric(
   if (status !== 'for_sale' && status !== 'for_rent') return null
   const row = propertyType?.trim() ? RUBRIC_CATEGORY_BY_TYPE[propertyType.trim()] : undefined
   if (!row) return null
-  if (status === 'for_rent' && row.forRent == null) return null
-  return rubricFromSettings(row.category, status, settings)
+  if (status === 'for_sale') {
+    if (row.forSale == null) return null
+    return rubricFromSettings(row.category, 'for_sale', settings)
+  }
+  if (row.forRent == null) return null
+  return row.rentRubricId ?? rubricFromSettings(row.category, 'for_rent', settings)
 }

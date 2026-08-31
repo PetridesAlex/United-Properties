@@ -57,6 +57,7 @@ export function mapHouseType(
   if (override === 1 || override === 2 || override === 7 || override === 9) return override
   const type = propertyType?.trim()
   if (!type) return null
+  if (type === 'Houses') return null
   return PROPERTY_TYPE_TO_HOUSE_TYPE[type] ?? (type === 'Holiday Home' ? 1 : null)
 }
 

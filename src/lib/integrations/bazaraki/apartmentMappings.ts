@@ -37,7 +37,7 @@ export type ApartmentAttrs = {
 }
 
 export function mapApartmentType(propertyType: string | null | undefined): 5 | 8 | null {
-  if (propertyType === 'Apartment') return 5
+  if (propertyType === 'Apartment' || propertyType === 'Apartments, flats') return 5
   if (propertyType === 'Penthouse') return 8
   return null
 }
