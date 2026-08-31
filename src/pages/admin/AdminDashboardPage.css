@@ -63,10 +63,13 @@
     font-family: 'Montserrat', var(--font-sans), system-ui, sans-serif;
     font-size: 1.15rem;
     font-weight: 650;
-    letter-spacing: -0.02em;
+    letter-spacing: 0.02em;
     line-height: 1.35;
+    text-transform: uppercase;
     color: #fff8ef;
-    animation: dash-admin-quote-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation:
+      dash-admin-quote-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both,
+      dash-admin-quote-color 5.5s ease-in-out infinite;
   }
 }
 
@@ -83,6 +86,22 @@
   }
 }
 
+@keyframes dash-admin-quote-color {
+  0%,
+  100% {
+    color: #fff8ef;
+  }
+  25% {
+    color: #f0dcc4;
+  }
+  50% {
+    color: #bf9875;
+  }
+  75% {
+    color: #e8d2ba;
+  }
+}
+
 @keyframes dash-admin-quote-pulse {
   0% {
     box-shadow: 0 0 0 0 rgba(125, 255, 179, 0.5);
@@ -96,7 +115,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dash-admin__quote-text,
+  .dash-admin__quote-text {
+    animation: none;
+    color: #fff8ef;
+  }
+
   .dash-admin__quote-dot {
     animation: none;
   }

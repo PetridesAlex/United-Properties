@@ -834,13 +834,16 @@
     font-weight: 600;
     font-style: normal;
     line-height: 1.32;
-    letter-spacing: -0.015em;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     color: #f6f0e6;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    animation: admin-shell-quote-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation:
+      admin-shell-quote-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both,
+      admin-shell-quote-color 5.5s ease-in-out infinite;
   }
 
   @keyframes admin-shell-quote-in {
@@ -856,9 +859,26 @@
     }
   }
 
+  @keyframes admin-shell-quote-color {
+    0%,
+    100% {
+      color: #f6f0e6;
+    }
+    25% {
+      color: #f0dcc4;
+    }
+    50% {
+      color: #bf9875;
+    }
+    75% {
+      color: #e8d2ba;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .admin-shell__mobile-quote {
       animation: none;
+      color: #f6f0e6;
     }
   }
 

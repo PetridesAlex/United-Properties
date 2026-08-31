@@ -1,21 +1,21 @@
 import {useEffect, useState} from 'react'
 
 export const AGENT_QUOTES = [
-  'What are we selling today?',
-  'Every listing has a story — tell it well.',
-  'Luxury is clarity, care, and confidence.',
-  'Find the right home for the right client.',
-  'Details close deals. Polish everything.',
-  'A great viewing starts before the door opens.',
-  'Listen first. Then recommend the perfect fit.',
-  'Cyprus shines — show them why it matters.',
-  'Turn enquiries into appointments today.',
-  'Premium service is the real difference.',
-  'Make every photo earn its place.',
-  'Relationships outlast any single sale.',
-  'Price with confidence. Present with pride.',
-  'One thoughtful follow-up can change everything.',
-  'Sell the lifestyle, not just the square metres.',
+  'What Are We Selling Today?',
+  'Every Listing Has A Story — Tell It Well.',
+  'Luxury Is Clarity, Care, And Confidence.',
+  'Find The Right Home For The Right Client.',
+  'Details Close Deals. Polish Everything.',
+  'A Great Viewing Starts Before The Door Opens.',
+  'Listen First. Then Recommend The Perfect Fit.',
+  'Cyprus Shines — Show Them Why It Matters.',
+  'Turn Enquiries Into Appointments Today.',
+  'Premium Service Is The Real Difference.',
+  'Make Every Photo Earn Its Place.',
+  'Relationships Outlast Any Single Sale.',
+  'Price With Confidence. Present With Pride.',
+  'One Thoughtful Follow-Up Can Change Everything.',
+  'Sell The Lifestyle, Not Just The Square Metres.',
 ] as const
 
 export function useAgentQuote(intervalMs = 7200) {

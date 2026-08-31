@@ -1,5 +1,5 @@
-import {ArrowLeft, ExternalLink} from 'lucide-react'
-import {useEffect, useMemo, useRef, useState, type FormEvent} from 'react'
+import {ArrowLeft, Check, ExternalLink} from 'lucide-react'
+import {useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent} from 'react'
 import {Link, useNavigate, useParams} from 'react-router-dom'
 import toast from 'react-hot-toast'
 import {useAdminAuth} from '../../lib/auth/AdminAuthProvider'
@@ -924,6 +924,8 @@ export default function AdminPropertyEditPage() {
 
   const completeTo = property ? completedFromActive(property.status) : null
   const revertTo = property ? revertCompleted(property.status) : null
+  const stepActiveIndex = LISTING_STEPS.findIndex((s) => s.id === listingStep)
+  const stepProgressPct = (stepActiveIndex / Math.max(LISTING_STEPS.length - 1, 1)) * 100
 
   return (
     <div className="admin-page admin-page--editor prop-edit">
@@ -990,21 +992,47 @@ export default function AdminPropertyEditPage() {
         }}
       >
         <nav className="prop-edit__steps" aria-label="Listing steps">
-          {LISTING_STEPS.map((step, index) => {
-            const activeIndex = LISTING_STEPS.findIndex((s) => s.id === listingStep)
-            const done = index < activeIndex
-            return (
-              <button
-                key={step.id}
-                type="button"
-                className={`prop-edit__step${listingStep === step.id ? ' is-active' : ''}${done ? ' is-done' : ''}`}
-                onClick={() => goToStep(step.id)}
-              >
-                <span className="prop-edit__step-index">{index + 1}</span>
-                <span className="prop-edit__step-label">{step.label.replace(/^\d+\.\s*/, '')}</span>
-              </button>
-            )
-          })}
+          <div className="prop-edit__steps-top">
+            <p className="prop-edit__steps-eyebrow">
+              <span className="prop-edit__steps-live" aria-hidden />
+              Listing wizard
+            </p>
+            <p className="prop-edit__steps-progress-label">
+              Step {stepActiveIndex + 1} of {LISTING_STEPS.length}
+            </p>
+          </div>
+          <div
+            className="prop-edit__steps-track"
+            style={{'--prop-edit-progress': `${stepProgressPct}%`} as CSSProperties}
+          >
+            <span className="prop-edit__steps-fill" aria-hidden />
+          </div>
+          <div className="prop-edit__steps-list">
+            {LISTING_STEPS.map((step, index) => {
+              const done = index < stepActiveIndex
+              const active = listingStep === step.id
+              return (
+                <button
+                  key={step.id}
+                  type="button"
+                  className={`prop-edit__step${active ? ' is-active' : ''}${done ? ' is-done' : ''}`}
+                  aria-current={active ? 'step' : undefined}
+                  onClick={() => goToStep(step.id)}
+                  style={{'--prop-edit-step-i': index} as CSSProperties}
+                >
+                  <span className="prop-edit__step-index" aria-hidden>
+                    {done ? <Check size={13} strokeWidth={2.6} /> : index + 1}
+                  </span>
+                  <span className="prop-edit__step-copy">
+                    <span className="prop-edit__step-label">{step.label.replace(/^\d+\.\s*/, '')}</span>
+                    <span className="prop-edit__step-state">
+                      {done ? 'Complete' : active ? 'In progress' : 'Up next'}
+                    </span>
+                  </span>
+                </button>
+              )
+            })}
+          </div>
         </nav>
 
         {listingStep === 'category' ? (
