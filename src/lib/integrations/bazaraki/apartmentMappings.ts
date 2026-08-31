@@ -7,6 +7,7 @@ import {
   mapAirConditioningLevel,
   mapBathrooms,
   mapBedroomsApartment,
+  mapConditionToBazaraki,
   mapConstructionYear,
   mapEnergyEfficiencyToBazaraki,
   mapFloorToBazaraki,
@@ -22,6 +23,7 @@ export type ApartmentAttrs = {
   schema: 'apartment'
   airConditioning: 1 | 2 | 3
   area: number
+  condition: number
   constructionYear: number | null
   energyEfficiency: number
   floor: number | null
@@ -48,8 +50,16 @@ export function buildApartmentAttrs(property: Property): ApartmentAttrs | null {
   const energyEfficiency = mapEnergyEfficiencyToBazaraki(property.energy_efficiency)
   const bedrooms = mapBedroomsApartment(property.bedrooms)
   const type = mapApartmentType(property.property_type)
+  const condition = mapConditionToBazaraki(property.condition)
 
-  if (!postalcode || area == null || energyEfficiency == null || bedrooms == null || type == null) {
+  if (
+    !postalcode ||
+    area == null ||
+    energyEfficiency == null ||
+    bedrooms == null ||
+    type == null ||
+    condition == null
+  ) {
     return null
   }
 
@@ -65,6 +75,7 @@ export function buildApartmentAttrs(property: Property): ApartmentAttrs | null {
     schema: 'apartment',
     airConditioning,
     area,
+    condition,
     constructionYear: mapConstructionYear(property.year_built),
     energyEfficiency,
     floor: mapFloorToBazaraki(property.floor),

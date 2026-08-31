@@ -40,6 +40,7 @@ const villaSaleXml = generateBazarakiXml([
       schema: 'houses',
       airConditioning: 1,
       area: 220,
+      condition: 20,
       constructionYear: 2018,
       energyEfficiency: 20,
       furnishing: 3,
@@ -83,6 +84,7 @@ const apartmentXml = generateBazarakiXml([
       schema: 'apartment',
       airConditioning: 1,
       area: 90,
+      condition: 20,
       constructionYear: 2020,
       energyEfficiency: 10,
       floor: 20,
@@ -106,6 +108,8 @@ const apartmentXml = generateBazarakiXml([
 assert('apartment rent rubric 3529', apartmentXml.includes('<rubric>3529</rubric>'))
 assert('apartment type 5', apartmentXml.includes('<type>5</type>'))
 assert('apartment floor', apartmentXml.includes('<floor>20</floor>'))
+assert('apartment condition', apartmentXml.includes('<condition>20</condition>'))
+assert('villa condition', villaSaleXml.includes('<condition>20</condition>'))
 
 const imageAmpXml = generateBazarakiXml([
   {

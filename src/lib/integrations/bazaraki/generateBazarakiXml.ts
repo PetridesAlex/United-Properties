@@ -41,6 +41,7 @@ function renderAttrs(attrs: BazarakiAttrs): string {
       return `<attrs>
 <air-conditioning>${attrs.airConditioning}</air-conditioning>
 <area>${attrs.area}</area>
+<condition>${attrs.condition}</condition>
 ${optionalTag('construction-year', attrs.constructionYear)}
 <energy-efficiency>${attrs.energyEfficiency}</energy-efficiency>
 ${optionalTag('furnishing', attrs.furnishing)}
@@ -59,6 +60,7 @@ ${optionalTag('plot-area', attrs.plotArea)}
       return `<attrs>
 <air-conditioning>${attrs.airConditioning}</air-conditioning>
 <area>${attrs.area}</area>
+<condition>${attrs.condition}</condition>
 ${optionalTag('construction-year', attrs.constructionYear)}
 <energy-efficiency>${attrs.energyEfficiency}</energy-efficiency>
 ${optionalTag('floor', attrs.floor)}

@@ -158,6 +158,9 @@ function validateSchemaFields(
       if (area == null) missingFields.push('Area (sqm)')
       if (energy == null) missingFields.push('Energy efficiency')
       if (property.bedrooms == null) missingFields.push('Bedrooms')
+      if (mapConditionToBazaraki(property.condition) == null) {
+        missingFields.push('Condition')
+      }
       if (mapHouseType(property.property_type, property.bazaraki_house_type) == null) {
         missingFields.push(
           property.property_type === 'Houses' ? 'House type (Bazaraki)' : 'Bazaraki house type',
@@ -172,6 +175,9 @@ function validateSchemaFields(
       if (area == null) missingFields.push('Area (sqm)')
       if (energy == null) missingFields.push('Energy efficiency')
       if (property.bedrooms == null) missingFields.push('Bedrooms')
+      if (mapConditionToBazaraki(property.condition) == null) {
+        missingFields.push('Condition')
+      }
       if (mapApartmentType(property.property_type) == null) {
         missingFields.push('Apartment type mapping')
       }
