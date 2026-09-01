@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import SearchPanel from '../SearchPanel/SearchPanel'
+import { useSiteContent } from '../../hooks/useSiteContent'
 import './Hero.css'
 
 /** Served from `public/video/hero-video-optimize-united-properties.mp4` */
 const HERO_VIDEO_SRC = '/video/hero-video-optimize-united-properties.mp4'
 
 function Hero() {
+  const { get } = useSiteContent()
   const sectionRef = useRef(null)
   const videoRef = useRef(null)
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false)
@@ -101,6 +103,12 @@ function Hero() {
         </div>
 
         <div className="hero-section__overlay" />
+
+        <div className="hero-section__copy">
+          <p className="hero-section__eyebrow">{get('home', 'hero', 'eyebrow')}</p>
+          <h1 className="hero-section__heading">{get('home', 'hero', 'heading')}</h1>
+          <p className="hero-section__lede">{get('home', 'hero', 'description')}</p>
+        </div>
 
         <a className="hero-section__indicator" href="#featured-properties" aria-label="Scroll">
           <ChevronDown size={22} />

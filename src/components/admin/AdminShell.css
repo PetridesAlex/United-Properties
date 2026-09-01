@@ -2714,6 +2714,37 @@ body:has(.admin-entry) main {
   color: var(--admin-gold, #c9a24d);
 }
 
+.admin-map-pin__help-list {
+  margin: 0.35rem 0 0.65rem;
+  padding-left: 1.15rem;
+  color: var(--admin-muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.admin-map-pin__error-detail {
+  margin: 0 0 0.75rem;
+  font-size: 0.82rem;
+  color: rgba(255, 180, 140, 0.95);
+}
+
+.admin-map-pin__auth-banner {
+  position: absolute;
+  inset: 0.75rem;
+  z-index: 3;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 180, 140, 0.35);
+  background: rgba(12, 18, 28, 0.92);
+  backdrop-filter: blur(6px);
+  overflow: auto;
+  max-height: calc(100% - 1.5rem);
+}
+
+.admin-map-pin__auth-banner p:last-child {
+  margin-bottom: 0;
+}
+
 .admin-form__grid--single {
   margin-top: 0.25rem;
 }

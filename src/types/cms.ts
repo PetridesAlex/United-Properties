@@ -219,6 +219,26 @@ export interface Inquiry {
   source: string | null
   status: InquiryStatus | string
   property_id: string | null
+  client_id?: string | null
+}
+
+export type ClientStatus = 'active' | 'archived'
+export type ClientSource = 'website' | 'manual'
+
+export interface Client {
+  id: string
+  first_name: string
+  last_name: string
+  email: string | null
+  phone: string | null
+  notes: string | null
+  source: ClientSource | string
+  status: ClientStatus | string
+  last_contact_at: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+  enquiry_count?: number
 }
 
 export interface BazarakiValidation {

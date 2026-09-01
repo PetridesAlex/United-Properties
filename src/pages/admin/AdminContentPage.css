@@ -41,6 +41,106 @@
   color: rgba(244, 239, 230, 0.62);
 }
 
+.content-admin__step {
+  margin: 0.55rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--admin-gold);
+}
+
+.content-admin__editor {
+  display: grid;
+  grid-template-columns: minmax(12rem, 16rem) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.content-admin__rail {
+  position: sticky;
+  top: 1rem;
+  padding: 0.9rem 0.85rem;
+  border-radius: 18px;
+  border: 1px solid rgba(244, 239, 230, 0.1);
+  background: rgba(10, 18, 32, 0.88);
+}
+
+.content-admin__rail-label {
+  margin: 0 0 0.65rem;
+  font-size: 0.64rem;
+  font-weight: 780;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(232, 210, 186, 0.8);
+}
+
+.content-admin__rail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.28rem;
+}
+
+.content-admin__rail-btn {
+  appearance: none;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.8rem minmax(0, 1fr);
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.45rem 0.5rem;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(244, 239, 230, 0.62);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+
+.content-admin__rail-btn span {
+  font-size: 0.64rem;
+  font-weight: 780;
+  letter-spacing: 0.04em;
+  color: rgba(244, 239, 230, 0.38);
+}
+
+.content-admin__rail-btn:hover {
+  background: rgba(191, 152, 117, 0.1);
+  color: var(--admin-cream);
+}
+
+.content-admin__rail-btn.is-active {
+  background: linear-gradient(145deg, rgba(232, 210, 186, 0.2), rgba(191, 152, 117, 0.12));
+  color: #fff8ef;
+}
+
+.content-admin__rail-btn.is-dirty:not(.is-active) {
+  box-shadow: inset 2px 0 0 var(--admin-gold);
+}
+
+.content-admin__stage {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.content-admin__section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.55rem;
+}
+
+.content-admin__sections {
+  display: grid;
+  gap: 1rem;
+}
+
 .content-admin__hero {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) auto;
@@ -388,5 +488,25 @@
   .content-admin__footer-bar .admin-btn {
     width: 100%;
     justify-content: center;
+  }
+
+  .content-admin__editor {
+    grid-template-columns: 1fr;
+  }
+
+  .content-admin__rail {
+    position: static;
+  }
+
+  .content-admin__rail-list {
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    overflow-x: auto;
+    gap: 0.35rem;
+  }
+
+  .content-admin__rail-btn {
+    width: auto;
+    white-space: nowrap;
   }
 }

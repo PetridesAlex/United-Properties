@@ -15,6 +15,7 @@ import {
   Share2,
   ExternalLink,
   Sparkles,
+  Users,
   X,
 } from 'lucide-react'
 import {useAdminAuth} from '../../lib/auth/AdminAuthProvider'
@@ -71,6 +72,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Clients & channels',
     items: [
+      {to: '/admin/clients', label: 'Clients', icon: Users},
       {to: '/admin/enquiries', label: 'Enquiries', icon: Inbox, badgeKey: 'enquiries'},
       {to: '/admin/bazaraki', label: 'Bazaraki', icon: Share2},
     ],

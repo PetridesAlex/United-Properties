@@ -115,7 +115,21 @@ function Home() {
   )
 
   const featuredAgents = agents.slice(0, 3)
-  const homeServices = services.slice(0, 8)
+  const homeServices = services.slice(0, 8).map((service, index) => ({
+    ...service,
+    title: get('home', 'services', `card${index + 1}_title`, service.title),
+    description: get('home', 'services', `card${index + 1}_body`, service.description),
+  }))
+  const homeTestimonials = [1, 2, 3].map((n, index) => {
+    const fallback = testimonials[index]
+    return {
+      id: n,
+      name: get('home', 'testimonials', `name${n}`, fallback?.name || ''),
+      location: get('home', 'testimonials', `location${n}`, fallback?.location || ''),
+      avatarUrl: fallback?.avatarUrl || '',
+      quote: get('home', 'testimonials', `quote${n}`, fallback?.quote || ''),
+    }
+  })
 
   const signatureViewCta = get('home', 'signature', 'view_cta', 'View Property')
 
@@ -237,7 +251,7 @@ function Home() {
             className="home-testimonials__header"
           />
           <div className="grid-3 home-testimonials__grid">
-            {testimonials.map((testimonial) => (
+            {homeTestimonials.map((testimonial) => (
               <TestimonialCard key={testimonial.id} testimonial={testimonial} />
             ))}
           </div>

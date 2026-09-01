@@ -18,9 +18,25 @@ export const CONTENT_PAGES: ContentPageDef[] = [
   {
     id: 'home',
     title: 'Homepage',
-    description: 'Main landing page — featured sections, services intro, and closing CTA.',
+    description: 'Main landing page — video hero, featured sections, services, and closing CTA.',
     path: '/',
     sections: [
+      {
+        id: 'hero',
+        title: 'Video hero',
+        description: 'Headline over the homepage film. Leave blank to keep the video full-bleed.',
+        fields: [
+          f('eyebrow', 'Small label', 'United Properties · Cyprus'),
+          f('heading', 'Heading', 'Luxury Real Estate in Cyprus'),
+          f(
+            'description',
+            'Supporting text',
+            'Curated homes, seafront living, and private-client advisory across Limassol and beyond.',
+            'textarea',
+            3,
+          ),
+        ],
+      },
       {
         id: 'featured',
         title: 'Featured properties',
@@ -57,7 +73,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
       {
         id: 'services',
         title: 'Services preview',
-        description: 'Homepage services grid heading.',
+        description: 'Homepage services grid heading and the eight service cards.',
         fields: [
           f('eyebrow', 'Small label', 'Services'),
           f('heading', 'Heading', 'Comprehensive Advisory and Property Services'),
@@ -67,6 +83,70 @@ export const CONTENT_PAGES: ContentPageDef[] = [
             'From acquisition strategy to relocation and portfolio management, every step is tailored.',
             'textarea',
             3,
+          ),
+          f('card1_title', 'Card 1 title', 'Property Sales'),
+          f(
+            'card1_body',
+            'Card 1 text',
+            'Strategic acquisition and sales advisory for primary residences and high-value assets.',
+            'textarea',
+            2,
+          ),
+          f('card2_title', 'Card 2 title', 'Luxury Rentals'),
+          f(
+            'card2_body',
+            'Card 2 text',
+            'Premium rental sourcing for executive, lifestyle, and long-stay relocation clients.',
+            'textarea',
+            2,
+          ),
+          f('card3_title', 'Card 3 title', 'Luxury Portfolio Representation'),
+          f(
+            'card3_body',
+            'Card 3 text',
+            'Bespoke marketing and positioning for trophy properties and signature homes.',
+            'textarea',
+            2,
+          ),
+          f('card4_title', 'Card 4 title', 'Investment Advisory'),
+          f(
+            'card4_body',
+            'Card 4 text',
+            'Data-backed investment structuring and market intelligence for international buyers.',
+            'textarea',
+            2,
+          ),
+          f('card5_title', 'Card 5 title', 'Property Management'),
+          f(
+            'card5_body',
+            'Card 5 text',
+            'End-to-end asset management, tenant operations, maintenance, and reporting.',
+            'textarea',
+            2,
+          ),
+          f('card6_title', 'Card 6 title', 'Holiday Home Support'),
+          f(
+            'card6_body',
+            'Card 6 text',
+            'Acquisition and optimization guidance for short-stay and seasonal properties.',
+            'textarea',
+            2,
+          ),
+          f('card7_title', 'Card 7 title', 'Relocation Services'),
+          f(
+            'card7_body',
+            'Card 7 text',
+            'Smooth relocation coordination for families, executives, and digital professionals.',
+            'textarea',
+            2,
+          ),
+          f('card8_title', 'Card 8 title', 'International Client Assistance'),
+          f(
+            'card8_body',
+            'Card 8 text',
+            'Cross-border purchase support, local process guidance, and trusted partner referrals.',
+            'textarea',
+            2,
           ),
         ],
       },
@@ -105,10 +185,19 @@ export const CONTENT_PAGES: ContentPageDef[] = [
       {
         id: 'testimonials',
         title: 'Testimonials',
-        description: 'Client testimonials heading.',
+        description: 'Client testimonials heading and quotes.',
         fields: [
           f('eyebrow', 'Small label', 'Client Testimonials'),
           f('heading', 'Heading', 'Trusted by Local and International Clients'),
+          f('quote1', 'Quote 1', 'Their team handled every stage with precision. We secured the right Limassol asset quickly and confidently.', 'textarea', 3),
+          f('name1', 'Quote 1 name', 'Michael R.'),
+          f('location1', 'Quote 1 location', 'London'),
+          f('quote2', 'Quote 2', 'The market insight and discretion were exceptional. It felt like a private advisory service, not a typical agency.', 'textarea', 3),
+          f('name2', 'Quote 2 name', 'Nadia A.'),
+          f('location2', 'Quote 2 location', 'Dubai'),
+          f('quote3', 'Quote 3', 'From legal introductions to relocation support, the process was seamless and genuinely premium.', 'textarea', 3),
+          f('name3', 'Quote 3 name', 'Andrei P.'),
+          f('location3', 'Quote 3 location', 'Bucharest'),
         ],
       },
       {
@@ -494,6 +583,52 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         ],
       },
       {
+        id: 'management',
+        title: 'Property management',
+        description: 'Shown when visitors open Property Management on the services page.',
+        fields: [
+          f('eyebrow', 'Small label', 'United Services'),
+          f('heading', 'Heading', 'Property management'),
+          f(
+            'description',
+            'Intro text',
+            'Hands-on care for your Cyprus asset — tenancy, maintenance, reporting, and owner peace of mind.',
+            'textarea',
+            3,
+          ),
+          f(
+            'body',
+            'Section body',
+            'We look after let and owner-occupied homes with the same standard as our sales advisory: vetted contractors, clear communication, and reporting you can share with family or partners abroad.',
+            'textarea',
+            4,
+          ),
+        ],
+      },
+      {
+        id: 'rent_property',
+        title: 'Rent your property',
+        description: 'Shown when visitors open Rent your property on the services page.',
+        fields: [
+          f('eyebrow', 'Small label', 'United Services'),
+          f('heading', 'Heading', 'Rent your property'),
+          f(
+            'description',
+            'Intro text',
+            'Let us position, market, and let your residence to the right tenant — discreetly and professionally.',
+            'textarea',
+            3,
+          ),
+          f(
+            'body',
+            'Section body',
+            'From photography and listing strategy to tenant screening and handover, we treat your home as a premium product — not a generic rental.',
+            'textarea',
+            4,
+          ),
+        ],
+      },
+      {
         id: 'cta',
         title: 'Bottom call to action',
         description: 'Closing banner on the Services page.',
@@ -728,7 +863,8 @@ export const CONTENT_PAGES: ContentPageDef[] = [
   {
     id: 'properties',
     title: 'Properties',
-    description: 'Buy / rent / sold / rented listing pages — heroes, discovery intros, and results chrome.',
+    description:
+      'Buy, rent, sold, rented, featured, and signature listing pages — heroes, discovery intros, and results chrome.',
     path: '/buy',
     sections: [
       {
@@ -800,6 +936,40 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         ],
       },
       {
+        id: 'hero_featured',
+        title: 'Featured listings hero',
+        description: 'Top banner on /featured-properties.',
+        fields: [
+          f('eyebrow', 'Small label', 'Featured'),
+          f('title', 'Heading', 'Featured Properties'),
+          f(
+            'description',
+            'Supporting text',
+            'A curated selection of our most compelling homes currently available in Cyprus.',
+            'textarea',
+            3,
+          ),
+          f('jump_cta', 'Jump button', 'Jump to Listings'),
+        ],
+      },
+      {
+        id: 'hero_signature',
+        title: 'Signature listings hero',
+        description: 'Top banner on /signature-listings.',
+        fields: [
+          f('eyebrow', 'Small label', 'Signature Collection'),
+          f('title', 'Heading', 'Signature Listings'),
+          f(
+            'description',
+            'Supporting text',
+            'Our most exclusive addresses — trophy homes and standout residences across Cyprus.',
+            'textarea',
+            3,
+          ),
+          f('jump_cta', 'Jump button', 'Jump to Listings'),
+        ],
+      },
+      {
         id: 'discovery_buy',
         title: 'Buy discovery',
         description: 'Listing section intro for buy mode.',
@@ -858,6 +1028,38 @@ export const CONTENT_PAGES: ContentPageDef[] = [
             'description',
             'Supporting text',
             'Homes and apartments successfully leased through our team.',
+            'textarea',
+            2,
+          ),
+        ],
+      },
+      {
+        id: 'discovery_featured',
+        title: 'Featured discovery',
+        description: 'Listing section intro on /featured-properties.',
+        fields: [
+          f('eyebrow', 'Small label', 'United Properties'),
+          f('title', 'Heading', 'Featured homes'),
+          f(
+            'description',
+            'Supporting text',
+            'Hand-picked listings our advisors are highlighting this season.',
+            'textarea',
+            2,
+          ),
+        ],
+      },
+      {
+        id: 'discovery_signature',
+        title: 'Signature discovery',
+        description: 'Listing section intro on /signature-listings.',
+        fields: [
+          f('eyebrow', 'Small label', 'Signature Collection'),
+          f('title', 'Heading', 'Exclusive addresses'),
+          f(
+            'description',
+            'Supporting text',
+            'Trophy homes and standout residences from our signature collection.',
             'textarea',
             2,
           ),
@@ -1055,6 +1257,175 @@ export const CONTENT_PAGES: ContentPageDef[] = [
           f('hint_price', 'Match hint — price', 'Price band'),
           f('empty_prefix', 'Empty link text', 'Browse all properties'),
           f('empty_suffix', 'Empty trailing text', ' to discover more listings.'),
+        ],
+      },
+    ],
+  },
+  {
+    id: 'concierge',
+    title: 'Concierge',
+    description: 'Lifestyle and relocation concierge page.',
+    path: '/concierge',
+    sections: [
+      {
+        id: 'hero',
+        title: 'Page intro',
+        description: 'Top banner on the Concierge page.',
+        fields: [
+          f('eyebrow', 'Small label', 'United Concierge'),
+          f('heading', 'Heading', 'A private lifestyle desk for Cyprus living'),
+          f(
+            'description',
+            'Intro text',
+            'Beyond the transaction — introductions, relocation support, and day-to-day living arranged with discretion.',
+            'textarea',
+            3,
+          ),
+        ],
+      },
+      {
+        id: 'story',
+        title: 'Story',
+        description: 'Main concierge narrative.',
+        fields: [
+          f('eyebrow', 'Small label', 'How we help'),
+          f('heading', 'Heading', 'Arrive, settle, and live well'),
+          f(
+            'body',
+            'Body',
+            'Whether you are buying a first home, relocating a family, or keeping a holiday residence ready, our concierge desk coordinates trusted local partners so you can focus on the life you came for.',
+            'textarea',
+            5,
+          ),
+        ],
+      },
+      {
+        id: 'services',
+        title: 'Concierge services',
+        description: 'Three service highlights.',
+        fields: [
+          f('point1_title', 'Point 1 title', 'Relocation'),
+          f('point1_body', 'Point 1 text', 'School, banking, and settling-in introductions for new residents.', 'textarea', 2),
+          f('point2_title', 'Point 2 title', 'Home readiness'),
+          f('point2_body', 'Point 2 text', 'Housekeeping, maintenance, and seasonal opening of holiday homes.', 'textarea', 2),
+          f('point3_title', 'Point 3 title', 'Lifestyle'),
+          f('point3_body', 'Point 3 text', 'Dining, yachting, and private experiences arranged on request.', 'textarea', 2),
+        ],
+      },
+      {
+        id: 'cta',
+        title: 'Call to action',
+        description: 'Closing invitation.',
+        fields: [
+          f('heading', 'Heading', 'Tell us what you need arranged'),
+          f(
+            'description',
+            'Supporting text',
+            'Share your brief with our team and we will propose a discreet, practical plan.',
+            'textarea',
+            3,
+          ),
+          f('button', 'Button label', 'Contact concierge'),
+        ],
+      },
+    ],
+  },
+  {
+    id: 'video',
+    title: 'Brand video',
+    description: 'Dedicated watch page for the homepage showcase film.',
+    path: '/videos/luxury-real-estate-cyprus',
+    sections: [
+      {
+        id: 'hero',
+        title: 'Page intro',
+        description: 'Top banner above the player.',
+        fields: [
+          f('eyebrow', 'Small label', 'Video'),
+          f('heading', 'Heading', 'Luxury real estate in Cyprus'),
+          f(
+            'description',
+            'Intro text',
+            'Our signature showcase film — the same reel featured on the homepage, on a page built for search engines and viewers.',
+            'textarea',
+            3,
+          ),
+        ],
+      },
+      {
+        id: 'body',
+        title: 'Below the player',
+        description: 'Copy and buttons under the video.',
+        fields: [
+          f(
+            'paragraph',
+            'Body',
+            'Discover curated villas, apartments, and penthouses across Cyprus — from Limassol seafront to elevated hillside homes. This video introduces our brand experience; browse live listings anytime from the properties hub.',
+            'textarea',
+            4,
+          ),
+          f('btn_listings', 'Listings button', 'View properties'),
+          f('btn_home', 'Home button', 'Back to home'),
+        ],
+      },
+      {
+        id: 'seo',
+        title: 'Search & social',
+        description: 'Title and description used for search engines and social previews.',
+        fields: [
+          f('title', 'Page title', 'Luxury Real Estate Cyprus — Brand Video | United Properties'),
+          f(
+            'description',
+            'Meta description',
+            'Watch our United Properties showcase video: luxury homes, seafront living, and premium real estate across Cyprus. Filmed for clients exploring Limassol and beyond.',
+            'textarea',
+            3,
+          ),
+          f('json_name', 'Video name (SEO)', 'United Properties — Luxury Real Estate in Cyprus'),
+        ],
+      },
+    ],
+  },
+  {
+    id: 'cookies',
+    title: 'Cookie preferences',
+    description: 'Cookie banner and preference labels shown site-wide.',
+    path: '/',
+    sections: [
+      {
+        id: 'modal',
+        title: 'Banner copy',
+        description: 'Headline, lead, and primary buttons.',
+        fields: [
+          f('eyebrow', 'Small label', 'Privacy'),
+          f('heading', 'Heading', 'Cookies'),
+          f(
+            'lead',
+            'Intro text',
+            'We use cookies to run the site securely and, with your consent, to improve your experience.',
+            'textarea',
+            3,
+          ),
+          f('accept', 'Accept all button', 'Accept all'),
+          f('essential', 'Essential only button', 'Essential only'),
+          f('customize', 'Customize label', 'Customize categories'),
+          f('save', 'Save choices button', 'Save choices'),
+          f('hint', 'Footer hint', 'Saved on this device. Change anytime via the cookie icon.'),
+          f('launcher_label', 'Icon button label', 'Cookie preferences'),
+          f('close_label', 'Close button label', 'Close'),
+        ],
+      },
+      {
+        id: 'categories',
+        title: 'Categories',
+        description: 'Names and descriptions for each cookie group.',
+        fields: [
+          f('necessary_title', 'Necessary title', 'Strictly necessary'),
+          f('necessary_body', 'Necessary text', 'Security, navigation, and core features — always on.', 'textarea', 2),
+          f('functional_title', 'Functional title', 'Functional'),
+          f('functional_body', 'Functional text', 'Saves preferences and improves usability.', 'textarea', 2),
+          f('analytics_title', 'Analytics title', 'Analytics & performance'),
+          f('analytics_body', 'Analytics text', 'Helps us measure traffic, speed, and improve the site.', 'textarea', 2),
         ],
       },
     ],
@@ -1334,4 +1705,55 @@ export function resolveContentValue(
 
 export function countPageFields(page: ContentPageDef): number {
   return page.sections.reduce((sum, section) => sum + section.fields.length, 0)
+}
+
+export const CONTENT_CATALOG_GROUPS = [
+  {
+    id: 'website',
+    title: 'Website pages',
+    blurb: 'Marketing pages your visitors see first — open a page, then edit one section at a time.',
+    ids: ['home', 'about', 'contact', 'services', 'sell', 'concierge', 'video', 'agents', 'not-found'],
+  },
+  {
+    id: 'listings',
+    title: 'Listings',
+    blurb: 'Buy, rent, sold, featured, and property detail chrome.',
+    ids: ['properties', 'property'],
+  },
+  {
+    id: 'sitewide',
+    title: 'Site-wide & forms',
+    blurb: 'Shared navigation, footer, search, enquiry form, and cookies.',
+    ids: ['inquiry', 'navbar', 'footer', 'search', 'cookies'],
+  },
+] as const
+
+export function getContentCatalogGroups(): Array<{
+  id: string
+  title: string
+  blurb: string
+  ids: string[]
+}> {
+  const listed = new Set<string>(CONTENT_CATALOG_GROUPS.flatMap((group) => [...group.ids]))
+  const groups: Array<{
+    id: string
+    title: string
+    blurb: string
+    ids: string[]
+  }> = CONTENT_CATALOG_GROUPS.map((group) => ({
+    id: group.id,
+    title: group.title,
+    blurb: group.blurb,
+    ids: [...group.ids],
+  }))
+  const orphan = CONTENT_PAGES.filter((page) => !listed.has(page.id)).map((page) => page.id)
+  if (orphan.length) {
+    groups.push({
+      id: 'other',
+      title: 'Other pages',
+      blurb: 'Additional editable areas from the content schema.',
+      ids: orphan,
+    })
+  }
+  return groups
 }

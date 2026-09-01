@@ -165,6 +165,43 @@
     linear-gradient(180deg, rgba(8, 14, 24, 0.12) 0%, rgba(8, 14, 24, 0.03) 42%, rgba(6, 12, 22, 0.24) 100%);
 }
 
+.hero-section__copy {
+  position: relative;
+  z-index: 3;
+  width: min(42rem, calc(100% - 3rem));
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.hero-section__eyebrow {
+  margin: 0 0 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(232, 210, 186, 0.92);
+}
+
+.hero-section__heading {
+  margin: 0;
+  font-size: clamp(1.85rem, 4.6vw, 3.4rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  color: #fff8ef;
+  text-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.hero-section__lede {
+  margin: 0.85rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(0.95rem, 1.6vw, 1.12rem);
+  line-height: 1.5;
+  color: rgba(244, 239, 230, 0.82);
+}
+
 .hero-section__indicator {
   position: absolute;
   left: 50%;

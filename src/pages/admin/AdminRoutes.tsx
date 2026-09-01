@@ -10,6 +10,8 @@ import AdminPropertyEditPage from './AdminPropertyEditPage'
 import AdminContentPage from './AdminContentPage'
 import AdminMediaPage from './AdminMediaPage'
 import AdminEnquiriesPage from './AdminEnquiriesPage'
+import AdminClientsPage from './AdminClientsPage'
+import AdminClientEditPage from './AdminClientEditPage'
 import AdminSettingsPage from './AdminSettingsPage'
 import AdminBazarakiPage from './AdminBazarakiPage'
 import AdminCalendarPage from './AdminCalendarPage'
@@ -29,6 +31,9 @@ export default function AdminRoutes() {
             <Route path="content" element={<AdminContentPage />} />
             <Route path="media" element={<AdminMediaPage />} />
             <Route path="calendar" element={<AdminCalendarPage />} />
+            <Route path="clients" element={<AdminClientsPage />} />
+            <Route path="clients/new" element={<AdminClientEditPage />} />
+            <Route path="clients/:id/edit" element={<AdminClientEditPage />} />
             <Route path="enquiries" element={<AdminEnquiriesPage />} />
             <Route path="bazaraki" element={<AdminBazarakiPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />

@@ -368,6 +368,11 @@ export default function AdminEnquiriesPage() {
                         <strong>{interestLabel}</strong>
                       )}
                     </div>
+                    {row.client_id ? (
+                      <Link className="enq-admin__client-link" to={`/admin/clients/${row.client_id}/edit`}>
+                        View client profile
+                      </Link>
+                    ) : null}
                   </div>
 
                   {row.message ? (

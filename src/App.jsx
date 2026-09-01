@@ -10,6 +10,7 @@ import QuickContactFab from './components/QuickContactFab/QuickContactFab'
 import SitePreloader from './components/SitePreloader/SitePreloader'
 import AppRouter from './router/AppRouter'
 import { MergedPropertiesProvider } from './hooks/useMergedProperties'
+import { GoogleMapsProvider } from './providers/GoogleMapsProvider'
 
 function App() {
   const [showPreloader, setShowPreloader] = useState(true)
@@ -19,16 +20,18 @@ function App() {
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem storageKey="united-properties-theme">
         {showPreloader && <SitePreloader onDone={() => setShowPreloader(false)} />}
         <BrowserRouter>
-          <MergedPropertiesProvider>
-            <ScrollToTop />
-            <Navbar />
-            <main>
-              <AppRouter />
-            </main>
-            <Footer />
-            <QuickContactFab />
-            <CookiePreferences />
-          </MergedPropertiesProvider>
+          <GoogleMapsProvider>
+            <MergedPropertiesProvider>
+              <ScrollToTop />
+              <Navbar />
+              <main>
+                <AppRouter />
+              </main>
+              <Footer />
+              <QuickContactFab />
+              <CookiePreferences />
+            </MergedPropertiesProvider>
+          </GoogleMapsProvider>
         </BrowserRouter>
       </ThemeProvider>
     </HelmetProvider>

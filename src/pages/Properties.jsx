@@ -63,7 +63,9 @@ function getModeFromRoute(location) {
   if (pathname === '/rent') return 'rent'
   if (pathname === '/sold') return 'sold'
   if (pathname === '/rented') return 'rented'
-  if (pathname === '/buy' || pathname === '/featured-properties') return 'buy'
+  if (pathname === '/featured-properties') return 'featured'
+  if (pathname === '/signature-listings') return 'signature'
+  if (pathname === '/buy') return 'buy'
   if (searchMode) return searchMode
   if (params.get('status') === 'For Rent') return 'rent'
   return 'buy'
@@ -103,6 +105,30 @@ function getDiscoveryIntro(mode, get) {
         'discovery_rented',
         'description',
         'Homes and apartments successfully leased through our team.',
+      ),
+    }
+  }
+  if (mode === 'featured') {
+    return {
+      eyebrow: get('properties', 'discovery_featured', 'eyebrow', 'United Properties'),
+      title: get('properties', 'discovery_featured', 'title', 'Featured homes'),
+      description: get(
+        'properties',
+        'discovery_featured',
+        'description',
+        'Hand-picked listings our advisors are highlighting this season.',
+      ),
+    }
+  }
+  if (mode === 'signature') {
+    return {
+      eyebrow: get('properties', 'discovery_signature', 'eyebrow', 'Signature Collection'),
+      title: get('properties', 'discovery_signature', 'title', 'Exclusive addresses'),
+      description: get(
+        'properties',
+        'discovery_signature',
+        'description',
+        'Trophy homes and standout residences from our signature collection.',
       ),
     }
   }
@@ -164,6 +190,38 @@ function getHeroContent(mode, status, get) {
       ),
       jumpCta: get('properties', 'hero_rented', 'jump_cta', 'Jump to Listings'),
       pageTitle: 'Rented Properties | United Properties',
+    }
+  }
+
+  if (mode === 'featured') {
+    return {
+      modeClass: 'properties-hero--buy',
+      eyebrow: get('properties', 'hero_featured', 'eyebrow', 'Featured collection'),
+      title: get('properties', 'hero_featured', 'title', 'Featured properties'),
+      description: get(
+        'properties',
+        'hero_featured',
+        'description',
+        'Hand-picked listings our advisors are highlighting this season.',
+      ),
+      jumpCta: get('properties', 'hero_featured', 'jump_cta', 'Jump to Listings'),
+      pageTitle: 'Featured Properties | United Properties',
+    }
+  }
+
+  if (mode === 'signature') {
+    return {
+      modeClass: 'properties-hero--buy',
+      eyebrow: get('properties', 'hero_signature', 'eyebrow', 'Signature Collection'),
+      title: get('properties', 'hero_signature', 'title', 'Signature listings'),
+      description: get(
+        'properties',
+        'hero_signature',
+        'description',
+        'Trophy homes and standout residences from our signature collection.',
+      ),
+      jumpCta: get('properties', 'hero_signature', 'jump_cta', 'Jump to Listings'),
+      pageTitle: 'Signature Listings | United Properties',
     }
   }
 

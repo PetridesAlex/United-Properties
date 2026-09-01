@@ -3,7 +3,7 @@ import { MessageCircle } from 'lucide-react'
 import { useSiteContent } from '../../hooks/useSiteContent'
 import './CTASection.css'
 
-function CTASection({ title, description }) {
+function CTASection({ title, description, primaryTo = '/properties', primaryLabel }) {
   const { get } = useSiteContent()
   const resolvedTitle =
     title ?? get('home', 'cta', 'heading', 'Ready to Find Your Ideal Property in Cyprus?')
@@ -23,8 +23,8 @@ function CTASection({ title, description }) {
           <h2>{resolvedTitle}</h2>
           <p>{resolvedDescription}</p>
           <div className="cta-section__actions">
-            <Link to="/properties" className="btn btn-gold">
-              {get('home', 'cta', 'btn_listings', 'View Listings')}
+            <Link to={primaryTo} className="btn btn-gold">
+              {primaryLabel ?? get('home', 'cta', 'btn_listings', 'View Listings')}
             </Link>
             <Link to="/contact" className="btn btn-outline-light">
               {get('home', 'cta', 'btn_contact', 'Contact Our Team')}

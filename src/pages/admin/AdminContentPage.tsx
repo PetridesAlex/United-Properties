@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useRef, useState} from 'react'
-import {ArrowLeft, ExternalLink, FileText, Save} from 'lucide-react'
+import {ArrowLeft, ChevronLeft, ChevronRight, ExternalLink, FileText, Save} from 'lucide-react'
 import toast from 'react-hot-toast'
 import {useAdminAuth} from '../../lib/auth/AdminAuthProvider'
 import {fetchSiteContentMap, savePageContent} from '../../lib/content/api'
@@ -7,6 +7,7 @@ import {
   CONTENT_PAGES,
   contentKey,
   countPageFields,
+  getContentCatalogGroups,
   getContentPage,
   getDefaultContentMap,
   type ContentPageDef,
@@ -18,6 +19,7 @@ const PROGRESS_KEY = 'up.contentCms.v1'
 
 type ContentProgress = {
   activePageId: string | null
+  activeSectionId: string | null
   values: Record<string, string>
   savedSnapshot: Record<string, string>
   scrollY: number
@@ -32,6 +34,7 @@ function readProgress(): ContentProgress | null {
     if (!parsed || typeof parsed !== 'object') return null
     return {
       activePageId: typeof parsed.activePageId === 'string' ? parsed.activePageId : null,
+      activeSectionId: typeof parsed.activeSectionId === 'string' ? parsed.activeSectionId : null,
       values: parsed.values && typeof parsed.values === 'object' ? parsed.values : {},
       savedSnapshot:
         parsed.savedSnapshot && typeof parsed.savedSnapshot === 'object' ? parsed.savedSnapshot : {},
@@ -76,17 +79,22 @@ export default function AdminContentPage() {
     if (cached?.activePageId && getContentPage(cached.activePageId)) return cached.activePageId
     return null
   })
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(
+    () => cached?.activeSectionId ?? null,
+  )
 
   const activePage = activePageId ? getContentPage(activePageId) : undefined
   const valuesRef = useRef(values)
   const savedRef = useRef(savedSnapshot)
   const pageRef = useRef(activePageId)
+  const sectionRef = useRef(activeSectionId)
   const persistTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const restoredScroll = useRef(false)
 
   valuesRef.current = values
   savedRef.current = savedSnapshot
   pageRef.current = activePageId
+  sectionRef.current = activeSectionId
 
   useEffect(() => {
     let cancelled = false
@@ -124,6 +132,7 @@ export default function AdminContentPage() {
     persistTimer.current = setTimeout(() => {
       writeProgress({
         activePageId,
+        activeSectionId,
         values,
         savedSnapshot,
         scrollY: window.scrollY || 0,
@@ -132,7 +141,7 @@ export default function AdminContentPage() {
     return () => {
       if (persistTimer.current) clearTimeout(persistTimer.current)
     }
-  }, [activePageId, values, savedSnapshot])
+  }, [activePageId, activeSectionId, values, savedSnapshot])
 
   useEffect(() => {
     function onScroll() {
@@ -140,6 +149,7 @@ export default function AdminContentPage() {
       persistTimer.current = setTimeout(() => {
         writeProgress({
           activePageId: pageRef.current,
+          activeSectionId: sectionRef.current,
           values: valuesRef.current,
           savedSnapshot: savedRef.current,
           scrollY: window.scrollY || 0,
@@ -160,6 +170,12 @@ export default function AdminContentPage() {
       restoredScroll.current = true
     }
   }, [loading, activePageId, cached])
+
+  useEffect(() => {
+    if (!activePage) return
+    const valid = activePage.sections.some((section) => section.id === activeSectionId)
+    if (!valid) setActiveSectionId(activePage.sections[0]?.id ?? null)
+  }, [activePage, activeSectionId])
 
   const dirty = useMemo(() => {
     if (!activePage) return false
@@ -188,16 +204,50 @@ export default function AdminContentPage() {
     return filled
   }
 
-  function openPage(pageId: string) {
+  const catalogGroups = useMemo(() => getContentCatalogGroups(), [])
+
+  const sectionIndex = useMemo(() => {
+    if (!activePage || !activeSectionId) return 0
+    const idx = activePage.sections.findIndex((s) => s.id === activeSectionId)
+    return idx >= 0 ? idx : 0
+  }, [activePage, activeSectionId])
+
+  const activeSection = activePage?.sections[sectionIndex]
+
+  function sectionDirty(page: ContentPageDef, sectionId: string) {
+    const section = page.sections.find((s) => s.id === sectionId)
+    if (!section) return false
+    for (const field of section.fields) {
+      const key = contentKey(page.id, section.id, field.key)
+      if ((values[key] ?? '') !== (savedSnapshot[key] ?? '')) return true
+    }
+    return false
+  }
+
+  function openPage(pageId: string, sectionId?: string) {
+    const page = getContentPage(pageId)
     restoredScroll.current = true
     setActivePageId(pageId)
+    setActiveSectionId(sectionId ?? page?.sections[0]?.id ?? null)
     requestAnimationFrame(() => window.scrollTo(0, 0))
+  }
+
+  function goToSection(sectionId: string) {
+    setActiveSectionId(sectionId)
+    requestAnimationFrame(() => window.scrollTo(0, 0))
+  }
+
+  function goAdjacentSection(delta: number) {
+    if (!activePage) return
+    const next = Math.min(Math.max(sectionIndex + delta, 0), activePage.sections.length - 1)
+    goToSection(activePage.sections[next].id)
   }
 
   function backToCatalog() {
     if (dirty && !window.confirm('You have unsaved changes. Leave this page?')) return
     restoredScroll.current = true
     setActivePageId(null)
+    setActiveSectionId(null)
     requestAnimationFrame(() => window.scrollTo(0, 0))
   }
 
@@ -216,6 +266,7 @@ export default function AdminContentPage() {
       setSavedSnapshot(nextSnapshot)
       writeProgress({
         activePageId,
+        activeSectionId,
         values,
         savedSnapshot: nextSnapshot,
         scrollY: window.scrollY || 0,
@@ -231,18 +282,6 @@ export default function AdminContentPage() {
   if (loading) return <p className="admin-empty">Loading website content…</p>
 
   if (!activePage) {
-    const websitePages = [
-      'home',
-      'about',
-      'contact',
-      'services',
-      'sell',
-      'properties',
-      'agents',
-      'property',
-      'not-found',
-    ] as const
-    const siteWidePages = ['inquiry', 'navbar', 'footer', 'search'] as const
     const totalFields = CONTENT_PAGES.reduce((sum, page) => sum + countPageFields(page), 0)
 
     return (
@@ -250,10 +289,10 @@ export default function AdminContentPage() {
         <header className="content-admin__hero">
           <div className="content-admin__hero-copy">
             <p className="content-admin__eyebrow">Website copy</p>
-            <h1>Edit by page</h1>
+            <h1>Edit page by page</h1>
             <p className="content-admin__lede">
-              Choose a page, update the text section by section, then save. Your place is kept so you
-              can continue where you left off.
+              Choose a page, then walk through each section. Every public page and shared block is listed
+              here — save when a page is ready.
             </p>
           </div>
           <div className="content-admin__hero-meta" aria-label="Content overview">
@@ -269,21 +308,8 @@ export default function AdminContentPage() {
         </header>
 
         <div className="content-admin__catalog">
-          {(
-            [
-              {
-                title: 'Website pages',
-                blurb: 'Marketing pages your visitors see first.',
-                ids: websitePages,
-              },
-              {
-                title: 'Site-wide & forms',
-                blurb: 'Shared navigation, footer, search, and enquiry copy.',
-                ids: siteWidePages,
-              },
-            ] as const
-          ).map((group) => (
-            <section key={group.title} className="content-admin__group">
+          {catalogGroups.map((group) => (
+            <section key={group.id} className="content-admin__group">
               <header className="content-admin__group-head">
                 <div>
                   <h2 className="content-admin__group-title">{group.title}</h2>
@@ -311,10 +337,10 @@ export default function AdminContentPage() {
                         <strong>{page.title}</strong>
                         <span>{page.description}</span>
                         <em>
-                          {filled}/{total} fields · {page.path}
+                          {page.sections.length} sections · {filled}/{total} fields · {page.path}
                         </em>
                       </span>
-                      <span className="content-admin__page-cta">Edit</span>
+                      <span className="content-admin__page-cta">Open</span>
                     </button>
                   )
                 })}
@@ -337,6 +363,10 @@ export default function AdminContentPage() {
           <p className="content-admin__eyebrow">Editing</p>
           <h1>{activePage.title}</h1>
           <p className="content-admin__lede">{activePage.description}</p>
+          <p className="content-admin__step">
+            Editing section {sectionIndex + 1} of {activePage.sections.length}
+            {activeSection ? ` — ${activeSection.title}` : ''}
+          </p>
         </div>
         <div className="admin-actions content-admin__actions">
           {dirty ? <span className="content-admin__dirty">Unsaved changes</span> : null}
@@ -361,53 +391,98 @@ export default function AdminContentPage() {
         </div>
       </header>
 
-      <div className="content-admin__sections">
-        {activePage.sections.map((section, index) => (
-          <section key={section.id} className="content-admin__section">
-            <header className="content-admin__section-head">
-              <span className="content-admin__section-index">
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <div>
-                <h2>{section.title}</h2>
-                <p>{section.description}</p>
-              </div>
-            </header>
+      <div className="content-admin__editor">
+        <aside className="content-admin__rail" aria-label="Page sections">
+          <p className="content-admin__rail-label">
+            Section {sectionIndex + 1} of {activePage.sections.length}
+          </p>
+          <ol className="content-admin__rail-list">
+            {activePage.sections.map((section, index) => (
+              <li key={section.id}>
+                <button
+                  type="button"
+                  className={`content-admin__rail-btn${section.id === activeSection?.id ? ' is-active' : ''}${
+                    sectionDirty(activePage, section.id) ? ' is-dirty' : ''
+                  }`}
+                  onClick={() => goToSection(section.id)}
+                >
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  {section.title}
+                </button>
+              </li>
+            ))}
+          </ol>
+        </aside>
 
-            <div className="content-admin__fields">
-              {section.fields.map((field) => {
-                const key = contentKey(activePage.id, section.id, field.key)
-                const value = values[key] ?? ''
-                return (
-                  <div className="admin-field content-admin__field" key={key}>
-                    <label htmlFor={key}>{field.label}</label>
-                    {field.help ? <p className="content-admin__help">{field.help}</p> : null}
-                    {field.type === 'textarea' ? (
-                      <textarea
-                        id={key}
-                        rows={field.rows ?? 4}
-                        value={value}
-                        placeholder={field.defaultValue}
-                        onChange={(e) =>
-                          setField(activePage.id, section.id, field.key, e.target.value)
-                        }
-                      />
-                    ) : (
-                      <input
-                        id={key}
-                        value={value}
-                        placeholder={field.defaultValue}
-                        onChange={(e) =>
-                          setField(activePage.id, section.id, field.key, e.target.value)
-                        }
-                      />
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </section>
-        ))}
+        <div className="content-admin__stage">
+          {activeSection ? (
+            <section className="content-admin__section">
+              <header className="content-admin__section-head">
+                <span className="content-admin__section-index">
+                  {String(sectionIndex + 1).padStart(2, '0')}
+                </span>
+                <div>
+                  <h2>{activeSection.title}</h2>
+                  <p>{activeSection.description}</p>
+                </div>
+              </header>
+
+              <div className="content-admin__fields">
+                {activeSection.fields.map((field) => {
+                  const key = contentKey(activePage.id, activeSection.id, field.key)
+                  const value = values[key] ?? ''
+                  return (
+                    <div className="admin-field content-admin__field" key={key}>
+                      <label htmlFor={key}>{field.label}</label>
+                      {field.help ? <p className="content-admin__help">{field.help}</p> : null}
+                      {field.type === 'textarea' ? (
+                        <textarea
+                          id={key}
+                          rows={field.rows ?? 4}
+                          value={value}
+                          placeholder={field.defaultValue}
+                          onChange={(e) =>
+                            setField(activePage.id, activeSection.id, field.key, e.target.value)
+                          }
+                        />
+                      ) : (
+                        <input
+                          id={key}
+                          value={value}
+                          placeholder={field.defaultValue}
+                          onChange={(e) =>
+                            setField(activePage.id, activeSection.id, field.key, e.target.value)
+                          }
+                        />
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+          ) : null}
+
+          <div className="content-admin__section-nav">
+            <button
+              type="button"
+              className="admin-btn admin-btn--ghost"
+              disabled={sectionIndex <= 0}
+              onClick={() => goAdjacentSection(-1)}
+            >
+              <ChevronLeft size={16} aria-hidden />
+              Previous section
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn--ghost"
+              disabled={sectionIndex >= activePage.sections.length - 1}
+              onClick={() => goAdjacentSection(1)}
+            >
+              Next section
+              <ChevronRight size={16} aria-hidden />
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="content-admin__footer-bar">

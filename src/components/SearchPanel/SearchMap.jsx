@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api'
+import { GoogleMap, MarkerF } from '@react-google-maps/api'
+import { triggerMapResize } from '../../lib/maps/googleMaps'
+import { useGoogleMapsLoader } from '../../providers/GoogleMapsProvider'
 
 const cyprusMapDefaults = {
   center: { lat: 35.1264, lng: 33.4299 },
@@ -31,22 +33,12 @@ function getMapViewport(activeCity) {
   }
 }
 
-function triggerMapResize(map) {
-  if (!map || typeof google === 'undefined') return
-  google.maps.event.trigger(map, 'resize')
-}
-
 function SearchMap({ properties, activeCity }) {
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+  const { apiKey, isLoaded, loadError } = useGoogleMapsLoader()
   const containerRef = useRef(null)
   const mapRef = useRef(null)
   const mapListenersCleanupRef = useRef(null)
   const [mapInstance, setMapInstance] = useState(null)
-  const { isLoaded, loadError } = useJsApiLoader({
-    id: 'google-map-script-search-panel',
-    googleMapsApiKey: apiKey || '',
-  })
-
   const onMapLoad = useCallback((map) => {
     mapRef.current = map
     setMapInstance(map)

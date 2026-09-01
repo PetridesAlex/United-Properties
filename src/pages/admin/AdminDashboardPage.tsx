@@ -17,16 +17,19 @@ import {
   Sparkles,
   Star,
   Tag,
+  Users,
 } from 'lucide-react'
 import {useAdminAuth} from '../../lib/auth/AdminAuthProvider'
 import {resolveAdminDisplay} from '../../lib/auth/displayName'
 import {listUpcomingAppointments} from '../../lib/appointments/storage'
 import {APPOINTMENT_TYPE_LABELS} from '../../lib/appointments/types'
 import {useAgentQuote} from '../../lib/admin/agentQuotes'
+import {fetchRecentClients} from '../../lib/clients/api'
+import {clientInitials, formatClientName} from '../../lib/clients/types'
 import {countPropertiesByTab, fetchAdminProperties} from '../../lib/properties/api'
 import {validatePropertyForBazaraki} from '../../lib/integrations/bazaraki/validatePropertyForBazaraki'
 import {supabase} from '../../lib/supabase/client'
-import type {Property, PropertyStatus} from '../../types/cms'
+import type {Client, Property, PropertyStatus} from '../../types/cms'
 import {PROPERTY_STATUS_LABELS} from '../../types/cms'
 import '../../components/admin/AdminShell.css'
 import './AdminDashboardPage.css'
@@ -73,6 +76,7 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState('')
   const [refreshedAt, setRefreshedAt] = useState<Date | null>(null)
   const [upcomingMeetings, setUpcomingMeetings] = useState(() => listUpcomingAppointments(5))
+  const [recentClients, setRecentClients] = useState<Client[]>([])
 
   useEffect(() => {
     setUpcomingMeetings(listUpcomingAppointments(5))
@@ -83,7 +87,7 @@ export default function AdminDashboardPage() {
 
     async function load() {
       try {
-        const [nextCounts, list, enquiryCount] = await Promise.all([
+        const [nextCounts, list, enquiryCount, clients] = await Promise.all([
           countPropertiesByTab(),
           fetchAdminProperties({pageSize: 8, tab: 'all'}),
           supabase
@@ -92,12 +96,14 @@ export default function AdminDashboardPage() {
                 .select('*', {count: 'exact', head: true})
                 .eq('status', 'new')
             : Promise.resolve({count: 0, error: null}),
+          fetchRecentClients(5).catch(() => [] as Client[]),
         ])
         if (cancelled) return
 
         setCounts(nextCounts)
         setRecent(list.rows)
         setNewEnquiries(enquiryCount.count ?? 0)
+        setRecentClients(clients)
 
         const needingAttention = list.rows.filter((p) => attentionReasons(p).length > 0)
         setAttention(needingAttention.slice(0, 6))
@@ -268,6 +274,39 @@ export default function AdminDashboardPage() {
                 </li>
               )
             })}
+          </ul>
+        </section>
+      ) : null}
+
+      {recentClients.length > 0 ? (
+        <section className="dash-admin__clients" aria-label="Recent clients">
+          <div className="dash-admin__meetings-head">
+            <div>
+              <p className="dash-admin__stats-eyebrow">
+                <Users size={13} aria-hidden />
+                CRM
+              </p>
+              <h2 className="dash-admin__stats-title">Recent clients</h2>
+            </div>
+            <Link to="/admin/clients" className="dash-admin__meetings-open">
+              Open clients
+              <ArrowUpRight size={14} aria-hidden />
+            </Link>
+          </div>
+          <ul className="dash-admin__clients-list">
+            {recentClients.map((row) => (
+              <li key={row.id}>
+                <Link to={`/admin/clients/${row.id}/edit`} className="dash-admin__client-card">
+                  <span className="dash-admin__client-avatar" aria-hidden>
+                    {clientInitials(row)}
+                  </span>
+                  <span className="dash-admin__client-body">
+                    <strong>{formatClientName(row)}</strong>
+                    <span>{row.email || row.phone || 'No contact yet'}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
           </ul>
         </section>
       ) : null}

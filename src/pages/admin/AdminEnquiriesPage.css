@@ -427,13 +427,30 @@
 
 .enq-admin__interest-banner {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
   gap: 0.7rem;
   align-items: center;
   padding: 0.75rem 0.85rem;
   border-radius: 14px;
   border: 1px solid rgba(191, 152, 117, 0.18);
   background: linear-gradient(90deg, rgba(191, 152, 117, 0.1), rgba(191, 152, 117, 0.02));
+}
+
+.enq-admin__client-link {
+  justify-self: end;
+  padding: 0.32rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(191, 152, 117, 0.32);
+  background: rgba(191, 152, 117, 0.12);
+  color: #e8d2ba;
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.enq-admin__client-link:hover {
+  background: rgba(191, 152, 117, 0.2);
 }
 
 .enq-admin__interest-icon {
@@ -634,6 +651,15 @@
 }
 
 @media (max-width: 720px) {
+  .enq-admin__interest-banner {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .enq-admin__client-link {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
   .enq-admin__hero {
     gap: 0.4375rem;
     padding: 0.75rem 0.875rem;

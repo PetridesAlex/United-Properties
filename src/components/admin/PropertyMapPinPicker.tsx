@@ -1,6 +1,8 @@
-import {useCallback, useEffect, useMemo, useState} from 'react'
-import {GoogleMap, MarkerF, useJsApiLoader} from '@react-google-maps/api'
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
+import {GoogleMap, MarkerF} from '@react-google-maps/api'
 import {MapPin} from 'lucide-react'
+import {triggerMapResize} from '../../lib/maps/googleMaps'
+import {useGoogleMapsLoader} from '../../providers/GoogleMapsProvider'
 
 const CYPRUS = {lat: 35.1264, lng: 33.4299}
 
@@ -17,6 +19,77 @@ const mapContainerStyle = {
   height: '100%',
 } as const
 
+function ManualCoordsFallback({
+  latitude,
+  longitude,
+  onChange,
+}: {
+  latitude: number | null
+  longitude: number | null
+  onChange: Props['onChange']
+}) {
+  function applyManual(latStr: string, lngStr: string) {
+    const lat = Number(latStr)
+    const lng = Number(lngStr)
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
+    onChange({latitude: lat, longitude: lng})
+  }
+
+  return (
+    <div className="admin-form__grid">
+      <div className="admin-field">
+        <label>Latitude</label>
+        <input
+          type="number"
+          step="any"
+          value={latitude ?? ''}
+          onChange={(e) => applyManual(e.target.value, String(longitude ?? ''))}
+          placeholder="34.7071"
+        />
+      </div>
+      <div className="admin-field">
+        <label>Longitude</label>
+        <input
+          type="number"
+          step="any"
+          value={longitude ?? ''}
+          onChange={(e) => applyManual(String(latitude ?? ''), e.target.value)}
+          placeholder="33.0226"
+        />
+      </div>
+    </div>
+  )
+}
+
+function MapsSetupHelp({reason}: {reason: 'missing' | 'load' | 'auth'}) {
+  if (reason === 'missing') {
+    return (
+      <p>
+        Add <code>VITE_GOOGLE_MAPS_API_KEY</code> to your <code>.env</code> file (and Vercel env for
+        production), then restart the dev server. You can still set coordinates manually:
+      </p>
+    )
+  }
+
+  return (
+    <>
+      <p>
+        Google Maps could not load. In Google Cloud Console, enable <strong>Maps JavaScript API</strong>
+        , turn on billing, and allow these referrers on your API key:
+      </p>
+      <ul className="admin-map-pin__help-list">
+        <li>
+          <code>http://localhost:*</code>
+        </li>
+        <li>
+          <code>https://your-production-domain/*</code>
+        </li>
+      </ul>
+      <p>You can still set coordinates manually below.</p>
+    </>
+  )
+}
+
 export default function PropertyMapPinPicker({
   latitude,
   longitude,
@@ -24,11 +97,10 @@ export default function PropertyMapPinPicker({
   defaultCenter,
   onChange,
 }: Props) {
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
-  const {isLoaded, loadError} = useJsApiLoader({
-    id: 'google-map-script-search-panel',
-    googleMapsApiKey: apiKey || '',
-  })
+  const {apiKey, isLoaded, loadError} = useGoogleMapsLoader()
+  const containerRef = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<google.maps.Map | null>(null)
+  const [authError, setAuthError] = useState(false)
 
   const hasPin = latitude != null && longitude != null
   const center = useMemo(() => {
@@ -37,27 +109,63 @@ export default function PropertyMapPinPicker({
     return CYPRUS
   }, [hasPin, latitude, longitude, defaultCenter])
 
-  const [map, setMap] = useState<google.maps.Map | null>(null)
-
-  useEffect(() => {
+  const scheduleResize = useCallback((map: google.maps.Map | null | undefined) => {
     if (!map) return
-    map.panTo(center)
-  }, [map, center.lat, center.lng])
-
-  const onLoad = useCallback((instance: google.maps.Map) => {
-    setMap(instance)
+    triggerMapResize(map)
+    requestAnimationFrame(() => triggerMapResize(map))
+    window.setTimeout(() => triggerMapResize(map), 120)
+    window.setTimeout(() => triggerMapResize(map), 400)
   }, [])
+
+  const onLoad = useCallback(
+    (instance: google.maps.Map) => {
+      mapRef.current = instance
+      scheduleResize(instance)
+      instance.panTo(center)
+    },
+    [center, scheduleResize],
+  )
 
   const onUnmount = useCallback(() => {
-    setMap(null)
+    mapRef.current = null
   }, [])
 
-  function applyManual(latStr: string, lngStr: string) {
-    const lat = Number(latStr)
-    const lng = Number(lngStr)
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
-    onChange({latitude: lat, longitude: lng})
-  }
+  useEffect(() => {
+    if (!mapRef.current) return
+    mapRef.current.panTo(center)
+    scheduleResize(mapRef.current)
+  }, [center, scheduleResize])
+
+  useEffect(() => {
+    if (!isLoaded || !containerRef.current) return
+
+    const root = containerRef.current
+    const detectAuthError = () => {
+      const hasError = Boolean(root.querySelector('.gm-err-container'))
+      setAuthError(hasError)
+    }
+
+    detectAuthError()
+    const observer = new MutationObserver(detectAuthError)
+    observer.observe(root, {childList: true, subtree: true, characterData: true})
+    const timer = window.setTimeout(detectAuthError, 600)
+
+    return () => {
+      observer.disconnect()
+      window.clearTimeout(timer)
+    }
+  }, [isLoaded])
+
+  useEffect(() => {
+    if (!isLoaded || !mapRef.current || !containerRef.current) return undefined
+
+    const el = containerRef.current
+    const ro = new ResizeObserver(() => scheduleResize(mapRef.current))
+    ro.observe(el)
+    scheduleResize(mapRef.current)
+
+    return () => ro.disconnect()
+  }, [isLoaded, scheduleResize])
 
   if (!apiKey) {
     return (
@@ -69,32 +177,8 @@ export default function PropertyMapPinPicker({
           </p>
         ) : null}
         <div className="admin-map-pin__fallback">
-          <p>
-            Add <code>VITE_GOOGLE_MAPS_API_KEY</code> to enable the drag-pin map. You can still set
-            coordinates manually:
-          </p>
-          <div className="admin-form__grid">
-            <div className="admin-field">
-              <label>Latitude</label>
-              <input
-                type="number"
-                step="any"
-                value={latitude ?? ''}
-                onChange={(e) => applyManual(e.target.value, String(longitude ?? ''))}
-                placeholder="34.7071"
-              />
-            </div>
-            <div className="admin-field">
-              <label>Longitude</label>
-              <input
-                type="number"
-                step="any"
-                value={longitude ?? ''}
-                onChange={(e) => applyManual(String(latitude ?? ''), e.target.value)}
-                placeholder="33.0226"
-              />
-            </div>
-          </div>
+          <MapsSetupHelp reason="missing" />
+          <ManualCoordsFallback latitude={latitude} longitude={longitude} onChange={onChange} />
         </div>
       </div>
     )
@@ -103,8 +187,16 @@ export default function PropertyMapPinPicker({
   if (loadError) {
     return (
       <div className="admin-map-pin">
+        {label ? (
+          <p className="admin-map-pin__label">
+            <MapPin size={16} aria-hidden />
+            <span>{label}</span>
+          </p>
+        ) : null}
         <div className="admin-map-pin__fallback">
-          <p>Google Maps failed to load. Check the API key and billing settings.</p>
+          <MapsSetupHelp reason="load" />
+          <p className="admin-map-pin__error-detail">{loadError.message}</p>
+          <ManualCoordsFallback latitude={latitude} longitude={longitude} onChange={onChange} />
         </div>
       </div>
     )
@@ -128,7 +220,12 @@ export default function PropertyMapPinPicker({
           <span>{label}</span>
         </p>
       ) : null}
-      <div className="admin-map-pin__canvas">
+      <div ref={containerRef} className="admin-map-pin__canvas">
+        {authError ? (
+          <div className="admin-map-pin__auth-banner" role="alert">
+            <MapsSetupHelp reason="auth" />
+          </div>
+        ) : null}
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
           center={center}
@@ -163,7 +260,7 @@ export default function PropertyMapPinPicker({
           ) : null}
         </GoogleMap>
         <div className="admin-map-pin__hint" role="status">
-          Please drag the pin to the exact spot.
+          {hasPin ? 'Drag the pin to the exact spot.' : 'Click the map to drop a pin, then drag to fine-tune.'}
         </div>
       </div>
       <p className="admin-map-pin__coords">
@@ -172,7 +269,7 @@ export default function PropertyMapPinPicker({
             {latitude!.toFixed(6)}, {longitude!.toFixed(6)}
           </>
         ) : (
-          'Click the map to drop a pin, then drag to fine-tune.'
+          'No pin yet — click the map to place one.'
         )}
       </p>
     </div>
