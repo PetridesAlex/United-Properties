@@ -274,11 +274,15 @@
 .property-card--cover.card-luxury p,
 .property-card--cover .property-card__price--cover,
 .property-card--cover .property-card__address-line {
-  color: #0f172a;
+  color: #1e293b;
 }
 
 .property-card--cover .property-card__price--cover {
   color: #050505;
+}
+
+.property-card--cover .property-card__address-line {
+  color: #334155;
 }
 
 .property-card--cover .property-card__spec-num {
@@ -436,15 +440,17 @@
 
 .property-card__address-line {
   margin: 0;
-  font-size: clamp(0.9rem, 1.3vw, 1rem);
-  font-weight: 600;
-  line-height: 1.45;
-  color: #0f172a;
+  font-size: clamp(0.95rem, 1.4vw, 1.06rem);
+  font-weight: 550;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  color: #1e293b;
   font-family: var(--font-sans);
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   overflow: hidden;
+  text-wrap: pretty;
 }
 
 .property-card__specs-line {

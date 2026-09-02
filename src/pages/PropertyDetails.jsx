@@ -36,6 +36,35 @@ import './PropertyDetails.css'
 const DESCRIPTION_PREVIEW_CHARS = 280
 const SIMILAR_MAX = 3
 
+/** Split listing copy into short readable paragraphs. */
+function splitDescriptionParagraphs(text) {
+  const raw = String(text || '')
+    .replace(/\r\n/g, '\n')
+    .trim()
+  if (!raw) return []
+
+  const byBreak = raw
+    .split(/\n{2,}/)
+    .map((part) => part.replace(/\n+/g, ' ').trim())
+    .filter(Boolean)
+  if (byBreak.length > 1) return byBreak
+
+  const single = raw.replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim()
+  const sentences = single.match(/[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g)
+  if (!sentences || sentences.length <= 2) return [single]
+
+  const chunks = []
+  for (let i = 0; i < sentences.length; i += 2) {
+    chunks.push(
+      sentences
+        .slice(i, i + 2)
+        .map((s) => s.trim())
+        .join(' '),
+    )
+  }
+  return chunks
+}
+
 function pickSimilarProperties(all, current, max = SIMILAR_MAX) {
   if (!current) return []
   const currentId = String(current.id)
@@ -139,6 +168,7 @@ function PropertyDetails() {
   const floorplanHeading = get('property', 'info_tiles', 'floorplan_heading', 'Floor plan')
   const locationHeading = get('property', 'info_tiles', 'location_heading', 'Location')
   const {facts: attributeFacts, meta: attributeMeta} = buildPublicPropertyAttributes(property)
+  const descriptionParagraphs = splitDescriptionParagraphs(property.description)
 
   return (
     <>
@@ -357,7 +387,9 @@ function PropertyDetails() {
                 id="property-description-body"
                 className={`property-details__description-body ${descriptionExpanded ? 'is-expanded' : ''}`}
               >
-                <p>{property.description}</p>
+                {descriptionParagraphs.map((paragraph, index) => (
+                  <p key={`desc-${index}`}>{paragraph}</p>
+                ))}
               </div>
               {property.description.length > DESCRIPTION_PREVIEW_CHARS ? (
                 <button
@@ -378,16 +410,23 @@ function PropertyDetails() {
                   className="property-details__attrs"
                   aria-labelledby="property-attributes-title"
                 >
-                  <h4 id="property-attributes-title" className="property-details__attrs-title">
-                    Property details
-                  </h4>
+                  <div className="property-details__attrs-heading">
+                    <span className="property-details__attrs-eyebrow">Specifications</span>
+                    <h4 id="property-attributes-title" className="property-details__attrs-title">
+                      Property details
+                    </h4>
+                  </div>
 
                   {attributeFacts.length > 0 ? (
                     <dl className="property-details__attrs-list">
-                      {attributeFacts.map((row) => (
-                        <div key={row.label} className="property-details__attrs-row">
-                          <dt>{row.label}</dt>
-                          <dd>{row.value}</dd>
+                      {attributeFacts.map((row, index) => (
+                        <div
+                          key={row.label}
+                          className="property-details__attrs-row"
+                          style={{ '--attr-i': index }}
+                        >
+                          <dt className="property-details__attrs-label">{row.label}</dt>
+                          <dd className="property-details__attrs-value">{row.value}</dd>
                         </div>
                       ))}
                     </dl>
