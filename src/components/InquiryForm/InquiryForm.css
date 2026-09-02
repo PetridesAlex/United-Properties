@@ -5,37 +5,32 @@
   padding: 0;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: linear-gradient(
-    165deg,
-    rgba(255, 252, 247, 0.99) 0%,
-    rgba(250, 245, 236, 0.98) 45%,
-    rgba(245, 238, 226, 0.96) 100%
-  );
-  border: 1px solid rgba(196, 156, 92, 0.42);
+  color: var(--color-white, #f8f6f1);
+  background:
+    radial-gradient(ellipse 86% 64% at 50% -18%, rgba(196, 156, 92, 0.14), transparent 56%),
+    linear-gradient(168deg, var(--color-bg-alt) 0%, var(--color-bg-dark-soft) 100%);
+  border: 1px solid rgba(196, 156, 92, 0.28);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.85) inset,
-    0 20px 50px rgba(15, 12, 5, 0.12),
-    0 6px 16px rgba(169, 131, 72, 0.12);
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 20px 50px rgba(8, 14, 28, 0.28),
+    0 6px 16px rgba(0, 0, 0, 0.18);
   transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
 }
 
 .inquiry-form:hover {
-  border-color: rgba(196, 156, 92, 0.58);
+  border-color: rgba(196, 156, 92, 0.42);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.95) inset,
-    0 26px 56px rgba(15, 12, 5, 0.14),
-    0 10px 24px rgba(169, 131, 72, 0.14);
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 26px 56px rgba(8, 14, 28, 0.32),
+    0 10px 24px rgba(0, 0, 0, 0.2);
 }
 
 .inquiry-form__header {
   padding: 1.25rem 1.35rem 1.1rem;
-  background: linear-gradient(
-    155deg,
-    rgba(28, 24, 18, 0.97) 0%,
-    rgba(22, 19, 15, 0.98) 50%,
-    rgba(18, 16, 13, 1) 100%
-  );
-  border-bottom: 1px solid rgba(196, 156, 92, 0.28);
+  background:
+    radial-gradient(ellipse 90% 80% at 12% 0%, rgba(196, 156, 92, 0.12), transparent 55%),
+    linear-gradient(155deg, rgba(16, 26, 44, 0.55) 0%, rgba(10, 16, 28, 0.35) 100%);
+  border-bottom: 1px solid rgba(196, 156, 92, 0.22);
 }
 
 .inquiry-form__eyebrow {
@@ -122,14 +117,14 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #5c564c;
+  color: rgba(232, 220, 200, 0.88);
 }
 
 .inquiry-form__optional {
   font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: none;
-  color: #8a8478;
+  color: rgba(212, 184, 140, 0.72);
 }
 
 .inquiry-form input,
@@ -137,14 +132,14 @@
 .inquiry-form textarea {
   width: 100%;
   margin: 0;
-  border: 1px solid rgba(110, 100, 88, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 10px;
   padding: 0.72rem 0.85rem;
   font-family: var(--font-sans);
   font-size: 0.94rem;
   color: #1f1c18;
   background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 1px 2px rgba(15, 12, 5, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
@@ -255,15 +250,15 @@
 }
 
 .inquiry-form__status--success {
-  background: rgba(18, 130, 89, 0.1);
-  color: #116548;
-  border: 1px solid rgba(18, 130, 89, 0.28);
+  background: rgba(18, 130, 89, 0.22);
+  color: #b8f0d4;
+  border: 1px solid rgba(120, 210, 170, 0.35);
 }
 
 .inquiry-form__status--error {
-  background: rgba(177, 44, 56, 0.1);
-  color: #8f2630;
-  border: 1px solid rgba(177, 44, 56, 0.3);
+  background: rgba(177, 44, 56, 0.22);
+  color: #ffc9ce;
+  border: 1px solid rgba(230, 120, 130, 0.4);
 }
 
 .inquiry-form__footnote {
@@ -271,7 +266,7 @@
   text-align: center;
   font-size: 0.72rem;
   line-height: 1.45;
-  color: #7a7468;
+  color: rgba(220, 212, 198, 0.72);
 }
 
 @media (max-width: 700px) {

@@ -277,6 +277,21 @@ export interface PublicPropertyCard {
   seoTitle?: string
   seoDescription?: string
   isSignature?: boolean
+  /** Bazaraki-aligned detail fields for the public property page */
+  furnishing?: string | null
+  condition?: string | null
+  energyEfficiency?: string | null
+  floor?: number | null
+  floorsTotal?: number | null
+  coveredArea?: number | null
+  onlineViewing?: boolean | null
+  airConditioning?: number | null
+  parkingType?: number | null
+  pets?: number | null
+  registrationBlock?: number | null
+  registrationNumber?: number | null
+  postalCode?: string | null
+  mustHaves?: number[] | null
 }
 
 export const PROPERTY_STATUS_LABELS: Record<PropertyStatus, string> = {

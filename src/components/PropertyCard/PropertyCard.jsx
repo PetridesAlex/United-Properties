@@ -29,7 +29,7 @@ function badgeVariantFromStatus(status) {
 function PropertyCard({
   property,
   variant = 'default',
-  showDescription = true,
+  showDescription = false,
   showButton = true,
 }) {
   const isSignature = variant === 'signature'
@@ -39,7 +39,6 @@ function PropertyCard({
   const streetAddress = property.address || property.title
   const showSignaturePill = Boolean(property.featured || property.isSignature)
   const sqft = sqmToSqft(property.sqm)
-  const coverDescription = (property.description || '').trim()
 
   const coverLinkLabel = `View listing: ${property.title}`
 
@@ -76,9 +75,6 @@ function PropertyCard({
               {streetAddress}
               {property.location ? `, ${property.location}` : ''}
             </p>
-            {coverDescription ? (
-              <p className="property-card__cover-description">{coverDescription}</p>
-            ) : null}
             <p
               className="property-card__specs-line"
               aria-label={`${property.bedrooms} bedrooms, ${property.bathrooms} full bathrooms, ${

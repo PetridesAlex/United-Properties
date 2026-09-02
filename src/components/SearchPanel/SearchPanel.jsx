@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { X } from 'lucide-react'
-import {
-  searchCategories,
-  searchCities,
-  searchDiscoveryProperties,
-} from '../../data/searchDiscoveryProperties'
+import { searchCities as defaultCities } from '../../data/searchDiscoveryProperties'
+import { useMergedProperties } from '../../hooks/useMergedProperties'
 import { useSiteContent } from '../../hooks/useSiteContent'
 import SearchBar from './SearchBar'
 import CityFilters from './CityFilters'
@@ -13,39 +10,75 @@ import DiscoveryResults from './DiscoveryResults'
 import SearchMap from './SearchMap'
 import './SearchPanel.css'
 
+const LISTING_FILTERS = ['All Listings', 'For Sale', 'For Rent', 'Featured']
+
+function extractCity(location = '') {
+  const parts = String(location)
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean)
+  if (!parts.length) return ''
+  return parts[parts.length - 1]
+}
+
+function normalizeSeedCategory(category) {
+  if (!category || category === 'All Listings') return 'All Listings'
+  if (category === 'Featured Properties' || category === 'Featured') return 'Featured'
+  if (category === 'Signature Listings' || category === 'Signature') return 'Featured'
+  if (category === 'For Sale' || category === 'For Rent') return category
+  return 'All Listings'
+}
+
 function SearchPanel({ open, onClose, seed = null, seedKey = 0 }) {
   const { get } = useSiteContent()
+  const { list: properties, loading } = useMergedProperties()
   const [query, setQuery] = useState('')
   const [activeCity, setActiveCity] = useState('All Cyprus')
   const [activeCategory, setActiveCategory] = useState('All Listings')
 
-  const filteredBase = useMemo(() => {
+  const cities = useMemo(() => {
+    const fromListings = new Set()
+    properties.forEach((property) => {
+      const city = extractCity(property.location) || property.location
+      if (city) fromListings.add(city)
+    })
+    const known = defaultCities.filter((city) => city === 'All Cyprus' || fromListings.has(city))
+    const extras = [...fromListings].filter((city) => !defaultCities.includes(city)).sort()
+    return [...known, ...extras]
+  }, [properties])
+
+  const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase()
-    return searchDiscoveryProperties.filter((property) => {
-      const matchesCity = activeCity === 'All Cyprus' || property.city === activeCity
+    return properties.filter((property) => {
+      const city = extractCity(property.location) || property.location
+      const matchesCity = activeCity === 'All Cyprus' || city === activeCity || property.location?.includes(activeCity)
+
       const matchesCategory =
         activeCategory === 'All Listings' ||
-        (activeCategory === 'Featured Properties' && property.isFeatured) ||
-        (activeCategory === 'Signature Listings' && property.isSignature)
+        (activeCategory === 'For Sale' && property.status === 'For Sale') ||
+        (activeCategory === 'For Rent' && property.status === 'For Rent') ||
+        (activeCategory === 'Featured' && (property.featured || property.isSignature))
 
       const matchesQuery =
         !normalized ||
-        [
-          property.title,
-          property.city,
-          property.area,
-          property.category,
-          property.type,
-          property.badges.join(' '),
-        ]
+        [property.title, property.location, property.type, property.status, property.address]
+          .filter(Boolean)
           .join(' ')
           .toLowerCase()
           .includes(normalized)
 
       return matchesCity && matchesCategory && matchesQuery
     })
-  }, [activeCity, activeCategory, query])
-  const mapProperties = filteredBase.length ? filteredBase : searchDiscoveryProperties
+  }, [properties, activeCity, activeCategory, query])
+
+  const mapProperties = useMemo(
+    () =>
+      filtered.map((property) => ({
+        ...property,
+        city: extractCity(property.location) || property.location,
+      })),
+    [filtered],
+  )
 
   function resetFilters() {
     setQuery('')
@@ -67,8 +100,6 @@ function SearchPanel({ open, onClose, seed = null, seedKey = 0 }) {
     const onKeyDown = (event) => {
       if (event.key === 'Escape') onClose()
     }
-    /* iOS/Safari: overflow:hidden on html/body often breaks momentum scroll inside fixed modals.
-       Locking the page with position:fixed preserves scroll position and lets the panel scroll with touch. */
     document.body.style.position = 'fixed'
     document.body.style.top = `-${scrollY}px`
     document.body.style.left = '0'
@@ -93,21 +124,20 @@ function SearchPanel({ open, onClose, seed = null, seedKey = 0 }) {
     if (seed) {
       setQuery(seed.query ?? '')
       setActiveCity(seed.city ?? 'All Cyprus')
-      setActiveCategory(seed.category ?? 'All Listings')
+      setActiveCategory(normalizeSeedCategory(seed.category))
     } else {
       setQuery('')
       setActiveCity('All Cyprus')
       setActiveCategory('All Listings')
     }
-    // seedKey is bumped whenever the hero opens the panel; seed matches that open
   }, [open, seedKey, seed])
 
   if (!open) return null
 
   const matchLabel =
-    filteredBase.length === 1
-      ? get('search', 'stat', 'match_singular', 'match')
-      : get('search', 'stat', 'match_plural', 'matches')
+    filtered.length === 1
+      ? get('search', 'stat', 'match_singular', 'home')
+      : get('search', 'stat', 'match_plural', 'homes')
 
   return (
     <div
@@ -124,78 +154,60 @@ function SearchPanel({ open, onClose, seed = null, seedKey = 0 }) {
         </button>
 
         <header className="search-panel__head">
-          <p className="search-panel__eyebrow">
-            {get('search', 'head', 'eyebrow', 'United Properties · Search')}
-          </p>
-          <h2 id="search-panel-title" className="search-panel__title">
-            {get('search', 'head', 'heading', 'Explore listings')}
-          </h2>
-          <p className="search-panel__sub">
-            {get(
-              'search',
-              'head',
-              'description',
-              'Narrow your criteria in the filter column — results and map update as you go.',
-            )}
-          </p>
+          <div className="search-panel__head-copy">
+            <h2 id="search-panel-title" className="search-panel__title">
+              {get('search', 'head', 'heading', 'Search homes')}
+            </h2>
+            <p className="search-panel__sub">
+              {get('search', 'head', 'description', 'Filter by location and listing type. Tap a home to open it.')}
+            </p>
+          </div>
+          <output className="search-panel__stat" htmlFor="search-panel-filters" aria-live="polite">
+            <span className="search-panel__stat-value">{loading ? '…' : filtered.length}</span>
+            <span className="search-panel__stat-label">{matchLabel}</span>
+          </output>
         </header>
 
+        <div className="search-panel__toolbar" id="search-panel-filters" aria-label="Search filters">
+          <SearchBar
+            value={query}
+            onChange={setQuery}
+            placeholder={get('search', 'filters', 'search_placeholder', 'Search by name or area…')}
+          />
+          <CityFilters
+            cities={cities}
+            activeCity={activeCity}
+            onSelect={setActiveCity}
+            locationLabel={get('search', 'filters', 'location_label', 'Location')}
+          />
+          <CategoryFilters
+            categories={LISTING_FILTERS}
+            activeCategory={activeCategory}
+            onSelect={setActiveCategory}
+            onReset={resetFilters}
+            categoryLabel={get('search', 'filters', 'category_label', 'Type')}
+            clearLabel={get('search', 'filters', 'clear', 'Clear')}
+          />
+        </div>
+
         <div className="search-panel__body">
-          <aside
-            className="search-panel__sidebar"
-            id="search-panel-filters"
-            aria-label="Search filters"
-          >
-            <SearchBar
-              value={query}
-              onChange={setQuery}
-              placeholder={get(
-                'search',
-                'filters',
-                'search_placeholder',
-                'Search properties, locations, featured...',
-              )}
-            />
-
-            <CityFilters
-              cities={searchCities}
-              activeCity={activeCity}
-              onSelect={setActiveCity}
-              locationLabel={get('search', 'filters', 'location_label', 'Location')}
-            />
-            <CategoryFilters
-              categories={searchCategories}
-              activeCategory={activeCategory}
-              onSelect={setActiveCategory}
-              onReset={resetFilters}
-              categoryLabel={get('search', 'filters', 'category_label', 'Listing type')}
-              clearLabel={get('search', 'filters', 'clear', 'Clear all')}
-            />
-          </aside>
-
           <div className="search-panel__main">
-            <output
-              className="search-panel__stat search-panel__stat--main"
-              htmlFor="search-panel-filters"
-              aria-live="polite"
-            >
-              <span className="search-panel__stat-value">{filteredBase.length}</span>
-              <span className="search-panel__stat-label">{matchLabel}</span>
-            </output>
             <DiscoveryResults
-              properties={filteredBase}
+              properties={filtered}
+              loading={loading}
               emptyTitle={get('search', 'empty', 'title', 'No matches')}
               emptyHint={get(
                 'search',
                 'empty',
                 'hint',
-                'Relax a filter or clear the search to see more listings.',
+                'Try another location, clear filters, or broaden your search.',
               )}
+              onNavigate={onClose}
             />
 
             <div className="search-panel__map-wrap">
               <p className="search-panel__section-title">
-                {get('search', 'map', 'heading', 'Explore Cyprus on Map')}
+                {get('search', 'map', 'heading', 'Map')}
               </p>
               <SearchMap properties={mapProperties} activeCity={activeCity} />
             </div>

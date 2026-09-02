@@ -6,11 +6,25 @@ function Gallery({ images = [], title = 'Property gallery' }) {
   const normalizedImages = useMemo(() => images.filter(Boolean), [images])
   const count = normalizedImages.length
   const [activeIndex, setActiveIndex] = useState(0)
+  const [frameAspect, setFrameAspect] = useState(3 / 2)
   const thumbRefs = useRef([])
+  const slideRefs = useRef([])
 
   useEffect(() => {
     setActiveIndex((i) => (count ? Math.min(i, count - 1) : 0))
   }, [count])
+
+  const syncAspectFromImage = useCallback((img) => {
+    if (!img?.naturalWidth || !img.naturalHeight) return
+    const next = img.naturalWidth / img.naturalHeight
+    if (!Number.isFinite(next) || next <= 0) return
+    setFrameAspect(next)
+  }, [])
+
+  useEffect(() => {
+    const img = slideRefs.current[activeIndex]
+    if (img?.complete) syncAspectFromImage(img)
+  }, [activeIndex, normalizedImages, syncAspectFromImage])
 
   const go = useCallback(
     (delta) => {
@@ -51,6 +65,8 @@ function Gallery({ images = [], title = 'Property gallery' }) {
 
   if (!count) return null
 
+  const activeSrc = normalizedImages[activeIndex]
+
   return (
     <section
       className="gallery"
@@ -59,22 +75,37 @@ function Gallery({ images = [], title = 'Property gallery' }) {
       aria-roledescription="carousel"
     >
       <div className="gallery__stage">
-        <div className="gallery__slides">
+        <div
+          className="gallery__slides"
+          style={{ '--gallery-aspect': String(frameAspect) }}
+        >
+          <img
+            className="gallery__slide-fill"
+            src={activeSrc}
+            alt=""
+            aria-hidden="true"
+            decoding="async"
+          />
           {normalizedImages.map((src, i) => (
             <img
               key={`${src}-${i}`}
+              ref={(el) => {
+                slideRefs.current[i] = el
+              }}
               src={src}
               alt={i === activeIndex ? `${title} — photo ${i + 1} of ${count}` : ''}
               className={`gallery__slide ${i === activeIndex ? 'is-active' : ''}`}
               loading={i === 0 ? 'eager' : 'lazy'}
               decoding="async"
+              onLoad={(e) => {
+                if (i === activeIndex) syncAspectFromImage(e.currentTarget)
+              }}
             />
           ))}
         </div>
 
         {count > 1 && (
           <>
-            <div className="gallery__chrome" aria-hidden="true" />
             <div className="gallery__arrows gallery__arrows--sides">
               <button
                 type="button"

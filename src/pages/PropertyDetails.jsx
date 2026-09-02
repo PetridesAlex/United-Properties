@@ -24,9 +24,12 @@ import Gallery from '../components/Gallery/Gallery'
 import InquiryForm from '../components/InquiryForm/InquiryForm'
 import SectionHeader from '../components/SectionHeader/SectionHeader'
 import PropertyCard from '../components/PropertyCard/PropertyCard'
+import AnimatedStatValue from '../components/PropertyDetails/AnimatedStatValue'
 import { agents } from '../data/agents'
 import { useMergedProperties } from '../hooks/useMergedProperties'
 import { useSiteContent } from '../hooks/useSiteContent'
+import { useInViewOnce } from '../hooks/useCountUp'
+import { buildPublicPropertyAttributes } from '../lib/properties/publicAttributes'
 import './Properties.css'
 import './PropertyDetails.css'
 
@@ -75,6 +78,7 @@ function PropertyDetails() {
   const { get } = useSiteContent()
   const { list: allProperties, loading } = useMergedProperties()
   const [descriptionExpanded, setDescriptionExpanded] = useState(false)
+  const [overviewRef, overviewInView] = useInViewOnce()
 
   const property = useMemo(
     () => allProperties.find((item) => item.slug === slug),
@@ -134,6 +138,7 @@ function PropertyDetails() {
   const featureList = Array.isArray(property.features) ? property.features : []
   const floorplanHeading = get('property', 'info_tiles', 'floorplan_heading', 'Floor plan')
   const locationHeading = get('property', 'info_tiles', 'location_heading', 'Location')
+  const {facts: attributeFacts, meta: attributeMeta} = buildPublicPropertyAttributes(property)
 
   return (
     <>
@@ -148,7 +153,17 @@ function PropertyDetails() {
       >
         <div className="container property-details__hero-inner">
           <div className="property-details__hero-meta" aria-label="Listing details">
-            <span className="property-details__hero-badge property-details__hero-badge--status">
+            <span
+              className={`property-details__hero-badge property-details__hero-badge--status property-details__hero-badge--${
+                property.status === 'For Rent'
+                  ? 'rent'
+                  : property.status === 'Sold'
+                    ? 'sold'
+                    : property.status === 'Reserved'
+                      ? 'reserved'
+                      : 'sale'
+              }`}
+            >
               {property.status}
             </span>
             {property.type ? (
@@ -165,10 +180,10 @@ function PropertyDetails() {
       </section>
 
       <section className="section section--light property-details__main">
-        <div className="property-details__gallery-fullbleed">
-          <Gallery images={property.gallery} title={property.title} />
-        </div>
         <div className="container property-details">
+          <div className="property-details__gallery">
+            <Gallery images={property.gallery} title={property.title} />
+          </div>
           {property.brochureUrl ? (
             <div className="property-details__brochure">
               <a
@@ -191,7 +206,19 @@ function PropertyDetails() {
           <div className="property-details__head">
             <div className="property-details__head-row">
               <div className="property-details__head-primary">
-                <p className="property-details__status">{property.status}</p>
+                <p
+                  className={`property-details__status property-details__status--${
+                    property.status === 'For Rent'
+                      ? 'rent'
+                      : property.status === 'Sold' || property.status === 'Rented'
+                        ? 'sold'
+                        : property.status === 'Reserved'
+                          ? 'reserved'
+                          : 'sale'
+                  }`}
+                >
+                  {property.status}
+                </p>
                 <h2
                   className="property-details__price"
                   aria-label={`Price EUR ${property.price.toLocaleString()}${
@@ -212,53 +239,106 @@ function PropertyDetails() {
                 </h2>
               </div>
               <a
-                className="btn btn-gold property-details__whatsapp"
+                className="property-details__whatsapp"
                 href="https://wa.me/35700000000"
                 target="_blank"
                 rel="noreferrer"
+                aria-label={get('property', 'actions', 'whatsapp_title', 'Chat on WhatsApp')}
               >
                 <span className="property-details__whatsapp-iconWrap" aria-hidden="true">
-                  <WhatsAppBrandIcon size={18} className="property-details__whatsapp-brandIcon" />
+                  <span className="property-details__whatsapp-pulse" />
+                  <WhatsAppBrandIcon size={20} className="property-details__whatsapp-brandIcon" />
                 </span>
-                <span className="property-details__whatsapp-text">
-                  <span className="property-details__whatsapp-title">
+                <span className="property-details__whatsapp-title">
+                  <span className="property-details__whatsapp-title-text">
                     {get('property', 'actions', 'whatsapp_title', 'Chat on WhatsApp')}
                   </span>
-                  <span className="property-details__whatsapp-sub">
-                    {get('property', 'actions', 'whatsapp_sub', 'FAST REPLY · SAME DAY')}
+                  <span className="property-details__whatsapp-dots" aria-hidden="true">
+                    <i />
+                    <i />
+                    <i />
                   </span>
                 </span>
-                <ChevronRight className="property-details__whatsapp-chevron" size={20} strokeWidth={2.25} aria-hidden />
               </a>
             </div>
-            <p className="property-details__summary">{property.description}</p>
           </div>
 
-          <div className="property-details__overview">
-            <span className="property-details__stat">
-              <BedDouble size={16} /> {property.bedrooms}{' '}
-              {get('property', 'stats', 'label_bedrooms', 'Bedrooms')}
-            </span>
-            <span className="property-details__stat property-details__stat--bath">
-              <Bath size={16} /> {property.bathrooms}{' '}
-              {get('property', 'stats', 'label_bathrooms', 'Bathrooms')}
-            </span>
-            <span className="property-details__stat">
-              <Ruler size={16} /> {property.sqm}{' '}
-              {get('property', 'stats', 'label_sqm', 'sqm internal area')}
-            </span>
-            <span className="property-details__stat">
-              <LandPlot size={16} /> {property.plotSize || 'N/A'}{' '}
-              {get('property', 'stats', 'label_plot', 'sqm plot size')}
-            </span>
-            <span className="property-details__stat">
-              <Car size={16} /> {property.parking}{' '}
-              {get('property', 'stats', 'label_parking', 'Parking')}
-            </span>
-            <span className="property-details__stat">
-              <CalendarClock size={16} /> {get('property', 'stats', 'label_built', 'Built in')}{' '}
-              {property.yearBuilt}
-            </span>
+          <div
+            ref={overviewRef}
+            key={property.id}
+            className="property-details__overview"
+            aria-label="Property key facts"
+          >
+            <div className="property-details__stat">
+              <span className="property-details__stat-icon" aria-hidden="true">
+                <BedDouble size={22} strokeWidth={1.85} />
+              </span>
+              <span className="property-details__stat-copy">
+                <AnimatedStatValue value={property.bedrooms} active={overviewInView} duration={900} />
+                <span className="property-details__stat-label">
+                  {get('property', 'stats', 'label_bedrooms', 'Bedrooms')}
+                </span>
+              </span>
+            </div>
+            <div className="property-details__stat property-details__stat--bath">
+              <span className="property-details__stat-icon" aria-hidden="true">
+                <Bath size={22} strokeWidth={1.85} />
+              </span>
+              <span className="property-details__stat-copy">
+                <AnimatedStatValue value={property.bathrooms} active={overviewInView} duration={950} />
+                <span className="property-details__stat-label">
+                  {get('property', 'stats', 'label_bathrooms', 'Bathrooms')}
+                </span>
+              </span>
+            </div>
+            <div className="property-details__stat">
+              <span className="property-details__stat-icon" aria-hidden="true">
+                <Ruler size={22} strokeWidth={1.85} />
+              </span>
+              <span className="property-details__stat-copy">
+                <AnimatedStatValue value={property.sqm} active={overviewInView} duration={1200} />
+                <span className="property-details__stat-label">
+                  {get('property', 'stats', 'label_sqm', 'sqm internal area')}
+                </span>
+              </span>
+            </div>
+            <div className="property-details__stat">
+              <span className="property-details__stat-icon" aria-hidden="true">
+                <LandPlot size={22} strokeWidth={1.85} />
+              </span>
+              <span className="property-details__stat-copy">
+                <AnimatedStatValue
+                  value={property.plotSize || 'N/A'}
+                  active={overviewInView}
+                  duration={1200}
+                />
+                <span className="property-details__stat-label">
+                  {get('property', 'stats', 'label_plot', 'sqm plot size')}
+                </span>
+              </span>
+            </div>
+            <div className="property-details__stat">
+              <span className="property-details__stat-icon" aria-hidden="true">
+                <Car size={22} strokeWidth={1.85} />
+              </span>
+              <span className="property-details__stat-copy">
+                <AnimatedStatValue value={property.parking} active={overviewInView} duration={1000} />
+                <span className="property-details__stat-label">
+                  {get('property', 'stats', 'label_parking', 'Parking')}
+                </span>
+              </span>
+            </div>
+            <div className="property-details__stat">
+              <span className="property-details__stat-icon" aria-hidden="true">
+                <CalendarClock size={22} strokeWidth={1.85} />
+              </span>
+              <span className="property-details__stat-copy">
+                <AnimatedStatValue value={property.yearBuilt} active={overviewInView} duration={1400} />
+                <span className="property-details__stat-label">
+                  {get('property', 'stats', 'label_built', 'Built in')}
+                </span>
+              </span>
+            </div>
           </div>
 
           <div className="property-details__content-grid">
@@ -291,6 +371,39 @@ function PropertyDetails() {
                     ? get('property', 'description', 'show_less', 'Show less')
                     : get('property', 'description', 'read_more', 'Read full description')}
                 </button>
+              ) : null}
+
+              {(attributeFacts.length > 0 || attributeMeta.length > 0) ? (
+                <section
+                  className="property-details__attrs"
+                  aria-labelledby="property-attributes-title"
+                >
+                  <h4 id="property-attributes-title" className="property-details__attrs-title">
+                    Property details
+                  </h4>
+
+                  {attributeFacts.length > 0 ? (
+                    <dl className="property-details__attrs-list">
+                      {attributeFacts.map((row) => (
+                        <div key={row.label} className="property-details__attrs-row">
+                          <dt>{row.label}</dt>
+                          <dd>{row.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  ) : null}
+
+                  {attributeMeta.length > 0 ? (
+                    <div className="property-details__attrs-meta">
+                      {attributeMeta.map((row) => (
+                        <div key={row.label} className="property-details__attrs-meta-row">
+                          <span className="property-details__attrs-meta-label">{row.label}</span>
+                          <span className="property-details__attrs-meta-value">{row.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </section>
               ) : null}
 
               {featureList.length > 0 ? (

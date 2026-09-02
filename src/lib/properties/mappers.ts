@@ -44,6 +44,20 @@ export function mapPropertyToPublicCard(property: Property): PublicPropertyCard 
     referenceId: property.reference_number,
     seoTitle: property.seo_title ?? undefined,
     seoDescription: property.seo_description ?? undefined,
+    furnishing: property.furnishing,
+    condition: property.condition,
+    energyEfficiency: property.energy_efficiency,
+    floor: property.floor,
+    floorsTotal: property.floors_total,
+    coveredArea: property.covered_area != null ? Number(property.covered_area) : null,
+    onlineViewing: property.bazaraki_online_viewing ?? null,
+    airConditioning: property.bazaraki_air_conditioning,
+    parkingType: property.bazaraki_parking,
+    pets: property.bazaraki_pets,
+    registrationBlock: property.registration_block,
+    registrationNumber: property.registration_number,
+    postalCode: property.postal_code,
+    mustHaves: property.bazaraki_must_haves,
   }
 }
 
