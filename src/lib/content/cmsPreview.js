@@ -222,6 +222,7 @@ export function postCmsReady() {
   const payload = {
     source: 'united-properties-cms',
     type: CMS_PREVIEW_READY,
+    pathname: window.location.pathname || '/',
   }
   const target = window.parent && window.parent !== window ? window.parent : null
   if (!target) return

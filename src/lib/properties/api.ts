@@ -8,6 +8,27 @@ const PROPERTY_SELECT = `
   property_images (*)
 `
 
+/** Cached after first PostgREST schema-cache miss — column may not be migrated yet. */
+let supportsShowLocationMap: boolean | null = null
+
+function isMissingColumnError(message: string, column: string) {
+  const mentionsColumn =
+    message.includes(`'${column}'`) ||
+    message.includes(`"${column}"`) ||
+    message.includes(`.${column}`)
+  const looksLikeSchemaMiss =
+    message.includes('schema cache') ||
+    message.includes('Could not find') ||
+    message.includes('does not exist')
+  return mentionsColumn && looksLikeSchemaMiss
+}
+
+function withoutShowLocationMap<T extends Record<string, unknown>>(payload: T): T {
+  const next = {...payload}
+  delete next.show_location_map
+  return next
+}
+
 export async function fetchPublishedProperties(): Promise<Property[]> {
   if (!supabase) return []
   const {data, error} = await supabase
@@ -196,7 +217,7 @@ export async function createProperty(
     slug = `${slugify(input.title)}-${n}`
   }
 
-  const payload = withResolvedCoordinates({
+  let payload: Record<string, unknown> = withResolvedCoordinates({
     ...input,
     slug,
     features: input.features ?? [],
@@ -205,11 +226,31 @@ export async function createProperty(
     published_at: input.published ? new Date().toISOString() : null,
   })
 
-  const {data, error} = await supabase
+  if (supportsShowLocationMap === false) {
+    payload = withoutShowLocationMap(payload)
+  }
+
+  let {data, error} = await supabase
     .from('properties')
     .insert(payload)
     .select(PROPERTY_SELECT)
     .single()
+
+  if (
+    error &&
+    supportsShowLocationMap !== false &&
+    isMissingColumnError(error.message, 'show_location_map')
+  ) {
+    supportsShowLocationMap = false
+    payload = withoutShowLocationMap(payload)
+    ;({data, error} = await supabase
+      .from('properties')
+      .insert(payload)
+      .select(PROPERTY_SELECT)
+      .single())
+  } else if (!error) {
+    supportsShowLocationMap = true
+  }
 
   if (error) throw new Error(error.message)
   return data as Property
@@ -222,11 +263,11 @@ export async function updateProperty(
 ): Promise<Property> {
   if (!supabase) throw new Error('Supabase is not configured')
 
-  const patch: PropertyUpdate = withResolvedCoordinates({
+  let patch: Record<string, unknown> = withResolvedCoordinates({
     ...input,
     updated_by: userId ?? null,
   })
-  if (patch.slug) {
+  if (typeof patch.slug === 'string') {
     const slug = patch.slug.trim()
     if (await slugTaken(slug, id)) throw new Error('Slug is already in use')
     patch.slug = slug
@@ -235,12 +276,33 @@ export async function updateProperty(
     patch.published_at = new Date().toISOString()
   }
 
-  const {data, error} = await supabase
+  if (supportsShowLocationMap === false) {
+    patch = withoutShowLocationMap(patch)
+  }
+
+  let {data, error} = await supabase
     .from('properties')
     .update(patch)
     .eq('id', id)
     .select(PROPERTY_SELECT)
     .single()
+
+  if (
+    error &&
+    supportsShowLocationMap !== false &&
+    isMissingColumnError(error.message, 'show_location_map')
+  ) {
+    supportsShowLocationMap = false
+    patch = withoutShowLocationMap(patch)
+    ;({data, error} = await supabase
+      .from('properties')
+      .update(patch)
+      .eq('id', id)
+      .select(PROPERTY_SELECT)
+      .single())
+  } else if (!error) {
+    supportsShowLocationMap = true
+  }
 
   if (error) throw new Error(error.message)
   return data as Property
@@ -314,7 +376,7 @@ export async function duplicateProperty(id: string, userId?: string | null) {
   )
 
   if (property_images?.length && supabase) {
-    const rows = property_images.map((img) => ({
+    const rowsWithKind = property_images.map((img) => ({
       property_id: copy.id,
       image_url: img.image_url,
       storage_path: img.storage_path,
@@ -323,7 +385,14 @@ export async function duplicateProperty(id: string, userId?: string | null) {
       is_featured: img.is_featured,
       kind: img.kind || 'gallery',
     }))
-    await supabase.from('property_images').insert(rows)
+    const {error: copyImagesError} = await supabase.from('property_images').insert(rowsWithKind)
+    if (copyImagesError && isMissingColumnError(copyImagesError.message, 'kind')) {
+      const rowsWithoutKind = rowsWithKind.map(({kind: _kind, ...row}) => row)
+      const {error: retryError} = await supabase.from('property_images').insert(rowsWithoutKind)
+      if (retryError) throw new Error(retryError.message)
+    } else if (copyImagesError) {
+      throw new Error(copyImagesError.message)
+    }
   }
 
   return fetchPropertyById(copy.id)

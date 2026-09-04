@@ -172,6 +172,18 @@ export default function AdminContentPage() {
   const focusFromPreviewRef = useRef<(pageId: string, sectionId: string) => void>(() => {})
   const editToolsRef = useRef(editToolsOn)
   editToolsRef.current = editToolsOn
+  /** Last path the preview iframe actually showed — keeps browse position across remounts. */
+  const iframePathRef = useRef<string | null>(null)
+
+  function captureIframePath() {
+    try {
+      const path = previewFrameRef.current?.contentWindow?.location?.pathname
+      if (path) iframePathRef.current = path
+    } catch {
+      // Cross-origin — ignore.
+    }
+  }
+
   const [activePageId, setActivePageId] = useState<string | null>(() => {
     if (cached?.activePageId && getContentPage(cached.activePageId)) return cached.activePageId
     return null
@@ -278,12 +290,18 @@ export default function AdminContentPage() {
       if (!sameOrigin(event.origin)) return
       const data = event.data
       if (isCmsBridgeMessage(data, CMS_PREVIEW_READY)) {
+        if (typeof data.pathname === 'string' && data.pathname.startsWith('/')) {
+          iframePathRef.current = data.pathname
+        } else {
+          captureIframePath()
+        }
         const frameWindow = previewFrameRef.current?.contentWindow
         if (frameWindow) postCmsEditMode(editToolsRef.current, frameWindow)
         return
       }
       if (!isCmsBridgeMessage(data, CMS_PREVIEW_MESSAGE)) return
       if (typeof data.page !== 'string' || typeof data.section !== 'string') return
+      captureIframePath()
       focusFromPreviewRef.current(data.page, data.section)
     }
     window.addEventListener('message', onMessage)
@@ -365,13 +383,19 @@ export default function AdminContentPage() {
 
   const previewSrc = useMemo(() => {
     if (!activePage) return '/'
-    const url = new URL(activePage.path || '/', window.location.origin)
-    // Stable preview token + bake edit mode into the URL so remounts after Save always work.
+    // Stay on wherever the iframe last was (e.g. browsed to /about), not always homepage.
+    const path = iframePathRef.current || activePage.path || '/'
+    const url = new URL(path, window.location.origin)
     url.searchParams.set('cmsPreview', String(previewKey || 1))
-    if (editToolsOn) url.searchParams.set('cmsEdit', '1')
+    // Bake edit mode only when the frame remounts — toggling must not change this URL.
+    if (editToolsRef.current) url.searchParams.set('cmsEdit', '1')
     else url.searchParams.delete('cmsEdit')
     return `${url.pathname}${url.search}`
-  }, [activePage, previewKey, editToolsOn])
+    // editToolsOn intentionally omitted: toggle uses postMessage, not a remount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePage, previewKey])
+
+  const previewFrameKey = `preview-${previewKey}`
 
   function openPage(pageId: string) {
     const page = getContentPage(pageId)
@@ -379,6 +403,7 @@ export default function AdminContentPage() {
     setQuery('')
     setActivePageId(pageId)
     setActiveSectionId(page?.sections[0]?.id ?? null)
+    iframePathRef.current = page?.path || '/'
     // Keep click-to-edit armed when entering any page.
     if (!editToolsRef.current) {
       setEditToolsOn(true)
@@ -426,6 +451,8 @@ export default function AdminContentPage() {
     if (pageId !== activePageId) {
       restoredScroll.current = true
       if (nextSection) pendingJumpRef.current = nextSection
+      // Preview is already on this page — don't force a remount back to another path.
+      iframePathRef.current = page.path || iframePathRef.current
       flushSync(() => {
         setActivePageId(pageId)
         setActiveSectionId(nextSection)
@@ -452,6 +479,7 @@ export default function AdminContentPage() {
   }
 
   function refreshPreview() {
+    captureIframePath()
     writeAdminEditToolsPreference(editToolsOn)
     setPreviewKey((n) => n + 1)
     toast.success('Preview refreshed')
@@ -461,6 +489,14 @@ export default function AdminContentPage() {
     setEditToolsOn((on) => {
       const next = !on
       writeAdminEditToolsPreference(next)
+      // Stay on the current preview page — only flip tools via postMessage (no iframe remount).
+      captureIframePath()
+      const frameWindow = previewFrameRef.current?.contentWindow
+      if (frameWindow) {
+        postCmsEditMode(next, frameWindow)
+        window.setTimeout(() => postCmsEditMode(next, frameWindow), 120)
+        window.setTimeout(() => postCmsEditMode(next, frameWindow), 350)
+      }
       toast.success(
         next
           ? 'Click-to-edit enabled — click a section in the preview'
@@ -491,7 +527,8 @@ export default function AdminContentPage() {
         savedSnapshot: nextSnapshot,
         scrollY: window.scrollY || 0,
       })
-      // Keep click-to-edit armed across the preview remount.
+      // Keep click-to-edit armed and stay on the same preview page after remount.
+      captureIframePath()
       writeAdminEditToolsPreference(editToolsOn)
       setPreviewKey((n) => n + 1)
       toast.success(
@@ -794,11 +831,12 @@ export default function AdminContentPage() {
               <div className="content-admin__preview-frame-shell">
                 <iframe
                   ref={previewFrameRef}
-                  key={previewSrc}
+                  key={previewFrameKey}
                   className="content-admin__preview-frame"
                   title={`${activePage.title} preview`}
                   src={previewSrc}
                   onLoad={() => {
+                    captureIframePath()
                     const frameWindow = previewFrameRef.current?.contentWindow
                     if (!frameWindow) return
                     const push = () => postCmsEditMode(editToolsRef.current, frameWindow)

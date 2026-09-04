@@ -303,6 +303,7 @@
     width: 100%;
     flex-direction: column;
     align-items: stretch;
+    gap: 0.5rem;
   }
 
   .property-share {
@@ -317,6 +318,12 @@
 
   .property-action {
     justify-content: flex-start;
+    min-height: 2.85rem;
+    padding-right: 1.05rem;
+  }
+
+  .property-action__copy {
+    align-items: flex-start;
   }
 }
 

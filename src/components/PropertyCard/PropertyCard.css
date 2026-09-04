@@ -280,7 +280,6 @@
 .property-card--cover .property-card__price--cover,
 .property-card--cover .property-card__cover-title,
 .property-card--cover .property-card__cover-location,
-.property-card--cover .property-card__cover-description,
 .property-card--cover .property-card__specs {
   color: #111827;
 }
@@ -291,10 +290,6 @@
 
 .property-card--cover .property-card__cover-location {
   color: #5b6575;
-}
-
-.property-card--cover .property-card__cover-description {
-  color: #4a5363;
 }
 
 .property-card--cover .property-card__specs {
@@ -486,20 +481,6 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
   overflow: hidden;
-}
-
-.property-card__cover-description {
-  margin: 0.1rem 0 0;
-  font-family: var(--font-sans);
-  font-size: 0.86rem;
-  font-weight: 450;
-  line-height: 1.5;
-  color: #4a5363;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  text-wrap: pretty;
 }
 
 .property-card__specs {

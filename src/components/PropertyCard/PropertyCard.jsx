@@ -46,10 +46,6 @@ function PropertyCard({
   const bathsLabel = property.bathrooms === 1 ? 'Bath' : 'Baths'
   const bedsLabel = property.bedrooms === 1 ? 'Bed' : 'Beds'
   const areaLabel = sqmLabel != null ? `${sqmLabel} sqm` : null
-  const coverDescription = String(property.description || '')
-    .replace(/\s+/g, ' ')
-    .trim()
-  const showCoverDescription = Boolean(coverDescription)
 
   const coverLinkLabel = `View listing: ${property.title}`
 
@@ -90,9 +86,6 @@ function PropertyCard({
                 <MapPin size={14} strokeWidth={1.85} aria-hidden />
                 <span>{locationLine || addressDisplay}</span>
               </p>
-            ) : null}
-            {showCoverDescription ? (
-              <p className="property-card__cover-description">{coverDescription}</p>
             ) : null}
             <ul
               className="property-card__specs"

@@ -2132,9 +2132,8 @@ export default function AdminPropertyEditPage() {
                   </span>
                 </div>
 
-                <label
+                <div
                   className={`prop-edit__gallery-drop${uploadingImages ? ' is-busy' : ''}${galleryFileDrag ? ' is-dragover' : ''}`}
-                  htmlFor="property-images"
                   onDragEnter={(e) => {
                     e.preventDefault()
                     setGalleryFileDrag(true)
@@ -2157,17 +2156,19 @@ export default function AdminPropertyEditPage() {
                       ? 'Uploading photos…'
                       : galleryFileDrag
                         ? 'Drop photos to upload'
-                        : 'Drag & drop photos here'}
+                        : 'Upload property photos'}
                   </span>
                   <span className="prop-edit__gallery-drop-hint">
-                    PNG, JPG or WEBP · multiple files allowed · they upload immediately
+                    PNG, JPG or WEBP · choose one or more files · they upload immediately
                   </span>
-                  <span className="prop-edit__gallery-drop-cta">Browse files</span>
+                  <label className="prop-edit__gallery-drop-cta" htmlFor="property-images">
+                    {uploadingImages ? 'Uploading…' : 'Choose photos'}
+                  </label>
                   <input
                     id="property-images"
                     className="prop-edit__gallery-input"
                     type="file"
-                    accept="image/*"
+                    accept="image/png,image/jpeg,image/jpg,image/webp,image/*"
                     multiple
                     disabled={uploadingImages}
                     onChange={(e) => {
@@ -2176,7 +2177,7 @@ export default function AdminPropertyEditPage() {
                       void onUpload(selected, 'gallery')
                     }}
                   />
-                </label>
+                </div>
 
                 {galleryImages.length ? (
                   <>
