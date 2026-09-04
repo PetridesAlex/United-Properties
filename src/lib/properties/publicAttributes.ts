@@ -23,12 +23,6 @@ export type PropertyAttributeRow = {
   value: string
 }
 
-function formatSquareMeterPrice(price: number, sqm: number): string | null {
-  if (!Number.isFinite(price) || !Number.isFinite(sqm) || sqm <= 0 || price <= 0) return null
-  const perSqm = Math.round(price / sqm)
-  return `€${perSqm.toLocaleString('de-DE')} /m²`
-}
-
 /** Bazaraki-style attribute rows for the public property page. */
 export function buildPublicPropertyAttributes(property: PublicPropertyCard): {
   facts: PropertyAttributeRow[]
@@ -66,11 +60,6 @@ export function buildPublicPropertyAttributes(property: PublicPropertyCard): {
 
   if (property.sqm != null && property.sqm > 0) {
     facts.push({label: 'Area', value: `${property.sqm} m²`})
-  }
-
-  const sqmPrice = formatSquareMeterPrice(property.price, property.sqm)
-  if (sqmPrice && property.status !== 'For Rent') {
-    facts.push({label: 'Square meter price', value: sqmPrice})
   }
 
   if (property.floor != null) {

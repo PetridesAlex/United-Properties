@@ -7,7 +7,13 @@ function InvestWithUsSection() {
   const { get } = useSiteContent()
 
   return (
-    <section id="invest-with-us" className="section section--alt invest-with-us" aria-labelledby="invest-with-us-heading">
+    <section
+      id="invest-with-us"
+      className="section section--alt invest-with-us"
+      aria-labelledby="invest-with-us-heading"
+      data-cms-page="services"
+      data-cms-section="invest_body"
+    >
       <div className="container">
         <motion.article
           className="invest-with-us__article"

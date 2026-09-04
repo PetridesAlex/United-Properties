@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import './Gallery.css'
 
-const SWIPE_MIN_PX = 48
+const SWIPE_MIN_PX = 42
+const SWIPE_LOCK_PX = 10
 const MOSAIC_SIDE = 4
 
 function Gallery({
@@ -18,11 +19,15 @@ function Gallery({
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [zoom, setZoom] = useState(1)
   const [frameRatio, setFrameRatio] = useState(4 / 3)
+  const [dragX, setDragX] = useState(0)
   const lightboxRef = useRef(null)
   const swipeRef = useRef({
+    pointerId: null,
     x: 0,
     y: 0,
+    dx: 0,
     active: false,
+    locked: false,
     swiped: false,
   })
 
@@ -35,6 +40,7 @@ function Gallery({
       if (!count) return
       setActiveIndex((i) => (i + delta + count) % count)
       setZoom(1)
+      setDragX(0)
     },
     [count],
   )
@@ -44,6 +50,7 @@ function Gallery({
       if (index >= 0 && index < count) {
         setActiveIndex(index)
         setZoom(1)
+        setDragX(0)
       }
     },
     [count],
@@ -54,6 +61,7 @@ function Gallery({
       if (index >= 0 && index < count) {
         setActiveIndex(index)
         setZoom(1)
+        setDragX(0)
         setLightboxOpen(true)
       }
     },
@@ -63,6 +71,7 @@ function Gallery({
   const closeLightbox = useCallback(() => {
     setLightboxOpen(false)
     setZoom(1)
+    setDragX(0)
   }, [])
 
   const zoomIn = useCallback(() => {
@@ -73,42 +82,96 @@ function Gallery({
     setZoom((z) => Math.max(1, Math.round((z - 0.25) * 100) / 100))
   }, [])
 
-  const onSwipeStart = useCallback(
+  const resetSwipe = useCallback(() => {
+    swipeRef.current = {
+      pointerId: null,
+      x: 0,
+      y: 0,
+      dx: 0,
+      active: false,
+      locked: false,
+      swiped: swipeRef.current.swiped,
+    }
+    setDragX(0)
+  }, [])
+
+  const onPointerDown = useCallback(
     (e) => {
-      if (count <= 1) return
-      const touch = e.changedTouches?.[0]
-      if (!touch) return
+      if (count <= 1 || zoom > 1) return
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      if (e.target instanceof Element && e.target.closest('button')) return
+
       swipeRef.current = {
-        x: touch.clientX,
-        y: touch.clientY,
+        pointerId: e.pointerId,
+        x: e.clientX,
+        y: e.clientY,
+        dx: 0,
         active: true,
+        locked: false,
         swiped: false,
       }
+      try {
+        e.currentTarget.setPointerCapture?.(e.pointerId)
+      } catch {
+        // ignore capture failures
+      }
     },
-    [count],
+    [count, zoom],
   )
 
-  const onSwipeEnd = useCallback(
-    (e) => {
-      if (!swipeRef.current.active || count <= 1) return
-      if (zoom > 1) {
-        swipeRef.current.active = false
+  const onPointerMove = useCallback((e) => {
+    const swipe = swipeRef.current
+    if (!swipe.active || swipe.pointerId !== e.pointerId) return
+
+    const dx = e.clientX - swipe.x
+    const dy = e.clientY - swipe.y
+
+    if (!swipe.locked) {
+      if (Math.abs(dx) < SWIPE_LOCK_PX && Math.abs(dy) < SWIPE_LOCK_PX) return
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        swipe.locked = true
+      } else {
+        swipe.active = false
+        setDragX(0)
         return
       }
-      const touch = e.changedTouches?.[0]
-      swipeRef.current.active = false
-      if (!touch) return
+    }
 
-      const dx = touch.clientX - swipeRef.current.x
-      const dy = touch.clientY - swipeRef.current.y
-      if (Math.abs(dx) < SWIPE_MIN_PX) return
-      if (Math.abs(dx) < Math.abs(dy) * 1.15) return
+    swipe.dx = dx
+    setDragX(dx)
+    if (e.cancelable) e.preventDefault()
+  }, [])
 
-      swipeRef.current.swiped = true
-      go(dx < 0 ? 1 : -1)
+  const finishSwipe = useCallback(
+    (e) => {
+      const swipe = swipeRef.current
+      if (!swipe.active || (e && swipe.pointerId !== e.pointerId)) return
+
+      const dx = swipe.dx
+      swipe.active = false
+      swipe.pointerId = null
+
+      if (swipe.locked && Math.abs(dx) >= SWIPE_MIN_PX) {
+        swipe.swiped = true
+        go(dx < 0 ? 1 : -1)
+        return
+      }
+
+      setDragX(0)
     },
-    [count, go, zoom],
+    [go],
   )
+
+  const onPointerUp = useCallback(
+    (e) => {
+      finishSwipe(e)
+    },
+    [finishSwipe],
+  )
+
+  const onPointerCancel = useCallback(() => {
+    resetSwipe()
+  }, [resetSwipe])
 
   useEffect(() => {
     function onKey(e) {
@@ -179,8 +242,13 @@ function Gallery({
 
   const extraCount = Math.max(0, count - (1 + mosaicSide.length))
   const showMoreOnLast = extraCount > 0 && mosaicSide.length === MOSAIC_SIDE
-
   const mosaicCount = Math.min(count, 1 + MOSAIC_SIDE)
+  const imageTransform =
+    zoom > 1
+      ? `scale(${zoom})`
+      : dragX
+        ? `translate3d(${dragX}px, 0, 0) scale(1)`
+        : 'scale(1)'
 
   if (!count) return null
 
@@ -291,10 +359,14 @@ function Gallery({
 
               <div className="gallery-lightbox__chrome" onClick={(e) => e.stopPropagation()}>
                 <div
-                  className="gallery-lightbox__stage"
+                  className={`gallery-lightbox__stage${count > 1 && zoom <= 1 ? ' is-swipeable' : ''}${
+                    dragX ? ' is-dragging' : ''
+                  }`}
                   style={{ '--gallery-ratio': String(frameRatio) }}
-                  onTouchStart={onSwipeStart}
-                  onTouchEnd={onSwipeEnd}
+                  onPointerDown={onPointerDown}
+                  onPointerMove={onPointerMove}
+                  onPointerUp={onPointerUp}
+                  onPointerCancel={onPointerCancel}
                 >
                   {count > 1 ? (
                     <button
@@ -312,13 +384,14 @@ function Gallery({
                       src={activeSrc}
                       alt={`${title} — photo ${activeIndex + 1} of ${count}`}
                       className="gallery-lightbox__image"
-                      style={{ transform: `scale(${zoom})` }}
+                      style={{ transform: imageTransform }}
                       draggable={false}
                       onClick={() => {
                         if (swipeRef.current.swiped) {
                           swipeRef.current.swiped = false
                           return
                         }
+                        if (Math.abs(swipeRef.current.dx) > 8) return
                         if (zoom > 1) zoomOut()
                         else zoomIn()
                       }}
@@ -336,6 +409,12 @@ function Gallery({
                     </button>
                   ) : null}
                 </div>
+
+                {count > 1 ? (
+                  <p className="gallery-lightbox__hint" aria-hidden>
+                    Swipe for next photo · {activeIndex + 1} / {count}
+                  </p>
+                ) : null}
 
                 {count > 1 ? (
                   <div className="gallery-lightbox__thumbs" role="tablist" aria-label="Preview thumbnails">

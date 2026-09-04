@@ -25,6 +25,8 @@ function Services() {
 
       <section
         className={`page-hero${investDeepLink || managementDeepLink || rentDeepLink ? ' page-hero--services-invest' : ''}`}
+        data-cms-page="services"
+        data-cms-section="hero"
       >
         <div className="container">
           {investDeepLink ? (
@@ -56,13 +58,23 @@ function Services() {
       </section>
 
       {managementDeepLink ? (
-        <section className="section section--light" id="property-management">
+        <section
+          className="section section--light"
+          id="property-management"
+          data-cms-page="services"
+          data-cms-section="management"
+        >
           <div className="container">
             <p>{get('services', 'management', 'body')}</p>
           </div>
         </section>
       ) : rentDeepLink ? (
-        <section className="section section--light" id="rent-your-property">
+        <section
+          className="section section--light"
+          id="rent-your-property"
+          data-cms-page="services"
+          data-cms-section="rent_property"
+        >
           <div className="container">
             <p>{get('services', 'rent_property', 'body')}</p>
           </div>
@@ -72,7 +84,12 @@ function Services() {
           <InvestWithUsSection />
           {!investDeepLink ? (
             <>
-              <section className="section section--light" id="property-management">
+              <section
+                className="section section--light"
+                id="property-management"
+                data-cms-page="services"
+                data-cms-section="management"
+              >
                 <div className="container">
                   <p className="section-eyebrow">{get('services', 'management', 'eyebrow')}</p>
                   <h2>{get('services', 'management', 'heading')}</h2>
@@ -80,7 +97,12 @@ function Services() {
                   <p>{get('services', 'management', 'body')}</p>
                 </div>
               </section>
-              <section className="section section--alt" id="rent-your-property">
+              <section
+                className="section section--alt"
+                id="rent-your-property"
+                data-cms-page="services"
+                data-cms-section="rent_property"
+              >
                 <div className="container">
                   <p className="section-eyebrow">{get('services', 'rent_property', 'eyebrow')}</p>
                   <h2>{get('services', 'rent_property', 'heading')}</h2>
@@ -93,7 +115,7 @@ function Services() {
         </>
       )}
 
-      <CTASection title={get('services', 'cta', 'heading')} />
+      <CTASection title={get('services', 'cta', 'heading')} cmsPage="services" cmsSection="cta" />
     </>
   )
 }

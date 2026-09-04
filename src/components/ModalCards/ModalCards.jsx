@@ -8,13 +8,28 @@ import './ModalCards.css'
 const MotionDiv = motion.div
 
 /**
- * @typedef {{ id: string; imageUrl: string; title: string; description: string; slug?: string }} ModalCardItem
+ * @typedef {{
+ *   id: string
+ *   imageUrl: string
+ *   title: string
+ *   description: string
+ *   slug?: string
+ *   price?: number
+ *   status?: string
+ * }} ModalCardItem
  */
 
 const backdropTransition = { duration: 0.35, ease: [0.32, 0.72, 0, 1] }
 const cardTransition = { type: 'spring', stiffness: 320, damping: 30 }
 
 const noopSubscribe = () => () => {}
+
+function formatCardPrice(value, status) {
+  const amount = Number(value)
+  if (!Number.isFinite(amount) || amount <= 0) return null
+  const formatted = new Intl.NumberFormat('en-US').format(amount)
+  return status === 'For Rent' ? `EUR ${formatted} / month` : `EUR ${formatted}`
+}
 
 export default function ModalCards({ cards = [], className }) {
   const [selected, setSelected] = useState(/** @type {ModalCardItem | null} */ (null))
@@ -48,6 +63,7 @@ export default function ModalCards({ cards = [], className }) {
     )
   }
 
+  const selectedPrice = selected ? formatCardPrice(selected.price, selected.status) : null
   const modal = mounted && (
     <AnimatePresence>
       {selected ? (
@@ -92,6 +108,9 @@ export default function ModalCards({ cards = [], className }) {
                       <h2 id="modal-cards-title" className="modal-expanded-title">
                         {selected.title}
                       </h2>
+                      {selectedPrice ? (
+                        <p className="modal-expanded-price">{selectedPrice}</p>
+                      ) : null}
                     </div>
                     <button
                       type="button"
@@ -143,7 +162,9 @@ export default function ModalCards({ cards = [], className }) {
   return (
     <div className={cn('modal-cards-container', className)}>
       <div className="modal-cards-grid">
-        {cards.map((card) => (
+        {cards.map((card) => {
+          const priceLabel = formatCardPrice(card.price, card.status)
+          return (
           <div
             key={card.id}
             role="button"
@@ -160,7 +181,10 @@ export default function ModalCards({ cards = [], className }) {
             <img className="modal-card-image" src={card.imageUrl} alt={card.title} loading="lazy" />
             <div className="modal-card-overlay">
               <div className="modal-card-content">
-                <h3 className="modal-card-title">{card.title}</h3>
+                <div className="modal-card-copy">
+                  <h3 className="modal-card-title">{card.title}</h3>
+                  {priceLabel ? <p className="modal-card-price">{priceLabel}</p> : null}
+                </div>
                 <span className="modal-card-icon" aria-hidden>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path
@@ -174,7 +198,8 @@ export default function ModalCards({ cards = [], className }) {
               </div>
             </div>
           </div>
-        ))}
+          )
+        })}
       </div>
       {mounted && modal ? createPortal(modal, document.body) : null}
     </div>

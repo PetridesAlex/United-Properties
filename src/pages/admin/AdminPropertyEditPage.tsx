@@ -53,7 +53,7 @@ import './AdminPropertyEditPage.css'
 const LISTING_STEPS = [
   {id: 'category', label: '1. Category', title: 'Choose a category'},
   {id: 'location', label: '2. Location', title: 'Select location'},
-  {id: 'map', label: '3. Location map', title: 'Location map on the website'},
+  {id: 'map', label: '3. Maps & Floor', title: 'Maps & floor plans'},
   {id: 'details', label: '4. Details', title: 'Property details'},
   {id: 'media', label: '5. Media', title: 'Images & description'},
   {id: 'publish', label: '6. Publish', title: 'Publishing'},
@@ -1276,8 +1276,8 @@ export default function AdminPropertyEditPage() {
         {listingStep === 'map' ? (
           <AdminFormSection
             eyebrow="Step 3"
-            title="Location map on the website"
-            lede="Available to every CMS admin (including listings@unitedproperties.com). Turn the map on, place the pin, then save — buyers will see it on the property page."
+            title="Maps & floor plans"
+            lede="Place the location pin for the website map, then optionally add floor-plan images for this listing."
           >
             <div className="prop-edit__map-guide" role="note">
               <div className="prop-edit__map-guide-head">

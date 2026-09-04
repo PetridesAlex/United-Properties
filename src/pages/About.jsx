@@ -16,7 +16,7 @@ function About() {
         <title>About Us | United Properties</title>
       </Helmet>
 
-      <section className="page-hero">
+      <section className="page-hero" data-cms-page="about" data-cms-section="hero">
         <div className="container">
           <p>{get('about', 'hero', 'eyebrow')}</p>
           <h1>{get('about', 'hero', 'heading')}</h1>
@@ -24,7 +24,7 @@ function About() {
         </div>
       </section>
 
-      <section className="section section--light">
+      <section className="section section--light" data-cms-page="about" data-cms-section="story">
         <div className="container about-grid">
           <img
             src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1500&q=80"
@@ -47,7 +47,7 @@ function About() {
         </div>
       </section>
 
-      <section className="section section--alt">
+      <section className="section section--alt" data-cms-page="about" data-cms-section="why">
         <div className="container">
           <SectionHeader
             title={get('about', 'why', 'heading')}
@@ -70,7 +70,7 @@ function About() {
         </div>
       </section>
 
-      <section className="section section--light">
+      <section className="section section--light" data-cms-page="about" data-cms-section="team">
         <div className="container">
           <SectionHeader title={get('about', 'team', 'heading')} />
           <div className="grid-3">
@@ -81,7 +81,7 @@ function About() {
         </div>
       </section>
 
-      <CTASection title={get('about', 'cta', 'heading')} />
+      <CTASection title={get('about', 'cta', 'heading')} cmsPage="about" cmsSection="cta" />
     </>
   )
 }

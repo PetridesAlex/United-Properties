@@ -158,6 +158,7 @@ function getHeroContent(mode, status, get) {
       ),
       jumpCta: get('properties', 'hero_rent', 'jump_cta', 'Jump to Listings'),
       pageTitle: 'Rent Properties | United Properties',
+      cmsSection: 'hero_rent',
     }
   }
 
@@ -174,6 +175,7 @@ function getHeroContent(mode, status, get) {
       ),
       jumpCta: get('properties', 'hero_sold', 'jump_cta', 'Jump to Listings'),
       pageTitle: 'Sold Properties | United Properties',
+      cmsSection: 'hero_sold',
     }
   }
 
@@ -190,6 +192,7 @@ function getHeroContent(mode, status, get) {
       ),
       jumpCta: get('properties', 'hero_rented', 'jump_cta', 'Jump to Listings'),
       pageTitle: 'Rented Properties | United Properties',
+      cmsSection: 'hero_rented',
     }
   }
 
@@ -206,6 +209,7 @@ function getHeroContent(mode, status, get) {
       ),
       jumpCta: get('properties', 'hero_featured', 'jump_cta', 'Jump to Listings'),
       pageTitle: 'Featured Properties | United Properties',
+      cmsSection: 'hero_featured',
     }
   }
 
@@ -222,6 +226,7 @@ function getHeroContent(mode, status, get) {
       ),
       jumpCta: get('properties', 'hero_signature', 'jump_cta', 'Jump to Listings'),
       pageTitle: 'Signature Listings | United Properties',
+      cmsSection: 'hero_signature',
     }
   }
 
@@ -237,7 +242,17 @@ function getHeroContent(mode, status, get) {
     ),
     jumpCta: get('properties', 'hero_buy', 'jump_cta', 'Jump to Listings'),
     pageTitle: 'Properties | United Properties',
+    cmsSection: 'hero_buy',
   }
+}
+
+function getDiscoveryCmsSection(mode) {
+  if (mode === 'rent') return 'discovery_rent'
+  if (mode === 'sold') return 'discovery_sold'
+  if (mode === 'rented') return 'discovery_rented'
+  if (mode === 'featured') return 'discovery_featured'
+  if (mode === 'signature') return 'discovery_signature'
+  return 'discovery_buy'
 }
 
 function Properties() {
@@ -302,7 +317,11 @@ function Properties() {
         <title>{heroContent.pageTitle}</title>
       </Helmet>
 
-      <section className={`page-hero properties-hero ${heroContent.modeClass}`.trim()}>
+      <section
+        className={`page-hero properties-hero ${heroContent.modeClass}`.trim()}
+        data-cms-page="properties"
+        data-cms-section={heroContent.cmsSection || 'hero_buy'}
+      >
         <div className="container">
           <p className="properties-hero__eyebrow">{heroContent.eyebrow}</p>
           <h1>{heroContent.title}</h1>
@@ -313,7 +332,12 @@ function Properties() {
         </div>
       </section>
 
-      <section className="section section--light" id="properties-discovery">
+      <section
+        className="section section--light"
+        id="properties-discovery"
+        data-cms-page="properties"
+        data-cms-section={getDiscoveryCmsSection(mode)}
+      >
         <div className="container">
           <header className="properties-discovery__header properties-discovery__header--limassol">
             <p className="properties-discovery__eyebrow">{discoveryIntro.eyebrow}</p>

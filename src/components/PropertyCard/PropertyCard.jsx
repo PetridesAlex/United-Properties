@@ -43,9 +43,13 @@ function PropertyCard({
       : streetAddress || locationLine
   const showSignaturePill = Boolean(property.featured || property.isSignature)
   const sqmLabel = formatSqm(property.sqm)
-  const bathsLabel = property.bathrooms === 1 ? 'FULL BATH' : 'FULL BATHS'
-  const bedsLabel = property.bedrooms === 1 ? 'BED' : 'BEDS'
-  const areaLabel = sqmLabel != null ? `${sqmLabel} SQM` : null
+  const bathsLabel = property.bathrooms === 1 ? 'Bath' : 'Baths'
+  const bedsLabel = property.bedrooms === 1 ? 'Bed' : 'Beds'
+  const areaLabel = sqmLabel != null ? `${sqmLabel} sqm` : null
+  const coverDescription = String(property.description || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  const showCoverDescription = Boolean(coverDescription)
 
   const coverLinkLabel = `View listing: ${property.title}`
 
@@ -80,31 +84,41 @@ function PropertyCard({
             <p className="property-card__price property-card__price--cover">
               {formatPrice(property.price, property.status)}
             </p>
-            <p className="property-card__address-line">{addressDisplay}</p>
-            <p
-              className="property-card__specs-line"
-              aria-label={`${property.bedrooms} bedrooms, ${property.bathrooms} full bathrooms${
+            <h3 className="property-card__cover-title">{property.title}</h3>
+            {locationLine || addressDisplay ? (
+              <p className="property-card__cover-location">
+                <MapPin size={14} strokeWidth={1.85} aria-hidden />
+                <span>{locationLine || addressDisplay}</span>
+              </p>
+            ) : null}
+            {showCoverDescription ? (
+              <p className="property-card__cover-description">{coverDescription}</p>
+            ) : null}
+            <ul
+              className="property-card__specs"
+              aria-label={`${property.bedrooms} ${bedsLabel.toLowerCase()}, ${property.bathrooms} ${bathsLabel.toLowerCase()}${
                 sqmLabel != null ? `, ${sqmLabel} square metres` : ''
               }`}
             >
-              <span>
-                {property.bedrooms} {bedsLabel}
-              </span>
-              <span className="property-card__specs-dot" aria-hidden>
-                •
-              </span>
-              <span>
-                {property.bathrooms} {bathsLabel}
-              </span>
+              <li>
+                <BedDouble size={14} strokeWidth={1.85} aria-hidden />
+                <span>
+                  {property.bedrooms} {bedsLabel}
+                </span>
+              </li>
+              <li>
+                <Bath size={14} strokeWidth={1.85} aria-hidden />
+                <span>
+                  {property.bathrooms} {bathsLabel}
+                </span>
+              </li>
               {areaLabel ? (
-                <>
-                  <span className="property-card__specs-dot" aria-hidden>
-                    •
-                  </span>
+                <li>
+                  <Ruler size={14} strokeWidth={1.85} aria-hidden />
                   <span>{areaLabel}</span>
-                </>
+                </li>
               ) : null}
-            </p>
+            </ul>
           </div>
         </Link>
       ) : (

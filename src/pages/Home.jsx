@@ -72,6 +72,8 @@ function Home() {
           property.description ||
           `Discover this ${property.type || 'property'} in ${property.location}.`,
         slug: property.slug,
+        price: property.price,
+        status: property.status,
       })),
     [featuredProperties],
   )

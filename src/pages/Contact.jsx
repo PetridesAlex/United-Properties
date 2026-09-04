@@ -54,7 +54,7 @@ function Contact() {
         <title>Contact | United Properties</title>
       </Helmet>
 
-      <section className="page-hero page-hero--contact">
+      <section className="page-hero page-hero--contact" data-cms-page="contact" data-cms-section="hero">
         <div className="container">
           <p>{get('contact', 'hero', 'eyebrow')}</p>
           <h1>{get('contact', 'hero', 'heading')}</h1>
@@ -62,7 +62,11 @@ function Contact() {
         </div>
       </section>
 
-      <section className="contact-intro section section--light">
+      <section
+        className="contact-intro section section--light"
+        data-cms-page="contact"
+        data-cms-section="intro"
+      >
         <div className="contact-intro__ambient" aria-hidden />
         <div className="container contact-intro__inner">
           <MotionHeader
@@ -102,7 +106,7 @@ function Contact() {
             </MotionP>
           </MotionHeader>
 
-          <div className="contact-methods">
+          <div className="contact-methods" data-cms-page="contact" data-cms-section="methods">
             {contactMethods.map((method, index) => {
               const Icon = method.icon
               const variant = contactMethodVariants[index] ?? 'call'
@@ -137,7 +141,11 @@ function Contact() {
         </div>
       </section>
 
-      <section className="section section--light contact-section">
+      <section
+        className="section section--light contact-section"
+        data-cms-page="contact"
+        data-cms-section="office"
+      >
         <div className="container contact-grid">
           <div className="contact-grid__details">
             <article className="card-luxury contact-card">

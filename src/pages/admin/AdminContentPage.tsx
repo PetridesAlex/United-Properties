@@ -23,8 +23,9 @@ import {
   CMS_PREVIEW_READY,
   isCmsBridgeMessage,
   postCmsEditMode,
+  readAdminEditToolsPreference,
   sameOrigin,
-  setCmsEditToolsPreference,
+  writeAdminEditToolsPreference,
 } from '../../lib/content/cmsPreview'
 import {
   contentKey,
@@ -165,10 +166,12 @@ export default function AdminContentPage() {
   const [previewOpen, setPreviewOpen] = useState(true)
   const [previewDevice, setPreviewDevice] = useState<PreviewDevice>('desktop')
   const [clickFlash, setClickFlash] = useState(false)
-  const [editToolsOn, setEditToolsOn] = useState(false)
+  const [editToolsOn, setEditToolsOn] = useState(() => readAdminEditToolsPreference(true))
   const previewFrameRef = useRef<HTMLIFrameElement | null>(null)
   const pendingJumpRef = useRef<string | null>(null)
   const focusFromPreviewRef = useRef<(pageId: string, sectionId: string) => void>(() => {})
+  const editToolsRef = useRef(editToolsOn)
+  editToolsRef.current = editToolsOn
   const [activePageId, setActivePageId] = useState<string | null>(() => {
     if (cached?.activePageId && getContentPage(cached.activePageId)) return cached.activePageId
     return null
@@ -276,7 +279,7 @@ export default function AdminContentPage() {
       const data = event.data
       if (isCmsBridgeMessage(data, CMS_PREVIEW_READY)) {
         const frameWindow = previewFrameRef.current?.contentWindow
-        if (frameWindow) postCmsEditMode(editToolsOn, frameWindow)
+        if (frameWindow) postCmsEditMode(editToolsRef.current, frameWindow)
         return
       }
       if (!isCmsBridgeMessage(data, CMS_PREVIEW_MESSAGE)) return
@@ -285,19 +288,18 @@ export default function AdminContentPage() {
     }
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
-  }, [editToolsOn])
+  }, [])
 
   useEffect(() => {
-    setCmsEditToolsPreference(editToolsOn)
+    writeAdminEditToolsPreference(editToolsOn)
     const frameWindow = previewFrameRef.current?.contentWindow
     if (!frameWindow || !previewOpen) return
 
-    postCmsEditMode(editToolsOn, frameWindow)
-    const t1 = window.setTimeout(() => postCmsEditMode(editToolsOn, frameWindow), 120)
-    const t2 = window.setTimeout(() => postCmsEditMode(editToolsOn, frameWindow), 400)
+    const push = () => postCmsEditMode(editToolsOn, frameWindow)
+    push()
+    const timers = [80, 200, 500, 1000, 2000].map((ms) => window.setTimeout(push, ms))
     return () => {
-      window.clearTimeout(t1)
-      window.clearTimeout(t2)
+      for (const t of timers) window.clearTimeout(t)
     }
   }, [editToolsOn, previewOpen, previewKey, activePageId])
 
@@ -364,9 +366,12 @@ export default function AdminContentPage() {
   const previewSrc = useMemo(() => {
     if (!activePage) return '/'
     const url = new URL(activePage.path || '/', window.location.origin)
-    url.searchParams.set('cmsPreview', String(previewKey))
+    // Stable preview token + bake edit mode into the URL so remounts after Save always work.
+    url.searchParams.set('cmsPreview', String(previewKey || 1))
+    if (editToolsOn) url.searchParams.set('cmsEdit', '1')
+    else url.searchParams.delete('cmsEdit')
     return `${url.pathname}${url.search}`
-  }, [activePage, previewKey])
+  }, [activePage, previewKey, editToolsOn])
 
   function openPage(pageId: string) {
     const page = getContentPage(pageId)
@@ -374,11 +379,17 @@ export default function AdminContentPage() {
     setQuery('')
     setActivePageId(pageId)
     setActiveSectionId(page?.sections[0]?.id ?? null)
+    // Keep click-to-edit armed when entering any page.
+    if (!editToolsRef.current) {
+      setEditToolsOn(true)
+      writeAdminEditToolsPreference(true)
+    }
     setPreviewKey((n) => n + 1)
     requestAnimationFrame(() => window.scrollTo(0, 0))
   }
 
   function jumpToSection(sectionId: string) {
+    setQuery('')
     setActiveSectionId(sectionId)
     requestAnimationFrame(() => {
       const el = document.getElementById(`cms-section-${sectionId}`)
@@ -408,7 +419,7 @@ export default function AdminContentPage() {
       setEditToolsOn(true)
       setQuery('')
       setClickFlash(true)
-      setCmsEditToolsPreference(true)
+      writeAdminEditToolsPreference(true)
     })
     window.setTimeout(() => setClickFlash(false), 1000)
 
@@ -441,6 +452,7 @@ export default function AdminContentPage() {
   }
 
   function refreshPreview() {
+    writeAdminEditToolsPreference(editToolsOn)
     setPreviewKey((n) => n + 1)
     toast.success('Preview refreshed')
   }
@@ -448,8 +460,12 @@ export default function AdminContentPage() {
   function toggleEditTools() {
     setEditToolsOn((on) => {
       const next = !on
-      setCmsEditToolsPreference(next)
-      toast.success(next ? 'Click-to-edit enabled — click a section in the preview' : 'Browse mode — click the site normally')
+      writeAdminEditToolsPreference(next)
+      toast.success(
+        next
+          ? 'Click-to-edit enabled — click a section in the preview'
+          : 'Browse mode — click the site normally',
+      )
       return next
     })
     if (!previewOpen) setPreviewOpen(true)
@@ -475,8 +491,14 @@ export default function AdminContentPage() {
         savedSnapshot: nextSnapshot,
         scrollY: window.scrollY || 0,
       })
+      // Keep click-to-edit armed across the preview remount.
+      writeAdminEditToolsPreference(editToolsOn)
       setPreviewKey((n) => n + 1)
-      toast.success('Saved — preview updated')
+      toast.success(
+        editToolsOn
+          ? 'Saved — preview updated. Click-to-edit is still on.'
+          : 'Saved — preview updated',
+      )
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Save failed')
     } finally {
@@ -614,8 +636,8 @@ export default function AdminContentPage() {
           <div className="content-admin__workspace-intro">
             <h2>Edit this section</h2>
             <p>
-              Pick a category below — or turn on <strong>Click to edit</strong> and click it in the
-              preview. Only the selected section is shown.
+              Pick a category below — or click it in the live preview (Click to edit stays on after
+              Save). Only the selected section is shown.
             </p>
           </div>
 
@@ -778,7 +800,12 @@ export default function AdminContentPage() {
                   src={previewSrc}
                   onLoad={() => {
                     const frameWindow = previewFrameRef.current?.contentWindow
-                    if (frameWindow) postCmsEditMode(editToolsOn, frameWindow)
+                    if (!frameWindow) return
+                    const push = () => postCmsEditMode(editToolsRef.current, frameWindow)
+                    push()
+                    window.setTimeout(push, 100)
+                    window.setTimeout(push, 400)
+                    window.setTimeout(push, 900)
                   }}
                 />
               </div>

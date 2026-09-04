@@ -428,23 +428,39 @@ function PropertyDetails() {
               </p>
               <ul className="property-signature__facts" aria-label="Key facts">
                 {hasStatValue(property.bedrooms) ? (
-                  <li>
-                    {property.bedrooms} {get('property', 'stats', 'label_bedrooms', 'Bedrooms')}
+                  <li className="property-signature__fact">
+                    <BedDouble size={15} strokeWidth={1.75} aria-hidden />
+                    <span>
+                      <strong>{property.bedrooms}</strong>{' '}
+                      {get('property', 'stats', 'label_bedrooms', 'Bedrooms')}
+                    </span>
                   </li>
                 ) : null}
                 {hasStatValue(property.bathrooms) ? (
-                  <li>
-                    {property.bathrooms} {get('property', 'stats', 'label_bathrooms', 'Bathrooms')}
+                  <li className="property-signature__fact">
+                    <Bath size={15} strokeWidth={1.75} aria-hidden />
+                    <span>
+                      <strong>{property.bathrooms}</strong>{' '}
+                      {get('property', 'stats', 'label_bathrooms', 'Bathrooms')}
+                    </span>
                   </li>
                 ) : null}
                 {hasStatValue(property.sqm) ? (
-                  <li>
-                    {property.sqm} {get('property', 'stats', 'label_sqm', 'sqm')}
+                  <li className="property-signature__fact">
+                    <Ruler size={15} strokeWidth={1.75} aria-hidden />
+                    <span>
+                      <strong>{property.sqm}</strong>{' '}
+                      {get('property', 'stats', 'label_sqm', 'sqm')}
+                    </span>
                   </li>
                 ) : null}
                 {hasStatValue(property.plotSize) ? (
-                  <li>
-                    {property.plotSize} {get('property', 'stats', 'label_plot', 'sqm plot')}
+                  <li className="property-signature__fact">
+                    <LandPlot size={15} strokeWidth={1.75} aria-hidden />
+                    <span>
+                      <strong>{property.plotSize}</strong>{' '}
+                      {get('property', 'stats', 'label_plot', 'sqm plot')}
+                    </span>
                   </li>
                 ) : null}
               </ul>

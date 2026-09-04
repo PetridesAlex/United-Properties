@@ -186,7 +186,11 @@ function SellWithUs() {
         />
       </Helmet>
 
-      <section className="page-hero sell-with-us__hero">
+      <section
+        className="page-hero sell-with-us__hero"
+        data-cms-page="sell"
+        data-cms-section="hero"
+      >
         <div className="sell-with-us__hero-ambient" aria-hidden="true">
           <span className="sell-with-us__hero-orb sell-with-us__hero-orb--a" />
           <span className="sell-with-us__hero-orb sell-with-us__hero-orb--b" />
@@ -235,7 +239,12 @@ function SellWithUs() {
         </motion.div>
       </section>
 
-      <section className="section section--alt sell-with-us__problem" aria-labelledby="sell-problem-heading">
+      <section
+        className="section section--alt sell-with-us__problem"
+        aria-labelledby="sell-problem-heading"
+        data-cms-page="sell"
+        data-cms-section="problem"
+      >
         <div className="sell-with-us__problem-shell container container--narrow">
           <motion.span
             className="sell-with-us__section-label"
@@ -287,7 +296,12 @@ function SellWithUs() {
         </div>
       </section>
 
-      <section className="section section--light sell-with-us__process" aria-labelledby="sell-process-heading">
+      <section
+        className="section section--light sell-with-us__process"
+        aria-labelledby="sell-process-heading"
+        data-cms-page="sell"
+        data-cms-section="process"
+      >
         <div className="container">
           <motion.header
             className="sell-with-us__process-intro"
@@ -337,7 +351,12 @@ function SellWithUs() {
         </div>
       </section>
 
-      <section className="section section--alt sell-with-us__why" aria-labelledby="sell-why-heading">
+      <section
+        className="section section--alt sell-with-us__why"
+        aria-labelledby="sell-why-heading"
+        data-cms-page="sell"
+        data-cms-section="why"
+      >
         <div className="container">
           <motion.header
             className="sell-with-us__process-intro sell-with-us__process-intro--alt"
@@ -382,7 +401,12 @@ function SellWithUs() {
         </div>
       </section>
 
-      <section className="section section--light sell-with-us__proof" aria-labelledby="sell-proof-heading">
+      <section
+        className="section section--light sell-with-us__proof"
+        aria-labelledby="sell-proof-heading"
+        data-cms-page="sell"
+        data-cms-section="proof"
+      >
         <div className="container">
           <motion.header
             className="sell-with-us__process-intro"
@@ -457,7 +481,12 @@ function SellWithUs() {
         </div>
       </section>
 
-      <section className="section section--alt sell-with-us__compare" aria-labelledby="sell-compare-heading">
+      <section
+        className="section section--alt sell-with-us__compare"
+        aria-labelledby="sell-compare-heading"
+        data-cms-page="sell"
+        data-cms-section="compare"
+      >
         <div className="container">
           <motion.header
             className="sell-with-us__process-intro sell-with-us__process-intro--alt sell-with-us__compare-intro"
@@ -522,6 +551,8 @@ function SellWithUs() {
           'description',
           'Book a valuation call with our team — confidential, structured, and tailored to your property.',
         )}
+        cmsPage="sell"
+        cmsSection="cta"
       />
     </>
   )

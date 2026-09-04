@@ -68,6 +68,11 @@
   background: transparent;
 }
 
+.properties-results-zone .grid-3 {
+  gap: clamp(1.6rem, 3vw, 2.4rem) clamp(1.25rem, 2.4vw, 1.85rem);
+  align-items: stretch;
+}
+
 .properties-hero {
   min-height: clamp(23rem, 56vh, 31rem);
   display: flex;
