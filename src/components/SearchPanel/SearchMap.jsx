@@ -99,7 +99,7 @@ function SearchMap({ properties, activeCity }) {
     return (
       <div className="search-panel-map search-panel-map--fallback">
         <h3>Map preview unavailable</h3>
-        <p>Add `VITE_GOOGLE_MAPS_API_KEY` in your `.env` file to enable the Cyprus map.</p>
+        <p>The Cyprus map will appear here once Maps access is restored on the live site.</p>
       </div>
     )
   }
@@ -115,11 +115,8 @@ function SearchMap({ properties, activeCity }) {
   if (loadError) {
     return (
       <div className="search-panel-map search-panel-map--fallback">
-        <h3>Google Maps failed to load</h3>
-        <p>
-          Please check API key restrictions, enabled APIs, and billing in Google Cloud
-          Console.
-        </p>
+        <h3>Map could not load</h3>
+        <p>Please try again in a moment. You can still browse listings in the list view.</p>
       </div>
     )
   }

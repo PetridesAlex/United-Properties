@@ -1,5 +1,5 @@
-import {ArrowLeft, Check, ExternalLink, LayoutTemplate, Save, Sparkles, Upload} from 'lucide-react'
-import {useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent} from 'react'
+import {ArrowLeft, Check, ExternalLink, GripVertical, LayoutTemplate, MapPinned, Save, Sparkles, Star, Upload} from 'lucide-react'
+import {useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type FormEvent} from 'react'
 import {Link, useNavigate, useParams} from 'react-router-dom'
 import toast from 'react-hot-toast'
 import {useAdminAuth} from '../../lib/auth/AdminAuthProvider'
@@ -53,7 +53,7 @@ import './AdminPropertyEditPage.css'
 const LISTING_STEPS = [
   {id: 'category', label: '1. Category', title: 'Choose a category'},
   {id: 'location', label: '2. Location', title: 'Select location'},
-  {id: 'map', label: '3. Map', title: 'Location on the map'},
+  {id: 'map', label: '3. Location map', title: 'Location map on the website'},
   {id: 'details', label: '4. Details', title: 'Property details'},
   {id: 'media', label: '5. Media', title: 'Images & description'},
   {id: 'publish', label: '6. Publish', title: 'Publishing'},
@@ -138,6 +138,7 @@ type FormState = {
   address: string
   latitude: string
   longitude: string
+  show_location_map: boolean
   bedrooms: string
   bathrooms: string
   internal_area: string
@@ -193,6 +194,7 @@ const emptyForm: FormState = {
   address: '',
   latitude: '',
   longitude: '',
+  show_location_map: false,
   bedrooms: '',
   bathrooms: '',
   internal_area: '',
@@ -324,6 +326,7 @@ function toForm(property: Property): FormState {
     address: property.address || '',
     latitude: property.latitude != null ? String(property.latitude) : '',
     longitude: property.longitude != null ? String(property.longitude) : '',
+    show_location_map: Boolean(property.show_location_map),
     bedrooms: property.bedrooms != null ? String(property.bedrooms) : '',
     bathrooms: property.bathrooms != null ? String(property.bathrooms) : '',
     internal_area: property.internal_area != null ? String(property.internal_area) : '',
@@ -400,6 +403,7 @@ function toPayload(form: FormState) {
     address: form.address.trim() || null,
     latitude: num(form.latitude),
     longitude: num(form.longitude),
+    show_location_map: form.show_location_map,
     bedrooms: num(form.bedrooms),
     bathrooms: num(form.bathrooms),
     internal_area: num(form.internal_area),
@@ -461,6 +465,9 @@ export default function AdminPropertyEditPage() {
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
   const [uploadingImages, setUploadingImages] = useState(false)
+  const [galleryDragIndex, setGalleryDragIndex] = useState<number | null>(null)
+  const [galleryDragOverIndex, setGalleryDragOverIndex] = useState<number | null>(null)
+  const [galleryFileDrag, setGalleryFileDrag] = useState(false)
   const [slugLocked, setSlugLocked] = useState(false)
   const slugLockedRef = useRef(false)
   const [autosaveState, setAutosaveState] = useState<'idle' | 'pending' | 'saving' | 'saved' | 'error'>(
@@ -906,6 +913,104 @@ export default function AdminPropertyEditPage() {
     }
   }
 
+  async function applyGalleryOrder(
+    nextGallery: PropertyImage[],
+    opts: {toastMessage?: string; onlyIds?: string[]} = {},
+  ) {
+    const ordered = nextGallery.map((img, position) => ({
+      ...img,
+      position,
+      is_featured: position === 0,
+    }))
+    setImages((prev) => {
+      const floorPlans = prev.filter(isFloorPlanImage)
+      const byId = new Map(ordered.map((img) => [img.id, img]))
+      const mergedGallery = prev
+        .filter(isGalleryImage)
+        .map((img) => byId.get(img.id) ?? img)
+        .sort((a, b) => a.position - b.position)
+      return [...mergedGallery, ...floorPlans]
+    })
+    setGalleryDragIndex(null)
+    setGalleryDragOverIndex(null)
+    try {
+      const payload = ordered
+        .map((row, position) => ({id: row.id, position}))
+        .filter((row) => !opts.onlyIds || opts.onlyIds.includes(row.id))
+      await reorderPropertyImages(payload)
+      if (ordered[0]) {
+        await setFeaturedImage(ordered[0].property_id, ordered[0].id)
+      }
+      if (opts.toastMessage) toast.success(opts.toastMessage)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not update image order')
+    }
+  }
+
+  /** Swap only the dragged photo with the drop target — other photos keep their places. */
+  async function swapGalleryImages(fromIndex: number, toIndex: number) {
+    const current = images
+      .filter(isGalleryImage)
+      .sort((a, b) => a.position - b.position)
+    if (
+      fromIndex < 0 ||
+      toIndex < 0 ||
+      fromIndex >= current.length ||
+      toIndex >= current.length ||
+      fromIndex === toIndex
+    ) {
+      setGalleryDragIndex(null)
+      setGalleryDragOverIndex(null)
+      return
+    }
+
+    const next = [...current]
+    const fromImage = next[fromIndex]
+    const toImage = next[toIndex]
+    next[fromIndex] = toImage
+    next[toIndex] = fromImage
+
+    const toastMessage =
+      toIndex === 0 || fromIndex === 0 ? 'Cover photo updated' : 'Photos swapped'
+    await applyGalleryOrder(next, {
+      toastMessage,
+      onlyIds: [fromImage.id, toImage.id],
+    })
+  }
+
+  function onGalleryGripDragStart(event: DragEvent, index: number) {
+    event.stopPropagation()
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/plain', String(index))
+    const tile = (event.currentTarget as HTMLElement).closest('.prop-edit__gallery-tile')
+    if (tile instanceof HTMLElement) {
+      event.dataTransfer.setDragImage(tile, Math.min(60, tile.clientWidth / 2), 28)
+    }
+    setGalleryDragIndex(index)
+  }
+
+  function onGalleryTileDragOver(event: DragEvent, index: number) {
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'move'
+    if (galleryDragOverIndex !== index) setGalleryDragOverIndex(index)
+  }
+
+  function onGalleryTileDrop(index: number) {
+    if (galleryDragIndex == null || galleryDragIndex === index) {
+      setGalleryDragIndex(null)
+      setGalleryDragOverIndex(null)
+      return
+    }
+    void swapGalleryImages(galleryDragIndex, index)
+  }
+
+  function onGalleryFilesDropped(event: DragEvent) {
+    event.preventDefault()
+    setGalleryFileDrag(false)
+    const files = event.dataTransfer?.files ? Array.from(event.dataTransfer.files).filter((f) => f.type.startsWith('image/')) : []
+    if (files.length) void onUpload(files, 'gallery')
+  }
+
   async function onLifecycle(next: PropertyStatus) {
     if (!property) return
     setSaving(true)
@@ -934,8 +1039,14 @@ export default function AdminPropertyEditPage() {
   const revertTo = property ? revertCompleted(property.status) : null
   const stepActiveIndex = LISTING_STEPS.findIndex((s) => s.id === listingStep)
   const stepProgressPct = (stepActiveIndex / Math.max(LISTING_STEPS.length - 1, 1)) * 100
-  const galleryImages = images.filter(isGalleryImage)
-  const floorPlanImages = images.filter(isFloorPlanImage)
+  const galleryImages = images
+    .filter(isGalleryImage)
+    .slice()
+    .sort((a, b) => a.position - b.position)
+  const floorPlanImages = images
+    .filter(isFloorPlanImage)
+    .slice()
+    .sort((a, b) => a.position - b.position)
 
   return (
     <div className="admin-page admin-page--editor prop-edit">
@@ -1165,26 +1276,105 @@ export default function AdminPropertyEditPage() {
         {listingStep === 'map' ? (
           <AdminFormSection
             eyebrow="Step 3"
-            title="Location on the map"
-            lede="Drag the pin to the exact spot — same as posting on Bazaraki. Add floor-plan images below for the website."
+            title="Location map on the website"
+            lede="Available to every CMS admin (including listings@unitedproperties.com). Turn the map on, place the pin, then save — buyers will see it on the property page."
           >
-            <PropertyMapPinPicker
-              latitude={num(form.latitude)}
-              longitude={num(form.longitude)}
-              label={
-                form.district && form.area
-                  ? `${form.district} — ${form.area}`
-                  : form.district || undefined
-              }
-              defaultCenter={(() => {
-                const coords = getDistrictCoordinates(form.bazaraki_district_id)
-                return coords ? {lat: coords.latitude, lng: coords.longitude} : null
-              })()}
-              onChange={({latitude, longitude}) => {
-                setField('latitude', String(latitude))
-                setField('longitude', String(longitude))
-              }}
-            />
+            <div className="prop-edit__map-guide" role="note">
+              <div className="prop-edit__map-guide-head">
+                <span className="prop-edit__map-guide-icon" aria-hidden>
+                  <MapPinned size={18} strokeWidth={2} />
+                </span>
+                <div>
+                  <h3 className="prop-edit__map-guide-title">How to add the location map</h3>
+                  <p className="prop-edit__map-guide-lede">
+                    Works the same for every admin login — click the map to drop the pin. No API keys
+                    or developer setup needed in the CMS.
+                  </p>
+                </div>
+              </div>
+              <ol className="prop-edit__map-guide-steps">
+                <li>
+                  Switch <strong>Show location map on website</strong> to on.
+                </li>
+                <li>Click or tap the map to drop the pin, then drag it to the exact spot.</li>
+                <li>
+                  Click <strong>Save</strong> (and publish when ready). Buyers then see the map on the
+                  listing.
+                </li>
+              </ol>
+              <p className="prop-edit__map-guide-note">
+                Leave the switch off if the address should stay private — the website will show{' '}
+                <strong>Location — on request</strong> instead.
+              </p>
+            </div>
+
+            <div className="prop-edit__map-visibility">
+              <AdminToggle
+                label="Show location map on website"
+                description={
+                  form.show_location_map
+                    ? 'On — visitors will see the Google Map and pin on this property page after you save.'
+                    : 'Off — visitors will see “Location — on request” instead of a map.'
+                }
+                checked={form.show_location_map}
+                onChange={(checked) => {
+                  setField('show_location_map', checked)
+                  if (checked && (!form.latitude || !form.longitude)) {
+                    const coords = getDistrictCoordinates(form.bazaraki_district_id)
+                    if (coords) {
+                      setField('latitude', String(coords.latitude))
+                      setField('longitude', String(coords.longitude))
+                    }
+                  }
+                }}
+              />
+              <p
+                className={`prop-edit__map-status${form.show_location_map ? ' is-on' : ' is-off'}`}
+                role="status"
+              >
+                {form.show_location_map ? (
+                  form.latitude && form.longitude ? (
+                    <>
+                      Website status: <strong>Map will show</strong> at the pin below.
+                    </>
+                  ) : (
+                    <>
+                      Website status: map is on — <strong>place a pin</strong> on the map below.
+                    </>
+                  )
+                ) : (
+                  <>
+                    Website status: <strong>Location — on request</strong> (no map).
+                  </>
+                )}
+              </p>
+            </div>
+
+            {form.show_location_map ? (
+              <PropertyMapPinPicker
+                latitude={num(form.latitude)}
+                longitude={num(form.longitude)}
+                label={
+                  form.district && form.area
+                    ? `${form.district} — ${form.area}`
+                    : form.district || undefined
+                }
+                defaultCenter={(() => {
+                  const coords = getDistrictCoordinates(form.bazaraki_district_id)
+                  return coords ? {lat: coords.latitude, lng: coords.longitude} : null
+                })()}
+                onChange={({latitude, longitude}) => {
+                  setField('latitude', String(latitude))
+                  setField('longitude', String(longitude))
+                }}
+              />
+            ) : (
+              <p className="prop-edit__map-on-request" role="status">
+                Map is off for this listing. Buyers will see <strong>Location — on request</strong> on
+                the property page. Turn the toggle on above to place a pin — this works for the
+                listings admin account the same as any other CMS login.
+              </p>
+            )}
 
             <div className="prop-edit__floor-plans">
               <div className="prop-edit__floor-plans-head">
@@ -1931,99 +2121,200 @@ export default function AdminPropertyEditPage() {
             <AdminFormSection
               eyebrow="Step 5"
               title="Images"
-              lede="Ads with good photos get more attention. First image is the title image."
+              lede="Upload photos, then drag them into the order you want. The first photo is the cover on the website."
             >
-              <div className="admin-field admin-file-upload">
-                <label htmlFor="property-images">Images</label>
-                <p className="admin-file-upload__hint">
-                  Select one or many photos at once — they upload immediately.
-                  {uploadingImages ? ' Uploading…' : ''}
-                </p>
-                <input
-                  id="property-images"
-                  className="admin-file-input"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  disabled={uploadingImages}
-                  onChange={(e) => {
-                    // Copy files before clearing — FileList is live and becomes empty when value is reset.
-                    const selected = e.target.files ? Array.from(e.target.files) : []
-                    e.target.value = ''
-                    void onUpload(selected)
+              <div className="prop-edit__gallery">
+                <div className="prop-edit__gallery-guide" role="note">
+                  <strong>Cover photo</strong>
+                  <span>
+                    Photo #1 is the large hero image visitors see first. Drag a photo onto another to
+                    swap only those two, or use “Make cover”.
+                  </span>
+                </div>
+
+                <label
+                  className={`prop-edit__gallery-drop${uploadingImages ? ' is-busy' : ''}${galleryFileDrag ? ' is-dragover' : ''}`}
+                  htmlFor="property-images"
+                  onDragEnter={(e) => {
+                    e.preventDefault()
+                    setGalleryFileDrag(true)
                   }}
-                />
-              </div>
-              <div className="admin-images">
-                {galleryImages.map((img, index) => (
-                  <div className="admin-image-tile" key={img.id}>
-                    <img src={img.image_url} alt={img.alt_text || ''} />
-                    <div className="admin-image-tile__actions">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          void setFeaturedImage(img.property_id, img.id).then(() => {
-                            setImages((prev) =>
-                              prev.map((row) =>
-                                isGalleryImage(row)
-                                  ? {...row, is_featured: row.id === img.id}
-                                  : row,
-                              ),
-                            )
-                            toast.success('Featured image updated')
-                          })
-                        }
-                      >
-                        {img.is_featured ? 'Main' : 'Set main'}
-                      </button>
-                      <button
-                        type="button"
-                        disabled={index === 0}
-                        onClick={() => {
-                          const next = [...galleryImages]
-                          ;[next[index - 1], next[index]] = [next[index], next[index - 1]]
-                          setImages((prev) => [
-                            ...next,
-                            ...prev.filter(isFloorPlanImage),
-                          ])
-                          void reorderPropertyImages(
-                            next.map((row, position) => ({id: row.id, position})),
-                          )
-                        }}
-                      >
-                        ←
-                      </button>
-                      <button
-                        type="button"
-                        disabled={index === galleryImages.length - 1}
-                        onClick={() => {
-                          const next = [...galleryImages]
-                          ;[next[index + 1], next[index]] = [next[index], next[index + 1]]
-                          setImages((prev) => [
-                            ...next,
-                            ...prev.filter(isFloorPlanImage),
-                          ])
-                          void reorderPropertyImages(
-                            next.map((row, position) => ({id: row.id, position})),
-                          )
-                        }}
-                      >
-                        →
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          void deletePropertyImage(img.id, img.storage_path).then(() => {
-                            setImages((prev) => prev.filter((row) => row.id !== img.id))
-                            toast.success('Image removed')
-                          })
-                        }
-                      >
-                        Delete
-                      </button>
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    setGalleryFileDrag(true)
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault()
+                    if (e.currentTarget === e.target) setGalleryFileDrag(false)
+                  }}
+                  onDrop={onGalleryFilesDropped}
+                >
+                  <span className="prop-edit__gallery-drop-icon" aria-hidden>
+                    <Upload size={20} strokeWidth={2.1} />
+                  </span>
+                  <span className="prop-edit__gallery-drop-title">
+                    {uploadingImages
+                      ? 'Uploading photos…'
+                      : galleryFileDrag
+                        ? 'Drop photos to upload'
+                        : 'Drag & drop photos here'}
+                  </span>
+                  <span className="prop-edit__gallery-drop-hint">
+                    PNG, JPG or WEBP · multiple files allowed · they upload immediately
+                  </span>
+                  <span className="prop-edit__gallery-drop-cta">Browse files</span>
+                  <input
+                    id="property-images"
+                    className="prop-edit__gallery-input"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={uploadingImages}
+                    onChange={(e) => {
+                      const selected = e.target.files ? Array.from(e.target.files) : []
+                      e.target.value = ''
+                      void onUpload(selected, 'gallery')
+                    }}
+                  />
+                </label>
+
+                {galleryImages.length ? (
+                  <>
+                    <div className="prop-edit__gallery-toolbar">
+                      <p className="prop-edit__gallery-count">
+                        {galleryImages.length} photo{galleryImages.length === 1 ? '' : 's'}
+                      </p>
+                      <p className="prop-edit__gallery-hint">
+                        Drag the handle onto another photo to swap · 1 = cover
+                      </p>
                     </div>
-                  </div>
-                ))}
+                    <div className="prop-edit__gallery-grid" role="list" aria-label="Gallery photos">
+                      {galleryImages.map((img, index) => {
+                        const isCover = index === 0
+                        return (
+                          <div
+                            key={img.id}
+                            role="listitem"
+                            className={[
+                              'prop-edit__gallery-tile',
+                              isCover ? 'is-cover' : '',
+                              galleryDragIndex === index ? 'is-dragging' : '',
+                              galleryDragOverIndex === index && galleryDragIndex !== index
+                                ? 'is-drop-target'
+                                : '',
+                            ]
+                              .filter(Boolean)
+                              .join(' ')}
+                            onDragOver={(e) => onGalleryTileDragOver(e, index)}
+                            onDragLeave={() => {
+                              if (galleryDragOverIndex === index) setGalleryDragOverIndex(null)
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              onGalleryTileDrop(index)
+                            }}
+                          >
+                            <div className="prop-edit__gallery-tile-media">
+                              <img
+                                src={img.image_url}
+                                alt={img.alt_text || `Photo ${index + 1}`}
+                                draggable={false}
+                              />
+                              <span className="prop-edit__gallery-tile-order" aria-hidden>
+                                {index + 1}
+                              </span>
+                              {isCover ? (
+                                <span className="prop-edit__gallery-tile-cover">
+                                  <Star size={12} strokeWidth={2.2} aria-hidden />
+                                  Cover
+                                </span>
+                              ) : null}
+                              <span
+                                className="prop-edit__gallery-tile-grip"
+                                draggable
+                                title="Drag onto another photo to swap"
+                                aria-label={`Drag photo ${index + 1} to swap with another`}
+                                onDragStart={(e) => onGalleryGripDragStart(e, index)}
+                                onDragEnd={() => {
+                                  setGalleryDragIndex(null)
+                                  setGalleryDragOverIndex(null)
+                                }}
+                              >
+                                <GripVertical size={16} strokeWidth={2} />
+                              </span>
+                            </div>
+                            <div className="prop-edit__gallery-tile-actions">
+                              {!isCover ? (
+                                <button
+                                  type="button"
+                                  className="prop-edit__gallery-tile-btn prop-edit__gallery-tile-btn--cover"
+                                  onClick={() => {
+                                    const next = [...galleryImages]
+                                    const [moved] = next.splice(index, 1)
+                                    next.unshift(moved)
+                                    void applyGalleryOrder(next, {toastMessage: 'Cover photo updated'})
+                                  }}
+                                >
+                                  Make cover
+                                </button>
+                              ) : (
+                                <span className="prop-edit__gallery-tile-cover-note">Website hero</span>
+                              )}
+                              <button
+                                type="button"
+                                className="prop-edit__gallery-tile-btn"
+                                disabled={index === 0}
+                                aria-label="Move photo earlier"
+                                onClick={() => {
+                                  const next = [...galleryImages]
+                                  ;[next[index - 1], next[index]] = [next[index], next[index - 1]]
+                                  void applyGalleryOrder(next)
+                                }}
+                              >
+                                ←
+                              </button>
+                              <button
+                                type="button"
+                                className="prop-edit__gallery-tile-btn"
+                                disabled={index === galleryImages.length - 1}
+                                aria-label="Move photo later"
+                                onClick={() => {
+                                  const next = [...galleryImages]
+                                  ;[next[index + 1], next[index]] = [next[index], next[index + 1]]
+                                  void applyGalleryOrder(next)
+                                }}
+                              >
+                                →
+                              </button>
+                              <button
+                                type="button"
+                                className="prop-edit__gallery-tile-btn prop-edit__gallery-tile-btn--danger"
+                                onClick={() =>
+                                  void deletePropertyImage(img.id, img.storage_path).then(async () => {
+                                    const remaining = galleryImages.filter((row) => row.id !== img.id)
+                                    if (remaining.length) {
+                                      await applyGalleryOrder(remaining)
+                                    } else {
+                                      setImages((prev) => prev.filter((row) => row.id !== img.id))
+                                    }
+                                    toast.success('Image removed')
+                                  })
+                                }
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <p className="prop-edit__gallery-empty" role="status">
+                    No photos yet. Drop files above or browse to add the cover photo first.
+                  </p>
+                )}
               </div>
             </AdminFormSection>
 
@@ -2065,7 +2356,7 @@ export default function AdminPropertyEditPage() {
               className="admin-publish-section"
               eyebrow="Step 6"
               title="Publishing"
-              lede="Location and map pin are already set — they feed both the website and Bazaraki."
+              lede="Control website and Bazaraki visibility. The location map is controlled in Step 3 by any CMS admin."
             >
               <div className="admin-toggle-group">
                 <AdminToggle
@@ -2076,7 +2367,7 @@ export default function AdminPropertyEditPage() {
                 />
                 <AdminToggle
                   label="Featured Property"
-                  description="Highlight on the homepage and featured modules"
+                  description="Highlight on the homepage and featured modules — uses this listing’s cover photo (#1)"
                   checked={form.featured}
                   onChange={(checked) => setField('featured', checked)}
                 />
@@ -2086,6 +2377,22 @@ export default function AdminPropertyEditPage() {
                   checked={form.publish_to_bazaraki}
                   onChange={(checked) => setField('publish_to_bazaraki', checked)}
                 />
+              </div>
+
+              <div className="prop-edit__publish-map-summary" role="status">
+                <div>
+                  <strong>Location map</strong>
+                  <p>
+                    {form.show_location_map
+                      ? form.latitude && form.longitude
+                        ? 'On — pin is set. Buyers will see the map on the property page.'
+                        : 'On — still needs a pin. Open Step 3 to place it.'
+                      : 'Off — buyers will see “Location — on request”.'}
+                  </p>
+                </div>
+                <button type="button" className="admin-btn admin-btn--ghost" onClick={() => goToStep('map')}>
+                  Edit map (Step 3)
+                </button>
               </div>
 
               {form.bazaraki_district_id != null ? (
@@ -2447,6 +2754,7 @@ function toPayloadSafe(form: FormState) {
       address: form.address,
       latitude: num(form.latitude),
       longitude: num(form.longitude),
+      show_location_map: form.show_location_map,
       bazaraki_district_id: form.bazaraki_district_id,
       postal_code: form.postal_code || null,
       bazaraki_must_haves: form.bazaraki_must_haves,

@@ -17,7 +17,7 @@ function CTASection({ title, description, primaryTo = '/properties', primaryLabe
     )
 
   return (
-    <section className="cta-section section">
+    <section className="cta-section section" data-cms-page="home" data-cms-section="cta">
       <div className="container">
         <div className="cta-section__panel">
           <h2>{resolvedTitle}</h2>

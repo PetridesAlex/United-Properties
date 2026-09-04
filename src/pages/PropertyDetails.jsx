@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useParams } from 'react-router-dom'
 import {
@@ -12,7 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LayoutTemplate,
-  Map,
+  Map as MapIcon,
   Mail,
   Phone,
   ArrowUpRight,
@@ -22,13 +22,13 @@ import {
   X,
   ZoomIn,
 } from 'lucide-react'
-import { WhatsAppBrandIcon } from '../components/Navbar/SocialBrandIcons'
 import Gallery from '../components/Gallery/Gallery'
 import InquiryForm from '../components/InquiryForm/InquiryForm'
 import SectionHeader from '../components/SectionHeader/SectionHeader'
 import PropertyCard from '../components/PropertyCard/PropertyCard'
 import AnimatedStatValue from '../components/PropertyDetails/AnimatedStatValue'
 import PropertyLocationMap from '../components/PropertyDetails/PropertyLocationMap'
+import PropertyShareMenu from '../components/PropertyDetails/PropertyShareMenu'
 import { agents } from '../data/agents'
 import { useMergedProperties } from '../hooks/useMergedProperties'
 import { useSiteContent } from '../hooks/useSiteContent'
@@ -40,6 +40,30 @@ import './PropertyDetails.css'
 
 const DESCRIPTION_PREVIEW_CHARS = 280
 const SIMILAR_MAX = 3
+
+const PROPERTY_SECTION_IDS = [
+  'property-overview',
+  'property-description',
+  'property-details',
+  'property-amenities',
+  'property-floorplans',
+  'property-location',
+  'property-enquire',
+]
+
+function scrollToPropertySection(id) {
+  const el = document.getElementById(id)
+  if (!el) return
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function hasStatValue(value) {
+  if (value == null) return false
+  if (typeof value === 'number') return Number.isFinite(value)
+  const text = String(value).trim()
+  if (!text) return false
+  return text.toUpperCase() !== 'N/A'
+}
 
 /** Split listing copy into short readable paragraphs. */
 function splitDescriptionParagraphs(text) {
@@ -115,6 +139,8 @@ function PropertyDetails() {
   const [overviewRef, overviewInView] = useInViewOnce()
   const [floorPlanIndex, setFloorPlanIndex] = useState(0)
   const [floorPlanLightboxOpen, setFloorPlanLightboxOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('property-description')
+  const sectionNavRef = useRef(null)
 
   const property = useMemo(
     () => allProperties.find((item) => item.slug === slug),
@@ -139,10 +165,61 @@ function PropertyDetails() {
   useEffect(() => {
     setFloorPlanIndex(0)
     setFloorPlanLightboxOpen(false)
+    setActiveSection('property-description')
   }, [property?.id])
 
   useEffect(() => {
-    if (!floorPlanLightboxOpen) return
+    if (!property) return undefined
+
+    const observed = PROPERTY_SECTION_IDS.map((id) => document.getElementById(id)).filter(Boolean)
+    if (!observed.length) return undefined
+
+    const visibility = new Map()
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          visibility.set(entry.target.id, entry.isIntersecting ? entry.intersectionRatio : 0)
+        }
+        let bestId = null
+        let bestRatio = 0
+        for (const id of PROPERTY_SECTION_IDS) {
+          const ratio = visibility.get(id) || 0
+          if (ratio > bestRatio) {
+            bestRatio = ratio
+            bestId = id
+          }
+        }
+        if (bestId) setActiveSection(bestId)
+      },
+      {
+        root: null,
+        rootMargin: '-28% 0px -52% 0px',
+        threshold: [0, 0.15, 0.35, 0.55, 0.75],
+      },
+    )
+
+    observed.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [
+    property?.id,
+    property?.description,
+    property?.features,
+    property?.showLocationMap,
+    floorPlanImages.length,
+  ])
+
+  useEffect(() => {
+    const track = sectionNavRef.current
+    if (!track) return
+    const active = track.querySelector('.property-details__section-nav-link.is-active')
+    if (!(active instanceof HTMLElement)) return
+    // Horizontal only — never call scrollIntoView (it fights page scroll / sticky).
+    const left = active.offsetLeft - (track.clientWidth - active.offsetWidth) / 2
+    track.scrollTo({ left: Math.max(0, left), behavior: 'smooth' })
+  }, [activeSection])
+
+  useEffect(() => {
+    if (!floorPlanLightboxOpen) return undefined
     function onKey(e) {
       if (e.key === 'Escape') {
         e.preventDefault()
@@ -224,11 +301,90 @@ function PropertyDetails() {
     area: property.area,
     district: property.district,
   })
-  const hasMapPin = Boolean(mapCoords)
-  const mapLatitude = mapCoords?.latitude ?? null
-  const mapLongitude = mapCoords?.longitude ?? null
+  const showLocationMap = Boolean(property.showLocationMap)
+  const hasMapPin = showLocationMap && Boolean(mapCoords)
+  const mapLatitude = hasMapPin ? mapCoords.latitude : null
+  const mapLongitude = hasMapPin ? mapCoords.longitude : null
   const showInfoTiles = !hasFloorPlans || !hasMapPin
   const mapZoom = mapCoords?.source === 'city' ? 12 : mapCoords?.source === 'pin' ? 15 : 14
+
+  const overviewStats = [
+    hasStatValue(property.bedrooms)
+      ? {
+          id: 'bedrooms',
+          value: property.bedrooms,
+          label: get('property', 'stats', 'label_bedrooms', 'Bedrooms'),
+          icon: BedDouble,
+          duration: 900,
+        }
+      : null,
+    hasStatValue(property.bathrooms)
+      ? {
+          id: 'bathrooms',
+          value: property.bathrooms,
+          label: get('property', 'stats', 'label_bathrooms', 'Bathrooms'),
+          icon: Bath,
+          duration: 950,
+          className: 'property-details__stat--bath',
+        }
+      : null,
+    hasStatValue(property.sqm)
+      ? {
+          id: 'sqm',
+          value: property.sqm,
+          label: get('property', 'stats', 'label_sqm', 'sqm internal area'),
+          icon: Ruler,
+          duration: 1200,
+        }
+      : null,
+    hasStatValue(property.plotSize)
+      ? {
+          id: 'plot',
+          value: property.plotSize,
+          label: get('property', 'stats', 'label_plot', 'sqm plot size'),
+          icon: LandPlot,
+          duration: 1200,
+        }
+      : null,
+    hasStatValue(property.parking)
+      ? {
+          id: 'parking',
+          value: property.parking,
+          label: get('property', 'stats', 'label_parking', 'Parking'),
+          icon: Car,
+          duration: 1000,
+        }
+      : null,
+    hasStatValue(property.yearBuilt)
+      ? {
+          id: 'built',
+          value: property.yearBuilt,
+          label: get('property', 'stats', 'label_built', 'Built in'),
+          icon: CalendarClock,
+          duration: 1400,
+        }
+      : null,
+  ].filter(Boolean)
+
+  const sectionLinks = [
+    overviewStats.length
+      ? { id: 'property-overview', label: get('property', 'nav', 'overview', 'Overview') }
+      : null,
+    { id: 'property-description', label: get('property', 'nav', 'description', 'Description') },
+    attributeFacts.length > 0 || attributeMeta.length > 0
+      ? { id: 'property-details', label: get('property', 'nav', 'details', 'Property details') }
+      : null,
+    featureList.length > 0
+      ? { id: 'property-amenities', label: get('property', 'nav', 'amenities', 'Amenities') }
+      : null,
+    hasFloorPlans
+      ? { id: 'property-floorplans', label: get('property', 'nav', 'floorplans', 'Floor plans') }
+      : null,
+    hasMapPin
+      ? { id: 'property-location', label: get('property', 'nav', 'location', 'Location') }
+      : null,
+    { id: 'property-enquire', label: get('property', 'nav', 'enquire', 'Enquire') },
+  ].filter(Boolean)
 
   return (
     <>
@@ -236,44 +392,77 @@ function PropertyDetails() {
         <title>{property.title} | United Properties</title>
       </Helmet>
 
-      <section
-        className={`page-hero page-hero--property properties-hero ${
-          property.status === 'For Rent' ? 'properties-hero--rent' : 'properties-hero--buy'
-        }`.trim()}
-      >
-        <div className="container property-details__hero-inner">
-          <div className="property-details__hero-meta" aria-label="Listing details">
-            <span
-              className={`property-details__hero-badge property-details__hero-badge--status property-details__hero-badge--${
-                property.status === 'For Rent'
-                  ? 'rent'
-                  : property.status === 'Sold'
-                    ? 'sold'
-                    : property.status === 'Reserved'
-                      ? 'reserved'
-                      : 'sale'
-              }`}
-            >
-              {property.status}
-            </span>
-            {property.type ? (
-              <span className="property-details__hero-badge property-details__hero-badge--type">
-                {property.type}
-              </span>
-            ) : null}
+      <section className="property-signature" aria-label="Property showcase">
+        <div className="container property-signature__inner">
+          <div className="property-signature__gallery">
+            <Gallery
+              images={property.gallery}
+              title={property.title}
+              brandLabel=""
+              statusLabel={property.status}
+            />
           </div>
-          <h1 className="property-details__hero-title">{property.title}</h1>
-          <p className="property-details__hero-location">
-            <MapPin size={16} aria-hidden /> {property.location}
-          </p>
+
+          <div className="property-signature__meta">
+            <div className="property-signature__meta-main">
+              <h1 className="property-signature__title">{property.title}</h1>
+              <p className="property-signature__location">
+                <MapPin size={15} aria-hidden />
+                <span>{property.location}</span>
+              </p>
+              <p
+                className="property-signature__price"
+                aria-label={`Price EUR ${property.price.toLocaleString()}${
+                  property.status === 'For Rent' ? ' per month' : ''
+                }`}
+              >
+                <span className="property-signature__price-currency">EUR</span>
+                <span className="property-signature__price-figure">
+                  {property.price.toLocaleString()}
+                </span>
+                {property.status === 'For Rent' ? (
+                  <span className="property-signature__price-period">
+                    {get('property', 'stats', 'price_period', '/ month')}
+                  </span>
+                ) : null}
+              </p>
+              <ul className="property-signature__facts" aria-label="Key facts">
+                {hasStatValue(property.bedrooms) ? (
+                  <li>
+                    {property.bedrooms} {get('property', 'stats', 'label_bedrooms', 'Bedrooms')}
+                  </li>
+                ) : null}
+                {hasStatValue(property.bathrooms) ? (
+                  <li>
+                    {property.bathrooms} {get('property', 'stats', 'label_bathrooms', 'Bathrooms')}
+                  </li>
+                ) : null}
+                {hasStatValue(property.sqm) ? (
+                  <li>
+                    {property.sqm} {get('property', 'stats', 'label_sqm', 'sqm')}
+                  </li>
+                ) : null}
+                {hasStatValue(property.plotSize) ? (
+                  <li>
+                    {property.plotSize} {get('property', 'stats', 'label_plot', 'sqm plot')}
+                  </li>
+                ) : null}
+              </ul>
+            </div>
+
+            <div className="property-signature__actions">
+              <PropertyShareMenu
+                property={property}
+                whatsappLabel={get('property', 'actions', 'whatsapp_title', 'Chat on WhatsApp')}
+                pdfLabel={get('property', 'actions', 'pdf_title', 'Download PDF')}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
       <section className="section section--light property-details__main">
         <div className="container property-details">
-          <div className="property-details__gallery">
-            <Gallery images={property.gallery} title={property.title} />
-          </div>
           {property.brochureUrl ? (
             <div className="property-details__brochure">
               <a
@@ -293,146 +482,70 @@ function PropertyDetails() {
             </div>
           ) : null}
 
-          <div className="property-details__head">
-            <div className="property-details__head-row">
-              <div className="property-details__head-primary">
-                <p
-                  className={`property-details__status property-details__status--${
-                    property.status === 'For Rent'
-                      ? 'rent'
-                      : property.status === 'Sold' || property.status === 'Rented'
-                        ? 'sold'
-                        : property.status === 'Reserved'
-                          ? 'reserved'
-                          : 'sale'
-                  }`}
-                >
-                  {property.status}
-                </p>
-                <h2
-                  className="property-details__price"
-                  aria-label={`Price EUR ${property.price.toLocaleString()}${
-                    property.status === 'For Rent' ? ' per month' : ''
-                  }`}
-                >
-                  <span className="property-details__price-inner">
-                    <span className="property-details__price-currency">EUR</span>
-                    <span className="property-details__price-figure">
-                      {property.price.toLocaleString()}
+          {overviewStats.length ? (
+            <div
+              ref={overviewRef}
+              id="property-overview"
+              key={property.id}
+              className="property-details__overview"
+              style={{ '--overview-cols': String(Math.min(overviewStats.length, 6)) }}
+              aria-label="Property key facts"
+            >
+              {overviewStats.map((stat) => {
+                const Icon = stat.icon
+                return (
+                  <div
+                    key={stat.id}
+                    className={['property-details__stat', stat.className].filter(Boolean).join(' ')}
+                  >
+                    <span className="property-details__stat-icon" aria-hidden="true">
+                      <Icon size={15} strokeWidth={1.9} />
                     </span>
-                    {property.status === 'For Rent' ? (
-                      <span className="property-details__price-period">
-                        {get('property', 'stats', 'price_period', '/ month')}
-                      </span>
-                    ) : null}
-                  </span>
-                </h2>
-              </div>
-              <a
-                className="property-details__whatsapp"
-                href="https://wa.me/35700000000"
-                target="_blank"
-                rel="noreferrer"
-                aria-label={get('property', 'actions', 'whatsapp_title', 'Chat on WhatsApp')}
-              >
-                <span className="property-details__whatsapp-iconWrap" aria-hidden="true">
-                  <span className="property-details__whatsapp-pulse" />
-                  <WhatsAppBrandIcon size={20} className="property-details__whatsapp-brandIcon" />
-                </span>
-                <span className="property-details__whatsapp-title">
-                  <span className="property-details__whatsapp-title-text">
-                    {get('property', 'actions', 'whatsapp_title', 'Chat on WhatsApp')}
-                  </span>
-                  <span className="property-details__whatsapp-dots" aria-hidden="true">
-                    <i />
-                    <i />
-                    <i />
-                  </span>
-                </span>
-              </a>
+                    <span className="property-details__stat-copy">
+                      <AnimatedStatValue
+                        value={stat.value}
+                        active={overviewInView}
+                        duration={stat.duration}
+                      />
+                      <span className="property-details__stat-label">{stat.label}</span>
+                    </span>
+                  </div>
+                )
+              })}
             </div>
-          </div>
+          ) : null}
 
-          <div
-            ref={overviewRef}
-            key={property.id}
-            className="property-details__overview"
-            aria-label="Property key facts"
+          <nav
+            ref={sectionNavRef}
+            className="property-details__section-nav"
+            aria-label="Property sections"
           >
-            <div className="property-details__stat">
-              <span className="property-details__stat-icon" aria-hidden="true">
-                <BedDouble size={22} strokeWidth={1.85} />
-              </span>
-              <span className="property-details__stat-copy">
-                <AnimatedStatValue value={property.bedrooms} active={overviewInView} duration={900} />
-                <span className="property-details__stat-label">
-                  {get('property', 'stats', 'label_bedrooms', 'Bedrooms')}
-                </span>
-              </span>
+            <div className="property-details__section-nav-track">
+              {sectionLinks.map((link) => (
+                <button
+                  key={link.id}
+                  type="button"
+                  className={`property-details__section-nav-link${
+                    activeSection === link.id ? ' is-active' : ''
+                  }`}
+                  aria-current={activeSection === link.id ? 'true' : undefined}
+                  onClick={() => {
+                    setActiveSection(link.id)
+                    scrollToPropertySection(link.id)
+                  }}
+                >
+                  {link.label}
+                </button>
+              ))}
             </div>
-            <div className="property-details__stat property-details__stat--bath">
-              <span className="property-details__stat-icon" aria-hidden="true">
-                <Bath size={22} strokeWidth={1.85} />
-              </span>
-              <span className="property-details__stat-copy">
-                <AnimatedStatValue value={property.bathrooms} active={overviewInView} duration={950} />
-                <span className="property-details__stat-label">
-                  {get('property', 'stats', 'label_bathrooms', 'Bathrooms')}
-                </span>
-              </span>
-            </div>
-            <div className="property-details__stat">
-              <span className="property-details__stat-icon" aria-hidden="true">
-                <Ruler size={22} strokeWidth={1.85} />
-              </span>
-              <span className="property-details__stat-copy">
-                <AnimatedStatValue value={property.sqm} active={overviewInView} duration={1200} />
-                <span className="property-details__stat-label">
-                  {get('property', 'stats', 'label_sqm', 'sqm internal area')}
-                </span>
-              </span>
-            </div>
-            <div className="property-details__stat">
-              <span className="property-details__stat-icon" aria-hidden="true">
-                <LandPlot size={22} strokeWidth={1.85} />
-              </span>
-              <span className="property-details__stat-copy">
-                <AnimatedStatValue
-                  value={property.plotSize || 'N/A'}
-                  active={overviewInView}
-                  duration={1200}
-                />
-                <span className="property-details__stat-label">
-                  {get('property', 'stats', 'label_plot', 'sqm plot size')}
-                </span>
-              </span>
-            </div>
-            <div className="property-details__stat">
-              <span className="property-details__stat-icon" aria-hidden="true">
-                <Car size={22} strokeWidth={1.85} />
-              </span>
-              <span className="property-details__stat-copy">
-                <AnimatedStatValue value={property.parking} active={overviewInView} duration={1000} />
-                <span className="property-details__stat-label">
-                  {get('property', 'stats', 'label_parking', 'Parking')}
-                </span>
-              </span>
-            </div>
-            <div className="property-details__stat">
-              <span className="property-details__stat-icon" aria-hidden="true">
-                <CalendarClock size={22} strokeWidth={1.85} />
-              </span>
-              <span className="property-details__stat-copy">
-                <AnimatedStatValue value={property.yearBuilt} active={overviewInView} duration={1400} />
-                <span className="property-details__stat-label">
-                  {get('property', 'stats', 'label_built', 'Built in')}
-                </span>
-              </span>
-            </div>
-          </div>
+          </nav>
 
           <div className="property-details__content-grid">
-            <article className="property-details__description" aria-labelledby="property-description-title">
+            <article
+              id="property-description"
+              className="property-details__description"
+              aria-labelledby="property-description-title"
+            >
               <header className="property-details__description-header">
                 <span className="property-details__description-eyebrow">
                   <Sparkles size={14} strokeWidth={2.2} aria-hidden />
@@ -467,6 +580,7 @@ function PropertyDetails() {
 
               {(attributeFacts.length > 0 || attributeMeta.length > 0) ? (
                 <section
+                  id="property-details"
                   className="property-details__attrs"
                   aria-labelledby="property-attributes-title"
                 >
@@ -507,6 +621,7 @@ function PropertyDetails() {
 
               {featureList.length > 0 ? (
                 <section
+                  id="property-amenities"
                   className="property-details__amenities-section"
                   aria-labelledby="amenities-heading"
                 >
@@ -523,6 +638,7 @@ function PropertyDetails() {
 
               {hasFloorPlans ? (
                 <section
+                  id="property-floorplans"
                   className="property-details__floorplans"
                   aria-labelledby="floorplans-heading"
                 >
@@ -634,22 +750,24 @@ function PropertyDetails() {
               ) : null}
 
               {hasMapPin && mapLatitude != null && mapLongitude != null ? (
-                <PropertyLocationMap
-                  latitude={mapLatitude}
-                  longitude={mapLongitude}
-                  title={property.title}
-                  locationLabel={property.location || property.address || undefined}
-                  heading={locationHeading}
-                  zoom={mapZoom}
-                  lede={get(
-                    'property',
-                    'location_map',
-                    'lede',
-                    mapCoords?.source === 'pin'
-                      ? 'Exact pin from the listing — explore the neighbourhood on the map.'
-                      : 'Location based on the listing area — open Google Maps for directions.',
-                  )}
-                />
+                <div id="property-location">
+                  <PropertyLocationMap
+                    latitude={mapLatitude}
+                    longitude={mapLongitude}
+                    title={property.title}
+                    locationLabel={property.location || property.address || undefined}
+                    heading={locationHeading}
+                    zoom={mapZoom}
+                    lede={get(
+                      'property',
+                      'location_map',
+                      'lede',
+                      mapCoords?.source === 'pin'
+                        ? 'Exact pin from the listing — explore the neighbourhood on the map.'
+                        : 'Location based on the listing area — open Google Maps for directions.',
+                    )}
+                  />
+                </div>
               ) : null}
 
               {showInfoTiles ? (
@@ -687,10 +805,10 @@ function PropertyDetails() {
                     <div
                       className="property-details__info-tile"
                       role="group"
-                      aria-label={`${locationHeading} map — pin not set`}
+                      aria-label={`${locationHeading} — available on request`}
                     >
                       <span className="property-details__info-tile-icon" aria-hidden="true">
-                        <Map size={22} strokeWidth={2} />
+                        <MapIcon size={22} strokeWidth={2} />
                       </span>
                       <div className="property-details__info-tile-copy">
                         <h4>{locationHeading}</h4>
@@ -698,13 +816,13 @@ function PropertyDetails() {
                           {get(
                             'property',
                             'info_tiles',
-                            'location_empty',
-                            'Map pin will appear here once the listing location is set.',
+                            'location_on_request',
+                            'Map and neighbourhood details available on request from our team.',
                           )}
                         </p>
                       </div>
                       <span className="property-details__info-tile-hint">
-                        {get('property', 'info_tiles', 'location_hint_pending', 'Pending')}
+                        {get('property', 'info_tiles', 'location_hint_request', 'Request')}
                       </span>
                     </div>
                   ) : null}
@@ -776,7 +894,7 @@ function PropertyDetails() {
               ) : null}
             </article>
 
-            <aside className="property-details__sidebar">
+            <aside id="property-enquire" className="property-details__sidebar">
               {agent && (
                 <article className="card-luxury property-details__agent">
                   <div className="property-details__agent-head">
@@ -836,14 +954,10 @@ function PropertyDetails() {
         </div>
       </section>
 
-      <section className="section section--alt">
+      <section className="section section--light property-details__similar-section">
         <div className="container property-details__similar">
           <div className="property-details__similar-heading">
-            <span className="property-details__similar-heading__accent" aria-hidden="true" />
             <div className="property-details__similar-heading__main">
-              <span className="property-details__similar-heading__icon" aria-hidden="true">
-                <Sparkles size={22} strokeWidth={2} />
-              </span>
               <div className="property-details__similar-heading__copy">
                 <SectionHeader
                   className="property-details__similar-header"
@@ -853,7 +967,7 @@ function PropertyDetails() {
                     'property',
                     'similar',
                     'description',
-                    'More listings that fit this home—matched by area, status, or price band. Open any card for the full story.',
+                    'More listings that fit this home—matched by area, status, or price band.',
                   )}
                 />
               </div>

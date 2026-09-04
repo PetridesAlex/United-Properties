@@ -2929,11 +2929,44 @@ body:has(.admin-entry) main {
   max-width: none !important;
 }
 
+.admin-map-pin__leaflet-icon {
+  background: transparent;
+  border: 0;
+}
+
+.admin-map-pin__leaflet-marker {
+  display: block;
+  width: 28px;
+  height: 36px;
+  background:
+    radial-gradient(circle at 50% 38%, #fff8ef 0 28%, transparent 29%),
+    radial-gradient(circle at 50% 38%, #bf9875 0 42%, transparent 43%),
+    linear-gradient(180deg, #d4b08a 0%, #bf9875 55%, #8f6a4a 100%);
+  clip-path: polygon(50% 100%, 92% 42%, 92% 22%, 75% 6%, 50% 0, 25% 6%, 8% 22%, 8% 42%);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
+}
+
+.admin-map-pin__canvas .leaflet-container {
+  font: inherit;
+  background: #0c1420;
+  z-index: 1;
+}
+
+.admin-map-pin__canvas .leaflet-control-attribution {
+  font-size: 0.65rem;
+  background: rgba(12, 18, 28, 0.72);
+  color: rgba(244, 239, 230, 0.72);
+}
+
+.admin-map-pin__canvas .leaflet-control-attribution a {
+  color: #e8d2ba;
+}
+
 .admin-map-pin__hint {
   position: absolute;
   left: 50%;
   bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
-  z-index: 2;
+  z-index: 1000;
   transform: translateX(-50%);
   max-width: calc(100% - 1.5rem);
   padding: 0.55rem 0.85rem;

@@ -48,6 +48,8 @@ export interface Property {
   address: string | null
   latitude: number | null
   longitude: number | null
+  /** When true, public property page shows the interactive map */
+  show_location_map: boolean
   bedrooms: number | null
   bathrooms: number | null
   internal_area: number | null
@@ -110,6 +112,7 @@ export type PropertyInsert = {
   address?: string | null
   latitude?: number | null
   longitude?: number | null
+  show_location_map?: boolean
   bedrooms?: number | null
   bathrooms?: number | null
   internal_area?: number | null
@@ -303,6 +306,8 @@ export interface PublicPropertyCard {
   brochureFilename?: string
   latitude?: number | null
   longitude?: number | null
+  /** Admin opted in to show the interactive map on the website */
+  showLocationMap?: boolean
   /** How map coords were resolved for the public page */
   mapCoordinateSource?: 'pin' | 'district' | 'area' | 'city'
 }

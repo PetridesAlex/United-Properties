@@ -81,7 +81,12 @@ function Hero() {
 
   return (
     <>
-      <section className="hero-section" ref={sectionRef}>
+      <section
+        className="hero-section"
+        ref={sectionRef}
+        data-cms-page="home"
+        data-cms-section="hero"
+      >
         <div className="hero-section__media" aria-hidden="true">
           <video
             ref={videoRef}

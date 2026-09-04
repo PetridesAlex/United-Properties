@@ -67,6 +67,7 @@ export function mapPropertyToPublicCard(property: Property): PublicPropertyCard 
     floorPlanImages,
     latitude: mapCoords?.latitude ?? null,
     longitude: mapCoords?.longitude ?? null,
+    showLocationMap: Boolean(property.show_location_map),
     mapCoordinateSource: mapCoords?.source,
     city: property.city ?? undefined,
     area: property.area ?? undefined,

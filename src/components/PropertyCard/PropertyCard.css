@@ -9,6 +9,11 @@
   border-radius: 14px;
 }
 
+.property-card.property-card--cover {
+  overflow: visible;
+  border-radius: 0;
+}
+
 .property-card__media {
   position: relative;
   overflow: hidden;
@@ -249,32 +254,29 @@
   box-shadow: none;
 }
 
-/* —— Listing grid (cover): full-bleed photo + crisp white info —— */
+/* —— Listing grid (cover): Serhant-style free photo + text, no card chrome —— */
 .property-card--cover {
   padding: 0;
-  overflow: hidden;
-  border-radius: 14px;
-  background: #ffffff;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.95) inset,
-    0 22px 56px rgba(8, 14, 28, 0.14);
+  overflow: visible;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .property-card--cover.card-luxury {
-  background: #ffffff;
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: transparent;
+  border: none;
   color: #0f172a;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.95) inset,
-    0 22px 56px rgba(8, 14, 28, 0.14);
+  box-shadow: none;
 }
 
-/* Beat global `.card-luxury p` (light text) — cover cards are white. */
+/* Beat global `.card-luxury p` (light text) — cover cards sit on light surfaces. */
 .property-card--cover.card-luxury p,
 .property-card--cover .property-card__price--cover,
-.property-card--cover .property-card__address-line {
-  color: #1e293b;
+.property-card--cover .property-card__address-line,
+.property-card--cover .property-card__specs-line {
+  color: #111827;
 }
 
 .property-card--cover .property-card__price--cover {
@@ -282,27 +284,23 @@
 }
 
 .property-card--cover .property-card__address-line {
-  color: #334155;
+  color: #1f2937;
 }
 
-.property-card--cover .property-card__spec-num {
-  color: #0a101a;
-}
-
-.property-card--cover .property-card__spec-label {
-  color: rgba(166, 124, 58, 0.92);
+.property-card--cover .property-card__specs-line {
+  color: #374151;
 }
 
 .property-card__cover-whole {
   display: grid;
-  grid-template-rows: minmax(0, auto) minmax(0, 1fr);
+  grid-template-rows: auto auto;
   grid-template-columns: minmax(0, 1fr);
   width: 100%;
   height: 100%;
   min-height: 0;
   text-decoration: none;
   color: inherit;
-  border-radius: inherit;
+  border-radius: 0;
 }
 
 .property-card__cover-whole:focus-visible {
@@ -319,23 +317,14 @@
   flex-shrink: 0;
   overflow: hidden;
   isolation: isolate;
-  aspect-ratio: 4 / 3;
-  background: #0b1220;
+  aspect-ratio: 3 / 2;
+  height: auto;
+  min-height: 0;
+  background: #e8ecf1;
 }
 
-/* Soft edge only — keep the photo fully clear */
 .property-card--cover .property-card__media::after {
-  content: '';
-  position: absolute;
-  inset: auto 0 0;
-  height: 28%;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(
-    to top,
-    rgba(8, 12, 22, 0.22) 0%,
-    rgba(8, 12, 22, 0) 100%
-  );
+  display: none;
 }
 
 .property-card--cover .property-card__media img {
@@ -353,12 +342,12 @@
 }
 
 .property-card--cover:hover .property-card__media img {
-  transform: scale(1.035);
+  transform: scale(1.03);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .property-card--cover .property-card__media::after {
-    opacity: 0.65;
+    display: none;
   }
 }
 
@@ -367,20 +356,20 @@
   top: 0.85rem;
   left: 0.85rem;
   z-index: 2;
-  padding: 0.38rem 0.65rem 0.4rem;
-  border-radius: 6px;
-  font-size: 0.64rem;
-  font-weight: 800;
-  letter-spacing: 0.11em;
+  padding: 0.4rem 0.7rem 0.42rem;
+  border-radius: 4px;
+  font-size: 0.66rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
   line-height: 1;
   text-transform: uppercase;
   pointer-events: none;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  box-shadow: none;
 }
 
 .property-card__status-pill--sale {
-  background: #b8d9f0;
-  color: #0c1e2e;
+  background: #c5dff0;
+  color: #0c2a45;
 }
 
 .property-card__status-pill--rent {
@@ -400,137 +389,106 @@
 
 .property-card__signature-pill {
   position: absolute;
-  left: 0.75rem;
-  bottom: 0.75rem;
+  left: 0;
+  bottom: 0;
   z-index: 2;
-  max-width: calc(100% - 1.5rem);
-  padding: 0.38rem 0.65rem 0.42rem;
-  border-radius: 999px;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  max-width: calc(100% - 1rem);
+  padding: 0.42rem 0.75rem 0.46rem;
+  border-radius: 0 12px 0 0;
+  font-size: 0.64rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
   line-height: 1.2;
   color: rgba(255, 255, 255, 0.96);
   background: #0a0a0a;
   pointer-events: none;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  box-shadow: none;
 }
 
 .property-card__body--cover {
-  flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 0.4rem;
   width: 100%;
   box-sizing: border-box;
-  padding: 1.15rem 1.2rem 1.25rem;
-  background: #ffffff;
-  border-top: 1px solid rgba(15, 23, 42, 0.06);
+  padding: 0.95rem 0 0.15rem;
+  background: transparent;
+  border: none;
   min-height: 0;
+  overflow: visible;
 }
 
 .property-card__price--cover {
-  margin: 0 0 0.48rem;
-  font-size: clamp(1.2rem, 2.15vw, 1.42rem);
+  margin: 0;
+  font-size: clamp(1.28rem, 2.1vw, 1.55rem);
   font-weight: 800;
-  letter-spacing: -0.025em;
-  line-height: 1.15;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
   color: #050505;
   font-family: var(--font-sans);
 }
 
 .property-card__address-line {
   margin: 0;
-  font-size: clamp(0.95rem, 1.4vw, 1.06rem);
-  font-weight: 550;
-  line-height: 1.55;
-  letter-spacing: 0.01em;
-  color: #1e293b;
+  font-size: clamp(0.94rem, 1.35vw, 1.05rem);
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: 0;
+  color: #1f2937;
   font-family: var(--font-sans);
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   overflow: hidden;
   text-wrap: pretty;
 }
 
 .property-card__specs-line {
-  margin: 0;
-  margin-top: auto;
-  padding-top: 0.95rem;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-  align-items: start;
-  border-top: 1px solid rgba(23, 38, 59, 0.1);
-  font-family: var(--font-sans);
-  line-height: 1.2;
-}
-
-.property-card__spec-pill {
+  margin: 0.2rem 0 0;
+  padding: 0.05rem 0;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.22rem;
-  padding: 0;
-  min-width: 0;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.4rem;
   border: none;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.property-card--cover .property-card__spec-pill {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
-
-.property-card__spec-num {
-  font-size: clamp(1.05rem, 2.1vw, 1.22rem);
-  font-weight: 750;
-  letter-spacing: -0.03em;
-  color: #0a101a;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-}
-
-.property-card__spec-label {
-  font-size: clamp(0.64rem, 1.15vw, 0.72rem);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
   font-weight: 650;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: rgba(138, 107, 62, 0.92);
+  line-height: 1.55;
+  color: #374151;
+  overflow: visible;
 }
 
-.property-card--cover .property-card__spec-label {
-  color: rgba(166, 124, 58, 0.88);
+.property-card__specs-line > span {
+  display: inline-block;
+  line-height: 1.55;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.property-card__specs-dot {
+  color: #9ca3af;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 @media (max-width: 720px) {
   .property-card--cover .property-card__media {
-    aspect-ratio: 5 / 4;
+    aspect-ratio: 3 / 2;
+    min-height: 0;
   }
 
   .property-card__body--cover {
-    padding: 1rem 1.05rem 1.1rem;
-  }
-
-  .property-card__specs-line {
-    gap: 0.5rem;
     padding-top: 0.85rem;
   }
 
-  .property-card__spec-pill {
-    gap: 0.18rem;
-  }
-
-  .property-card__spec-num {
-    font-size: 1.12rem;
-  }
-
-  .property-card__spec-label {
-    font-size: 0.66rem;
-    letter-spacing: 0.1em;
+  .property-card__specs-line {
+    margin-top: 0.15rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.045em;
+    line-height: 1.55;
   }
 }
 

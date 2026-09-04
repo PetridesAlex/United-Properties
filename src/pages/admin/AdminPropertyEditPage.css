@@ -337,6 +337,155 @@
   border-top: 1px solid rgba(191, 152, 117, 0.14);
 }
 
+.prop-edit__map-visibility {
+  margin-bottom: 1rem;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.prop-edit__map-guide {
+  margin: 0 0 1.15rem;
+  padding: 1.05rem 1.1rem 1.1rem;
+  display: grid;
+  gap: 0.85rem;
+  border-radius: 18px;
+  border: 1px solid rgba(191, 152, 117, 0.3);
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(191, 152, 117, 0.16), transparent 55%),
+    rgba(10, 18, 32, 0.55);
+}
+
+.prop-edit__map-guide-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.prop-edit__map-guide-icon {
+  width: 2.35rem;
+  height: 2.35rem;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(191, 152, 117, 0.35);
+  background: linear-gradient(145deg, rgba(232, 210, 186, 0.28), rgba(191, 152, 117, 0.12));
+  color: #f0dcc4;
+}
+
+.prop-edit__map-guide-title {
+  margin: 0 0 0.25rem;
+  font-size: 0.98rem;
+  font-weight: 750;
+  color: #f4efe6;
+}
+
+.prop-edit__map-guide-lede {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: rgba(244, 239, 230, 0.72);
+}
+
+.prop-edit__map-guide-steps {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.4rem;
+  color: rgba(244, 239, 230, 0.88);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.prop-edit__map-guide-steps strong {
+  color: #f0dcc4;
+  font-weight: 750;
+}
+
+.prop-edit__map-guide-note {
+  margin: 0;
+  padding-top: 0.15rem;
+  border-top: 1px solid rgba(191, 152, 117, 0.18);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: rgba(244, 239, 230, 0.68);
+}
+
+.prop-edit__map-guide-note strong {
+  color: #f0dcc4;
+  font-weight: 750;
+}
+
+.prop-edit__map-status {
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: 12px;
+  font-size: 0.84rem;
+  line-height: 1.4;
+  border: 1px solid transparent;
+}
+
+.prop-edit__map-status strong {
+  font-weight: 750;
+}
+
+.prop-edit__map-status.is-on {
+  color: rgba(232, 248, 236, 0.92);
+  border-color: rgba(76, 175, 120, 0.28);
+  background: rgba(46, 125, 80, 0.18);
+}
+
+.prop-edit__map-status.is-off {
+  color: rgba(244, 239, 230, 0.78);
+  border-color: rgba(191, 152, 117, 0.28);
+  background: rgba(191, 152, 117, 0.1);
+}
+
+.prop-edit__publish-map-summary {
+  margin-top: 1rem;
+  padding: 0.95rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  border-radius: 14px;
+  border: 1px solid rgba(191, 152, 117, 0.28);
+  background: rgba(10, 18, 32, 0.45);
+}
+
+.prop-edit__publish-map-summary strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: #f0dcc4;
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.prop-edit__publish-map-summary p {
+  margin: 0;
+  max-width: 36rem;
+  color: rgba(244, 239, 230, 0.72);
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.prop-edit__map-on-request {
+  margin: 0 0 0.25rem;
+  padding: 0.95rem 1rem;
+  border-radius: 14px;
+  border: 1px dashed rgba(191, 152, 117, 0.35);
+  background: rgba(191, 152, 117, 0.08);
+  color: rgba(244, 239, 230, 0.72);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.prop-edit__map-on-request strong {
+  color: #f0dcc4;
+  font-weight: 750;
+}
+
 .prop-edit__floor-plans {
   position: relative;
   isolation: isolate;
@@ -602,6 +751,298 @@
 .prop-edit__floor-plan-tile-actions button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.prop-edit__gallery {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.prop-edit__gallery-guide {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 14px;
+  border: 1px solid rgba(191, 152, 117, 0.3);
+  background: rgba(191, 152, 117, 0.1);
+  color: rgba(244, 239, 230, 0.72);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.prop-edit__gallery-guide strong {
+  color: #f0dcc4;
+  font-size: 0.78rem;
+  font-weight: 780;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.prop-edit__gallery-drop {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  padding: 1.35rem 1rem 1.25rem;
+  border-radius: 16px;
+  border: 1.5px dashed rgba(191, 152, 117, 0.42);
+  background: linear-gradient(180deg, rgba(191, 152, 117, 0.1), rgba(191, 152, 117, 0.03));
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.prop-edit__gallery-drop:hover,
+.prop-edit__gallery-drop:focus-within,
+.prop-edit__gallery-drop.is-dragover {
+  border-color: rgba(232, 210, 186, 0.7);
+  background: linear-gradient(180deg, rgba(191, 152, 117, 0.18), rgba(191, 152, 117, 0.06));
+  box-shadow: 0 10px 24px rgba(191, 152, 117, 0.16);
+}
+
+.prop-edit__gallery-drop.is-busy {
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.prop-edit__gallery-drop-icon {
+  width: 2.55rem;
+  height: 2.55rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(191, 152, 117, 0.35);
+  background: rgba(12, 24, 44, 0.55);
+  color: #f0dcc4;
+  margin-bottom: 0.2rem;
+}
+
+.prop-edit__gallery-drop-title {
+  color: #fff6ea;
+  font-size: 0.98rem;
+  font-weight: 750;
+}
+
+.prop-edit__gallery-drop-hint {
+  color: rgba(244, 239, 230, 0.58);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.prop-edit__gallery-drop-cta {
+  margin-top: 0.45rem;
+  padding: 0.48rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(246, 240, 230, 0.28);
+  background: linear-gradient(135deg, #f0dcc4 0%, #e2c29e 40%, #bf9875 100%);
+  color: #142033;
+  font-size: 0.78rem;
+  font-weight: 780;
+}
+
+.prop-edit__gallery-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.prop-edit__gallery-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.45rem 1rem;
+}
+
+.prop-edit__gallery-count {
+  margin: 0;
+  color: #f0dcc4;
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
+.prop-edit__gallery-hint {
+  margin: 0;
+  color: rgba(244, 239, 230, 0.55);
+  font-size: 0.78rem;
+}
+
+.prop-edit__gallery-empty {
+  margin: 0;
+  padding: 0.75rem 0.15rem 0;
+  color: rgba(244, 239, 230, 0.5);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.prop-edit__gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 0.85rem;
+}
+
+.prop-edit__gallery-tile {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(191, 152, 117, 0.24);
+  background: rgba(8, 14, 24, 0.85);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+  cursor: default;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.prop-edit__gallery-tile.is-cover {
+  border-color: rgba(191, 152, 117, 0.72);
+  box-shadow:
+    0 0 0 1px rgba(191, 152, 117, 0.28),
+    0 12px 26px rgba(191, 152, 117, 0.18);
+}
+
+.prop-edit__gallery-tile.is-dragging {
+  opacity: 0.55;
+  transform: scale(0.98);
+}
+
+.prop-edit__gallery-tile.is-drop-target {
+  border-color: rgba(125, 255, 179, 0.55);
+  box-shadow: 0 0 0 2px rgba(125, 255, 179, 0.22);
+}
+
+.prop-edit__gallery-tile-media {
+  position: relative;
+}
+
+.prop-edit__gallery-tile-media img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: #0a1220;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.prop-edit__gallery-tile-order {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  min-width: 1.55rem;
+  height: 1.55rem;
+  padding: 0 0.35rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(12, 20, 34, 0.82);
+  color: #f8f4ec;
+  font-size: 0.72rem;
+  font-weight: 780;
+  backdrop-filter: blur(8px);
+}
+
+.prop-edit__gallery-tile-cover {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(246, 240, 230, 0.35);
+  background: linear-gradient(135deg, #f0dcc4 0%, #bf9875 100%);
+  color: #142033;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.prop-edit__gallery-tile-grip {
+  position: absolute;
+  bottom: 0.45rem;
+  right: 0.45rem;
+  width: 1.7rem;
+  height: 1.7rem;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(12, 20, 34, 0.72);
+  color: #e8d2ba;
+  backdrop-filter: blur(8px);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  z-index: 2;
+}
+
+.prop-edit__gallery-tile-grip:active,
+.prop-edit__gallery-tile.is-dragging .prop-edit__gallery-tile-grip {
+  cursor: grabbing;
+}
+
+.prop-edit__gallery-tile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.5rem;
+  background: rgba(8, 16, 28, 0.9);
+  border-top: 1px solid rgba(191, 152, 117, 0.16);
+}
+
+.prop-edit__gallery-tile-btn {
+  appearance: none;
+  border: 1px solid rgba(244, 239, 230, 0.12);
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  background: rgba(244, 239, 230, 0.04);
+  color: var(--admin-muted);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.prop-edit__gallery-tile-btn:hover:not(:disabled) {
+  border-color: rgba(191, 152, 117, 0.4);
+  color: var(--admin-cream);
+  background: rgba(191, 152, 117, 0.1);
+}
+
+.prop-edit__gallery-tile-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.prop-edit__gallery-tile-btn--cover {
+  border-color: rgba(191, 152, 117, 0.4);
+  color: #f0dcc4;
+}
+
+.prop-edit__gallery-tile-btn--danger:hover:not(:disabled) {
+  border-color: rgba(255, 120, 120, 0.45);
+  color: #ffd0d0;
+  background: rgba(180, 60, 60, 0.16);
+}
+
+.prop-edit__gallery-tile-cover-note {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.65rem;
+  color: #b8f0d0;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
 }
 
 .prop-edit__floor-plan-tile-delete:hover:not(:disabled) {
@@ -1359,6 +1800,19 @@
   .prop-edit__form .admin-image-tile__actions button {
     width: 100%;
     min-height: 2.35rem;
+  }
+
+  .prop-edit__gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .prop-edit__gallery-tile-actions {
+    gap: 0.3rem;
+  }
+
+  .prop-edit__gallery-tile-btn {
+    min-height: 2.15rem;
   }
 
   .prop-edit__form .admin-publish-bazaraki {

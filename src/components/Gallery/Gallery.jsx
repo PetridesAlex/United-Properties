@@ -1,15 +1,30 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight, Minus, Plus, X, ZoomIn } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import './Gallery.css'
 
-function Gallery({ images = [], title = 'Property gallery' }) {
+const SWIPE_MIN_PX = 48
+const MOSAIC_SIDE = 4
+
+function Gallery({
+  images = [],
+  title = 'Property gallery',
+  brandLabel = '',
+  statusLabel = '',
+}) {
   const normalizedImages = useMemo(() => images.filter(Boolean), [images])
   const count = normalizedImages.length
   const [activeIndex, setActiveIndex] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [zoom, setZoom] = useState(1)
-  const thumbRefs = useRef([])
+  const [frameRatio, setFrameRatio] = useState(4 / 3)
   const lightboxRef = useRef(null)
+  const swipeRef = useRef({
+    x: 0,
+    y: 0,
+    active: false,
+    swiped: false,
+  })
 
   useEffect(() => {
     setActiveIndex((i) => (count ? Math.min(i, count - 1) : 0))
@@ -34,10 +49,16 @@ function Gallery({ images = [], title = 'Property gallery' }) {
     [count],
   )
 
-  const openLightbox = useCallback(() => {
-    setZoom(1)
-    setLightboxOpen(true)
-  }, [])
+  const openLightboxAt = useCallback(
+    (index) => {
+      if (index >= 0 && index < count) {
+        setActiveIndex(index)
+        setZoom(1)
+        setLightboxOpen(true)
+      }
+    },
+    [count],
+  )
 
   const closeLightbox = useCallback(() => {
     setLightboxOpen(false)
@@ -52,50 +73,69 @@ function Gallery({ images = [], title = 'Property gallery' }) {
     setZoom((z) => Math.max(1, Math.round((z - 0.25) * 100) / 100))
   }, [])
 
-  useEffect(() => {
-    const el = thumbRefs.current[activeIndex]
-    if (el?.scrollIntoView) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-    }
-  }, [activeIndex])
+  const onSwipeStart = useCallback(
+    (e) => {
+      if (count <= 1) return
+      const touch = e.changedTouches?.[0]
+      if (!touch) return
+      swipeRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+        active: true,
+        swiped: false,
+      }
+    },
+    [count],
+  )
+
+  const onSwipeEnd = useCallback(
+    (e) => {
+      if (!swipeRef.current.active || count <= 1) return
+      if (zoom > 1) {
+        swipeRef.current.active = false
+        return
+      }
+      const touch = e.changedTouches?.[0]
+      swipeRef.current.active = false
+      if (!touch) return
+
+      const dx = touch.clientX - swipeRef.current.x
+      const dy = touch.clientY - swipeRef.current.y
+      if (Math.abs(dx) < SWIPE_MIN_PX) return
+      if (Math.abs(dx) < Math.abs(dy) * 1.15) return
+
+      swipeRef.current.swiped = true
+      go(dx < 0 ? 1 : -1)
+    },
+    [count, go, zoom],
+  )
 
   useEffect(() => {
     function onKey(e) {
-      if (lightboxOpen) {
-        if (e.key === 'Escape') {
-          e.preventDefault()
-          closeLightbox()
-          return
-        }
-        if (e.key === 'ArrowLeft') {
-          e.preventDefault()
-          go(-1)
-          return
-        }
-        if (e.key === 'ArrowRight') {
-          e.preventDefault()
-          go(1)
-          return
-        }
-        if (e.key === '+' || e.key === '=') {
-          e.preventDefault()
-          zoomIn()
-          return
-        }
-        if (e.key === '-' || e.key === '_') {
-          e.preventDefault()
-          zoomOut()
-        }
+      if (!lightboxOpen) return
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        closeLightbox()
         return
       }
-
       if (e.key === 'ArrowLeft') {
         e.preventDefault()
         go(-1)
+        return
       }
       if (e.key === 'ArrowRight') {
         e.preventDefault()
         go(1)
+        return
+      }
+      if (e.key === '+' || e.key === '=') {
+        e.preventDefault()
+        zoomIn()
+        return
+      }
+      if (e.key === '-' || e.key === '_') {
+        e.preventDefault()
+        zoomOut()
       }
     }
     window.addEventListener('keydown', onKey)
@@ -106,226 +146,219 @@ function Gallery({ images = [], title = 'Property gallery' }) {
     if (!lightboxOpen) return undefined
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    document.documentElement.classList.add('gallery-lightbox-open')
     lightboxRef.current?.focus?.()
     return () => {
       document.body.style.overflow = previous
+      document.documentElement.classList.remove('gallery-lightbox-open')
     }
   }, [lightboxOpen])
 
-  if (!count) return null
+  const activeSrc = count ? normalizedImages[Math.min(activeIndex, count - 1)] : ''
 
-  const activeSrc = normalizedImages[activeIndex]
+  useEffect(() => {
+    if (!activeSrc) return undefined
+    let cancelled = false
+    const probe = new Image()
+    probe.onload = () => {
+      if (cancelled) return
+      const w = probe.naturalWidth
+      const h = probe.naturalHeight
+      if (w > 0 && h > 0) setFrameRatio(w / h)
+    }
+    probe.src = activeSrc
+    return () => {
+      cancelled = true
+    }
+  }, [activeSrc])
+
+  const mosaicSide = useMemo(() => {
+    if (count <= 1) return []
+    return normalizedImages.slice(1, 1 + MOSAIC_SIDE)
+  }, [normalizedImages, count])
+
+  const extraCount = Math.max(0, count - (1 + mosaicSide.length))
+  const showMoreOnLast = extraCount > 0 && mosaicSide.length === MOSAIC_SIDE
+
+  const mosaicCount = Math.min(count, 1 + MOSAIC_SIDE)
+
+  if (!count) return null
 
   return (
     <section
-      className="gallery"
+      className={`gallery gallery--mosaic gallery--mosaic-${mosaicCount}`}
       aria-label={title}
       role="region"
-      aria-roledescription="carousel"
     >
-      <div className="gallery__stage">
-        <div className="gallery__slides">
+      <div className="gallery__mosaic">
+        <button
+          type="button"
+          className="gallery__mosaic-cell gallery__mosaic-cell--hero"
+          onClick={() => openLightboxAt(0)}
+          aria-label={`Open preview — photo 1 of ${count}`}
+        >
           <img
-            className="gallery__slide-fill"
-            src={activeSrc}
+            src={normalizedImages[0]}
             alt=""
             aria-hidden="true"
+            className="gallery__mosaic-fill"
+            loading="eager"
             decoding="async"
+            draggable={false}
           />
-          {normalizedImages.map((src, i) => (
+          <img
+            src={normalizedImages[0]}
+            alt={`${title} — photo 1 of ${count}`}
+            className="gallery__mosaic-img"
+            loading="eager"
+            decoding="async"
+            draggable={false}
+          />
+          {brandLabel ? (
+            <span className="gallery__mosaic-brand">{brandLabel}</span>
+          ) : null}
+          {statusLabel ? (
+            <span className="gallery__mosaic-status">{statusLabel}</span>
+          ) : null}
+        </button>
+
+        {mosaicSide.map((src, i) => {
+          const index = i + 1
+          const isLast = i === mosaicSide.length - 1
+          const showMore = isLast && showMoreOnLast
+          return (
             <button
-              key={`${src}-${i}`}
+              key={`${src}-mosaic-${index}`}
               type="button"
-              className={`gallery__slide-btn ${i === activeIndex ? 'is-active' : ''}`}
-              onClick={openLightbox}
-              aria-label={`Open preview — photo ${i + 1} of ${count}`}
-              tabIndex={i === activeIndex ? 0 : -1}
+              className="gallery__mosaic-cell"
+              onClick={() => openLightboxAt(showMore ? index : index)}
+              aria-label={
+                showMore
+                  ? `Open gallery — ${extraCount + 1} more photos`
+                  : `Open preview — photo ${index + 1} of ${count}`
+              }
             >
               <img
                 src={src}
-                alt={i === activeIndex ? `${title} — photo ${i + 1} of ${count}` : ''}
-                className={`gallery__slide ${i === activeIndex ? 'is-active' : ''}`}
-                loading={i === 0 ? 'eager' : 'lazy'}
+                alt=""
+                aria-hidden="true"
+                className="gallery__mosaic-fill"
+                loading="lazy"
                 decoding="async"
+                draggable={false}
               />
+              <img
+                src={src}
+                alt=""
+                className="gallery__mosaic-img"
+                loading="lazy"
+                decoding="async"
+                draggable={false}
+              />
+              {showMore ? (
+                <span className="gallery__mosaic-more" aria-hidden>
+                  +{extraCount + 1}
+                </span>
+              ) : null}
             </button>
-          ))}
-        </div>
-
-        {count > 1 && (
-          <>
-            <div className="gallery__arrows gallery__arrows--sides">
-              <button
-                type="button"
-                className="gallery__arrow gallery__arrow--prev"
-                onClick={() => go(-1)}
-                aria-label="Previous image"
-              >
-                <ChevronLeft size={22} strokeWidth={2} />
-              </button>
-              <button
-                type="button"
-                className="gallery__arrow gallery__arrow--next"
-                onClick={() => go(1)}
-                aria-label="Next image"
-              >
-                <ChevronRight size={22} strokeWidth={2} />
-              </button>
-            </div>
-            <div className="gallery__toolbar">
-              <span className="gallery__counter">
-                {activeIndex + 1} <span className="gallery__counter-sep">/</span> {count}
-              </span>
-              <button
-                type="button"
-                className="gallery__zoom-hint"
-                onClick={openLightbox}
-                aria-label="Open image preview"
-              >
-                <ZoomIn size={15} strokeWidth={2.2} aria-hidden />
-                Preview
-              </button>
-            </div>
-          </>
-        )}
-
-        {count === 1 && (
-          <div className="gallery__toolbar">
-            <button
-              type="button"
-              className="gallery__zoom-hint"
-              onClick={openLightbox}
-              aria-label="Open image preview"
-            >
-              <ZoomIn size={15} strokeWidth={2.2} aria-hidden />
-              Preview
-            </button>
-          </div>
-        )}
+          )
+        })}
       </div>
 
-      {count > 1 && (
-        <div className="gallery__thumbs" role="tablist" aria-label="Gallery thumbnails">
-          {normalizedImages.map((image, index) => (
-            <button
-              key={`${image}-thumb-${index}`}
-              ref={(el) => {
-                thumbRefs.current[index] = el
-              }}
-              type="button"
-              role="tab"
-              aria-selected={activeIndex === index}
-              aria-label={`Show image ${index + 1} of ${count}`}
-              className={`gallery__thumb ${activeIndex === index ? 'is-active' : ''}`}
-              onClick={() => goTo(index)}
+      {lightboxOpen && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              className="gallery-lightbox"
+              role="dialog"
+              aria-modal="true"
+              aria-label={`${title} preview`}
+              ref={lightboxRef}
+              tabIndex={-1}
+              onClick={closeLightbox}
             >
-              <img src={image} alt="" loading="lazy" decoding="async" />
-            </button>
-          ))}
-        </div>
-      )}
+              <button
+                type="button"
+                className="gallery-lightbox__close"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  closeLightbox()
+                }}
+                aria-label="Exit image preview"
+              >
+                <X size={18} strokeWidth={2.3} aria-hidden />
+                <span>Exit</span>
+              </button>
 
-      {lightboxOpen ? (
-        <div
-          className="gallery-lightbox"
-          role="dialog"
-          aria-modal="true"
-          aria-label={`${title} preview`}
-          ref={lightboxRef}
-          tabIndex={-1}
-          onClick={closeLightbox}
-        >
-          <div className="gallery-lightbox__chrome" onClick={(e) => e.stopPropagation()}>
-            <div className="gallery-lightbox__top">
-              <span className="gallery-lightbox__counter">
-                {activeIndex + 1} / {count}
-              </span>
-              <div className="gallery-lightbox__actions">
-                <button
-                  type="button"
-                  className="gallery-lightbox__btn"
-                  onClick={zoomOut}
-                  disabled={zoom <= 1}
-                  aria-label="Zoom out"
+              <div className="gallery-lightbox__chrome" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="gallery-lightbox__stage"
+                  style={{ '--gallery-ratio': String(frameRatio) }}
+                  onTouchStart={onSwipeStart}
+                  onTouchEnd={onSwipeEnd}
                 >
-                  <Minus size={18} strokeWidth={2.2} />
-                </button>
-                <span className="gallery-lightbox__zoom-label">{Math.round(zoom * 100)}%</span>
-                <button
-                  type="button"
-                  className="gallery-lightbox__btn"
-                  onClick={zoomIn}
-                  disabled={zoom >= 3}
-                  aria-label="Zoom in"
-                >
-                  <Plus size={18} strokeWidth={2.2} />
-                </button>
-                <button
-                  type="button"
-                  className="gallery-lightbox__btn gallery-lightbox__btn--close"
-                  onClick={closeLightbox}
-                  aria-label="Close preview"
-                >
-                  <X size={18} strokeWidth={2.2} />
-                </button>
+                  {count > 1 ? (
+                    <button
+                      type="button"
+                      className="gallery-lightbox__nav gallery-lightbox__nav--prev"
+                      onClick={() => go(-1)}
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft size={26} strokeWidth={2} />
+                    </button>
+                  ) : null}
+
+                  <div className={`gallery-lightbox__frame ${zoom > 1 ? 'is-zoomed' : ''}`}>
+                    <img
+                      src={activeSrc}
+                      alt={`${title} — photo ${activeIndex + 1} of ${count}`}
+                      className="gallery-lightbox__image"
+                      style={{ transform: `scale(${zoom})` }}
+                      draggable={false}
+                      onClick={() => {
+                        if (swipeRef.current.swiped) {
+                          swipeRef.current.swiped = false
+                          return
+                        }
+                        if (zoom > 1) zoomOut()
+                        else zoomIn()
+                      }}
+                    />
+                  </div>
+
+                  {count > 1 ? (
+                    <button
+                      type="button"
+                      className="gallery-lightbox__nav gallery-lightbox__nav--next"
+                      onClick={() => go(1)}
+                      aria-label="Next image"
+                    >
+                      <ChevronRight size={26} strokeWidth={2} />
+                    </button>
+                  ) : null}
+                </div>
+
+                {count > 1 ? (
+                  <div className="gallery-lightbox__thumbs" role="tablist" aria-label="Preview thumbnails">
+                    {normalizedImages.map((image, index) => (
+                      <button
+                        key={`${image}-lb-${index}`}
+                        type="button"
+                        role="tab"
+                        aria-selected={activeIndex === index}
+                        aria-label={`Show image ${index + 1}`}
+                        className={`gallery-lightbox__thumb ${activeIndex === index ? 'is-active' : ''}`}
+                        onClick={() => goTo(index)}
+                      >
+                        <img src={image} alt="" loading="lazy" decoding="async" />
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
-            </div>
-
-            <div className="gallery-lightbox__stage">
-              {count > 1 ? (
-                <button
-                  type="button"
-                  className="gallery-lightbox__nav gallery-lightbox__nav--prev"
-                  onClick={() => go(-1)}
-                  aria-label="Previous image"
-                >
-                  <ChevronLeft size={26} strokeWidth={2} />
-                </button>
-              ) : null}
-
-              <div className={`gallery-lightbox__frame ${zoom > 1 ? 'is-zoomed' : ''}`}>
-                <img
-                  src={activeSrc}
-                  alt={`${title} — photo ${activeIndex + 1} of ${count}`}
-                  className="gallery-lightbox__image"
-                  style={{ transform: `scale(${zoom})` }}
-                  draggable={false}
-                  onClick={() => (zoom > 1 ? zoomOut() : zoomIn())}
-                />
-              </div>
-
-              {count > 1 ? (
-                <button
-                  type="button"
-                  className="gallery-lightbox__nav gallery-lightbox__nav--next"
-                  onClick={() => go(1)}
-                  aria-label="Next image"
-                >
-                  <ChevronRight size={26} strokeWidth={2} />
-                </button>
-              ) : null}
-            </div>
-
-            {count > 1 ? (
-              <div className="gallery-lightbox__thumbs" role="tablist" aria-label="Preview thumbnails">
-                {normalizedImages.map((image, index) => (
-                  <button
-                    key={`${image}-lb-${index}`}
-                    type="button"
-                    role="tab"
-                    aria-selected={activeIndex === index}
-                    aria-label={`Show image ${index + 1}`}
-                    className={`gallery-lightbox__thumb ${activeIndex === index ? 'is-active' : ''}`}
-                    onClick={() => goTo(index)}
-                  >
-                    <img src={image} alt="" loading="lazy" decoding="async" />
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
+            </div>,
+            document.body,
+          )
+        : null}
     </section>
   )
 }

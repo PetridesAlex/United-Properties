@@ -3,6 +3,7 @@ import {GoogleMap} from '@react-google-maps/api'
 import {ExternalLink, MapPin} from 'lucide-react'
 import {triggerMapResize} from '../../lib/maps/googleMaps'
 import {useGoogleMapsLoader} from '../../providers/GoogleMapsProvider'
+import OsmLocationMap from '../maps/OsmLocationMap'
 import './PropertyLocationMap.css'
 
 type Props = {
@@ -173,23 +174,17 @@ export default function PropertyLocationMap({
       </header>
 
       <div className="property-location-map__canvas-wrap">
-        {!apiKey ? (
-          <div className="property-location-map__fallback">
-            <p>Map preview unavailable. Coordinates are saved for this listing.</p>
-            <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
-              View on Google Maps
-            </a>
-          </div>
+        {!apiKey || loadError ? (
+          <OsmLocationMap
+            className="property-location-map__canvas property-location-map__canvas--osm"
+            latitude={latitude}
+            longitude={longitude}
+            title={title}
+            zoom={zoom}
+          />
         ) : !isLoaded ? (
           <div className="property-location-map__fallback">
             <p>Loading map…</p>
-          </div>
-        ) : loadError ? (
-          <div className="property-location-map__fallback">
-            <p>Map could not load. You can still open the pin in Google Maps.</p>
-            <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
-              Open in Google Maps
-            </a>
           </div>
         ) : (
           <div

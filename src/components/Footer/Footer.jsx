@@ -12,7 +12,7 @@ function Footer() {
   const { get } = useSiteContent()
 
   return (
-    <footer className="footer">
+    <footer className="footer" data-cms-page="footer" data-cms-section="brand">
       <div className="container footer__grid">
         <div className="footer__col footer__col--brand">
           <h3 className="footer__brand">

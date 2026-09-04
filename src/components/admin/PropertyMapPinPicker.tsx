@@ -1,8 +1,7 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
-import {GoogleMap, MarkerF} from '@react-google-maps/api'
+import {useEffect, useMemo, useRef} from 'react'
+import L from 'leaflet'
 import {MapPin} from 'lucide-react'
-import {triggerMapResize} from '../../lib/maps/googleMaps'
-import {useGoogleMapsLoader} from '../../providers/GoogleMapsProvider'
+import 'leaflet/dist/leaflet.css'
 
 const CYPRUS = {lat: 35.1264, lng: 33.4299}
 
@@ -14,12 +13,13 @@ type Props = {
   onChange: (coords: {latitude: number; longitude: number}) => void
 }
 
-const mapContainerStyle = {
-  width: '100%',
-  height: '100%',
-  minWidth: 0,
-  minHeight: 0,
-} as const
+/** Brand pin for Leaflet — avoids broken default marker asset paths in Vite. */
+const PIN_ICON = L.divIcon({
+  className: 'admin-map-pin__leaflet-icon',
+  html: `<span class="admin-map-pin__leaflet-marker" aria-hidden="true"></span>`,
+  iconSize: [28, 36],
+  iconAnchor: [14, 34],
+})
 
 function ManualCoordsFallback({
   latitude,
@@ -70,35 +70,6 @@ function ManualCoordsFallback({
   )
 }
 
-function MapsSetupHelp({reason}: {reason: 'missing' | 'load' | 'auth'}) {
-  if (reason === 'missing') {
-    return (
-      <p>
-        Add <code>VITE_GOOGLE_MAPS_API_KEY</code> to your <code>.env</code> file (and Vercel env for
-        production), then restart the dev server. You can still set coordinates manually:
-      </p>
-    )
-  }
-
-  return (
-    <>
-      <p>
-        Google Maps could not load. In Google Cloud Console, enable <strong>Maps JavaScript API</strong>
-        , turn on billing, and allow these referrers on your API key:
-      </p>
-      <ul className="admin-map-pin__help-list">
-        <li>
-          <code>http://localhost:*</code>
-        </li>
-        <li>
-          <code>https://your-production-domain/*</code>
-        </li>
-      </ul>
-      <p>You can still set coordinates manually below.</p>
-    </>
-  )
-}
-
 export default function PropertyMapPinPicker({
   latitude,
   longitude,
@@ -106,12 +77,11 @@ export default function PropertyMapPinPicker({
   defaultCenter,
   onChange,
 }: Props) {
-  const {apiKey, isLoaded, loadError} = useGoogleMapsLoader()
   const containerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<google.maps.Map | null>(null)
-  const listenersCleanupRef = useRef<(() => void) | null>(null)
-  const [authError, setAuthError] = useState(false)
-  const [mapReady, setMapReady] = useState(false)
+  const mapRef = useRef<L.Map | null>(null)
+  const markerRef = useRef<L.Marker | null>(null)
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
 
   const hasPin = latitude != null && longitude != null
   const center = useMemo(() => {
@@ -120,142 +90,70 @@ export default function PropertyMapPinPicker({
     return CYPRUS
   }, [hasPin, latitude, longitude, defaultCenter])
 
-  const scheduleResize = useCallback((map: google.maps.Map | null | undefined) => {
-    if (!map) return
-    triggerMapResize(map)
-    requestAnimationFrame(() => triggerMapResize(map))
-    window.setTimeout(() => triggerMapResize(map), 80)
-    window.setTimeout(() => triggerMapResize(map), 250)
-    window.setTimeout(() => triggerMapResize(map), 600)
-  }, [])
-
-  const onLoad = useCallback(
-    (instance: google.maps.Map) => {
-      mapRef.current = instance
-      setMapReady(true)
-      scheduleResize(instance)
-      instance.panTo(center)
-
-      const onViewportChange = () => scheduleResize(mapRef.current)
-      window.addEventListener('resize', onViewportChange)
-      window.addEventListener('orientationchange', onViewportChange)
-      window.visualViewport?.addEventListener('resize', onViewportChange)
-      window.visualViewport?.addEventListener('scroll', onViewportChange)
-
-      listenersCleanupRef.current = () => {
-        window.removeEventListener('resize', onViewportChange)
-        window.removeEventListener('orientationchange', onViewportChange)
-        window.visualViewport?.removeEventListener('resize', onViewportChange)
-        window.visualViewport?.removeEventListener('scroll', onViewportChange)
-      }
-    },
-    [center, scheduleResize],
-  )
-
-  const onUnmount = useCallback(() => {
-    listenersCleanupRef.current?.()
-    listenersCleanupRef.current = null
-    mapRef.current = null
-    setMapReady(false)
-  }, [])
-
   useEffect(() => {
-    if (!mapRef.current) return
-    mapRef.current.panTo(center)
-    scheduleResize(mapRef.current)
-  }, [center, scheduleResize])
-
-  useEffect(() => {
-    if (!isLoaded || !containerRef.current) return
-
-    const root = containerRef.current
-    const detectAuthError = () => {
-      const hasError = Boolean(root.querySelector('.gm-err-container'))
-      setAuthError(hasError)
-    }
-
-    detectAuthError()
-    const observer = new MutationObserver(detectAuthError)
-    observer.observe(root, {childList: true, subtree: true, characterData: true})
-    const timer = window.setTimeout(detectAuthError, 800)
-
-    return () => {
-      observer.disconnect()
-      window.clearTimeout(timer)
-    }
-  }, [isLoaded])
-
-  useEffect(() => {
-    if (!isLoaded || !mapReady || !containerRef.current) return undefined
-
     const el = containerRef.current
-    const ro = new ResizeObserver(() => scheduleResize(mapRef.current))
-    ro.observe(el)
+    if (!el || mapRef.current) return undefined
 
-    const io =
-      typeof IntersectionObserver !== 'undefined'
-        ? new IntersectionObserver(
-            (entries) => {
-              if (entries.some((entry) => entry.isIntersecting)) {
-                scheduleResize(mapRef.current)
-              }
-            },
-            {threshold: [0, 0.1, 0.5, 1]},
-          )
-        : null
-    io?.observe(el)
-    scheduleResize(mapRef.current)
+    const map = L.map(el, {
+      center: [center.lat, center.lng],
+      zoom: hasPin || defaultCenter ? 14 : 8,
+      scrollWheelZoom: true,
+      attributionControl: true,
+    })
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(map)
+
+    map.on('click', (e: L.LeafletMouseEvent) => {
+      onChangeRef.current({latitude: e.latlng.lat, longitude: e.latlng.lng})
+    })
+
+    mapRef.current = map
+
+    const ro = new ResizeObserver(() => {
+      map.invalidateSize({animate: false})
+    })
+    ro.observe(el)
+    requestAnimationFrame(() => map.invalidateSize({animate: false}))
+    window.setTimeout(() => map.invalidateSize({animate: false}), 120)
 
     return () => {
       ro.disconnect()
-      io?.disconnect()
+      map.remove()
+      mapRef.current = null
+      markerRef.current = null
     }
-  }, [isLoaded, mapReady, scheduleResize])
+    // Mount once — center/pin sync happens in the effect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  if (!apiKey) {
-    return (
-      <div className="admin-map-pin">
-        {label ? (
-          <p className="admin-map-pin__label">
-            <MapPin size={16} aria-hidden />
-            <span>{label}</span>
-          </p>
-        ) : null}
-        <div className="admin-map-pin__fallback">
-          <MapsSetupHelp reason="missing" />
-          <ManualCoordsFallback latitude={latitude} longitude={longitude} onChange={onChange} />
-        </div>
-      </div>
-    )
-  }
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
 
-  if (loadError) {
-    return (
-      <div className="admin-map-pin">
-        {label ? (
-          <p className="admin-map-pin__label">
-            <MapPin size={16} aria-hidden />
-            <span>{label}</span>
-          </p>
-        ) : null}
-        <div className="admin-map-pin__fallback">
-          <MapsSetupHelp reason="load" />
-          <p className="admin-map-pin__error-detail">{loadError.message}</p>
-          <ManualCoordsFallback latitude={latitude} longitude={longitude} onChange={onChange} />
-        </div>
-      </div>
-    )
-  }
+    map.setView([center.lat, center.lng], map.getZoom(), {animate: false})
 
-  if (!isLoaded) {
-    return (
-      <div className="admin-map-pin">
-        <div className="admin-map-pin__fallback">
-          <p>Loading map…</p>
-        </div>
-      </div>
-    )
-  }
+    if (!hasPin) {
+      markerRef.current?.remove()
+      markerRef.current = null
+      return
+    }
+
+    const latLng: L.LatLngExpression = [latitude!, longitude!]
+    if (!markerRef.current) {
+      markerRef.current = L.marker(latLng, {icon: PIN_ICON, draggable: true})
+        .addTo(map)
+        .on('dragend', () => {
+          const pos = markerRef.current?.getLatLng()
+          if (!pos) return
+          onChangeRef.current({latitude: pos.lat, longitude: pos.lng})
+        })
+    } else {
+      markerRef.current.setLatLng(latLng)
+    }
+  }, [center.lat, center.lng, hasPin, latitude, longitude])
 
   return (
     <div className="admin-map-pin">
@@ -265,56 +163,8 @@ export default function PropertyMapPinPicker({
           <span>{label}</span>
         </p>
       ) : null}
-      <div ref={containerRef} className="admin-map-pin__canvas">
-        {authError ? (
-          <div className="admin-map-pin__auth-banner" role="alert">
-            <MapsSetupHelp reason="auth" />
-          </div>
-        ) : null}
-        <GoogleMap
-          mapContainerStyle={mapContainerStyle}
-          mapContainerClassName="admin-map-pin__map"
-          center={center}
-          zoom={hasPin || defaultCenter ? 14 : 8}
-          onLoad={onLoad}
-          onUnmount={onUnmount}
-          onClick={(e) => {
-            const lat = e.latLng?.lat()
-            const lng = e.latLng?.lng()
-            if (lat == null || lng == null) return
-            onChange({latitude: lat, longitude: lng})
-          }}
-          options={{
-            mapTypeControl: true,
-            mapTypeControlOptions: {
-              style:
-                typeof google !== 'undefined'
-                  ? google.maps.MapTypeControlStyle.DROPDOWN_MENU
-                  : undefined,
-            },
-            streetViewControl: false,
-            fullscreenControl: true,
-            zoomControl: true,
-            clickableIcons: false,
-            // One-finger pan on phones/tablets so pin placement works in the wizard.
-            gestureHandling: 'greedy',
-            disableDoubleClickZoom: false,
-            keyboardShortcuts: true,
-          }}
-        >
-          {hasPin ? (
-            <MarkerF
-              position={{lat: latitude!, lng: longitude!}}
-              draggable
-              onDragEnd={(e) => {
-                const lat = e.latLng?.lat()
-                const lng = e.latLng?.lng()
-                if (lat == null || lng == null) return
-                onChange({latitude: lat, longitude: lng})
-              }}
-            />
-          ) : null}
-        </GoogleMap>
+      <div className="admin-map-pin__canvas">
+        <div ref={containerRef} className="admin-map-pin__map" role="presentation" />
         <div className="admin-map-pin__hint" role="status">
           {hasPin
             ? 'Drag the pin to the exact spot.'

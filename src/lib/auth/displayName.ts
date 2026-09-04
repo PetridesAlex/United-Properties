@@ -4,6 +4,10 @@ const EMAIL_DISPLAY: Record<string, {name: string; roleLabel: string}> = {
     name: 'Panos',
     roleLabel: 'Administrator',
   },
+  'listings@unitedproperties.com': {
+    name: 'Panos',
+    roleLabel: 'Administrator',
+  },
   'petridesalexeu@gmail.com': {
     name: 'Dev',
     roleLabel: 'Developer',

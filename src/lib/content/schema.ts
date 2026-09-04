@@ -1172,6 +1172,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         description: 'Brochure and WhatsApp action labels.',
         fields: [
           f('brochure_fallback', 'Brochure button', 'Download brochure (PDF)'),
+          f('pdf_title', 'Download PDF button', 'Download PDF'),
           f('whatsapp_title', 'WhatsApp title', 'Chat on WhatsApp'),
           f('whatsapp_sub', 'WhatsApp subtitle', 'FAST REPLY · SAME DAY'),
         ],
@@ -1397,12 +1398,12 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         title: 'Banner copy',
         description: 'Headline, lead, and primary buttons.',
         fields: [
-          f('eyebrow', 'Small label', 'Privacy'),
-          f('heading', 'Heading', 'Cookies'),
+          f('eyebrow', 'Small label', 'United Properties'),
+          f('heading', 'Heading', 'Your privacy, our standard'),
           f(
             'lead',
             'Intro text',
-            'We use cookies to run the site securely and, with your consent, to improve your experience.',
+            'We use essential cookies to keep unitedproperties.eu secure, and optional ones only with your consent — so your browsing stays as refined as our homes.',
             'textarea',
             3,
           ),
@@ -1711,20 +1712,20 @@ export const CONTENT_CATALOG_GROUPS = [
   {
     id: 'website',
     title: 'Website pages',
-    blurb: 'Marketing pages your visitors see first — open a page, then edit one section at a time.',
+    blurb: 'Same pages as the public site — open one and edit the words you see.',
     ids: ['home', 'about', 'contact', 'services', 'sell', 'concierge', 'video', 'agents', 'not-found'],
   },
   {
     id: 'listings',
-    title: 'Listings',
-    blurb: 'Buy, rent, sold, featured, and property detail chrome.',
+    title: 'Property pages',
+    blurb: 'Buy / rent listings and the single property detail page.',
     ids: ['properties', 'property'],
   },
   {
     id: 'sitewide',
-    title: 'Site-wide & forms',
-    blurb: 'Shared navigation, footer, search, enquiry form, and cookies.',
-    ids: ['inquiry', 'navbar', 'footer', 'search', 'cookies'],
+    title: 'On every page',
+    blurb: 'Menu, footer, search, enquiry form, and cookie banner.',
+    ids: ['navbar', 'footer', 'search', 'inquiry', 'cookies'],
   },
 ] as const
 

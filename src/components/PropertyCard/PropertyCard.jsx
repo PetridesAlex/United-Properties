@@ -10,11 +10,10 @@ function formatPrice(value, status) {
     : `EUR ${formatter.format(value)}`
 }
 
-/** Internal area in sqm → sq ft for listing line (matches US-style MLS copy). */
-function sqmToSqft(sqm) {
+function formatSqm(sqm) {
   const n = Number(sqm)
   if (!Number.isFinite(n) || n <= 0) return null
-  return Math.round(n * 10.76391041671)
+  return n.toLocaleString('en-US')
 }
 
 function badgeVariantFromStatus(status) {
@@ -37,8 +36,16 @@ function PropertyCard({
   const badgeVariant = badgeVariantFromStatus(property.status)
   const reduceMotion = useReducedMotion()
   const streetAddress = property.address || property.title
+  const locationLine = property.location?.trim() || ''
+  const addressDisplay =
+    locationLine && streetAddress && !streetAddress.toLowerCase().includes(locationLine.toLowerCase())
+      ? `${streetAddress}, ${locationLine}`
+      : streetAddress || locationLine
   const showSignaturePill = Boolean(property.featured || property.isSignature)
-  const sqft = sqmToSqft(property.sqm)
+  const sqmLabel = formatSqm(property.sqm)
+  const bathsLabel = property.bathrooms === 1 ? 'FULL BATH' : 'FULL BATHS'
+  const bedsLabel = property.bedrooms === 1 ? 'BED' : 'BEDS'
+  const areaLabel = sqmLabel != null ? `${sqmLabel} SQM` : null
 
   const coverLinkLabel = `View listing: ${property.title}`
 
@@ -47,7 +54,7 @@ function PropertyCard({
       className={`property-card ${isSignature ? 'property-card--signature' : 'card-luxury'} ${
         isCover ? 'property-card--cover' : ''
       }`.trim()}
-      whileHover={isCover ? { y: -3 } : { y: -4 }}
+      whileHover={isCover ? { y: -2 } : { y: -4 }}
       transition={{ duration: 0.22 }}
     >
       {isCover ? (
@@ -70,31 +77,33 @@ function PropertyCard({
             ) : null}
           </div>
           <div className="property-card__body property-card__body--cover">
-            <p className="property-card__price property-card__price--cover">{formatPrice(property.price, property.status)}</p>
-            <p className="property-card__address-line">
-              {streetAddress}
-              {property.location ? `, ${property.location}` : ''}
+            <p className="property-card__price property-card__price--cover">
+              {formatPrice(property.price, property.status)}
             </p>
+            <p className="property-card__address-line">{addressDisplay}</p>
             <p
               className="property-card__specs-line"
-              aria-label={`${property.bedrooms} bedrooms, ${property.bathrooms} full bathrooms, ${
-                sqft != null ? `${sqft.toLocaleString('en-US')} square feet` : `${property.sqm} square metres`
+              aria-label={`${property.bedrooms} bedrooms, ${property.bathrooms} full bathrooms${
+                sqmLabel != null ? `, ${sqmLabel} square metres` : ''
               }`}
             >
-              <span className="property-card__spec-pill">
-                <span className="property-card__spec-num">{property.bedrooms}</span>
-                <span className="property-card__spec-label">Beds</span>
+              <span>
+                {property.bedrooms} {bedsLabel}
               </span>
-              <span className="property-card__spec-pill">
-                <span className="property-card__spec-num">{property.bathrooms}</span>
-                <span className="property-card__spec-label">Baths</span>
+              <span className="property-card__specs-dot" aria-hidden>
+                •
               </span>
-              <span className="property-card__spec-pill">
-                <span className="property-card__spec-num">
-                  {sqft != null ? sqft.toLocaleString('en-US') : property.sqm}
-                </span>
-                <span className="property-card__spec-label">{sqft != null ? 'Sq Ft' : 'Sqm'}</span>
+              <span>
+                {property.bathrooms} {bathsLabel}
               </span>
+              {areaLabel ? (
+                <>
+                  <span className="property-card__specs-dot" aria-hidden>
+                    •
+                  </span>
+                  <span>{areaLabel}</span>
+                </>
+              ) : null}
             </p>
           </div>
         </Link>

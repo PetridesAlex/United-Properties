@@ -129,7 +129,7 @@ function Navbar() {
   }
 
   return (
-    <header className={navClass}>
+    <header className={navClass} data-cms-page="navbar" data-cms-section="nav">
       <section className="navbar__ticker" aria-label="Premium services" role="region">
         <div className="navbar__ticker-viewport">
           <div className="navbar__ticker-track" aria-hidden="true">

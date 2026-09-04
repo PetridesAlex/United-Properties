@@ -22,31 +22,21 @@ const HOME_SCROLL_STACK_PREVIEW_COUNT = 6
 /** Featured ModalCards: max cards; prefer featured flag, then fill from pool for layout preview */
 const FEATURED_MODAL_PREVIEW_COUNT = 12
 
-/** Cinematic “render-style” hero art (preview / marketing — not tied to listing photos). */
-const SIGNATURE_SCROLL_STACK_IMAGES = [
-  'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1920&q=85',
-  'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=85',
-  'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1920&q=85',
-  'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1920&q=85',
-  'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1920&q=85',
-  'https://images.unsplash.com/photo-1600047509807-ba61f281090b?auto=format&fit=crop&w=1920&q=85',
-]
-
-const FEATURED_MODAL_CINEMATIC_IMAGES = [
-  ...SIGNATURE_SCROLL_STACK_IMAGES,
-  'https://images.unsplash.com/photo-1600585154087-4e5fe7c90381?auto=format&fit=crop&w=1920&q=85',
-  'https://images.unsplash.com/photo-1600566753089-00f18fb6b442?auto=format&fit=crop&w=1920&q=85',
-  'https://images.unsplash.com/photo-1600573472592-401b3a6e6939?auto=format&fit=crop&w=1920&q=85',
-  'https://images.unsplash.com/photo-1613490493578-7fde639acd22?auto=format&fit=crop&w=1920&q=85',
-  'https://images.unsplash.com/photo-1600047509358-9dc87607ebfa?auto=format&fit=crop&w=1920&q=85',
-  'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1920&q=85',
-]
+/** Cover photo from CMS (gallery #1 / is_featured) — never stock placeholders. */
+function propertyCoverImage(property) {
+  if (!property) return ''
+  if (typeof property.image === 'string' && property.image.trim()) return property.image.trim()
+  const gallery = Array.isArray(property.gallery) ? property.gallery : []
+  const first = gallery.find((url) => typeof url === 'string' && url.trim())
+  return first ? first.trim() : ''
+}
 
 function takeFeaturedWithFill(pool, maxCount) {
-  const featured = pool.filter((p) => p.featured)
+  const withCover = pool.filter((p) => propertyCoverImage(p))
+  const featured = withCover.filter((p) => p.featured)
   if (featured.length >= maxCount) return featured.slice(0, maxCount)
   const seen = new Set(featured.map((p) => String(p.id)))
-  const filler = pool.filter((p) => !seen.has(String(p.id)))
+  const filler = withCover.filter((p) => !seen.has(String(p.id)))
   return [...featured, ...filler].slice(0, maxCount)
 }
 
@@ -74,10 +64,9 @@ function Home() {
   )
   const featuredModalCards = useMemo(
     () =>
-      featuredProperties.map((property, index) => ({
+      featuredProperties.map((property) => ({
         id: String(property.id),
-        imageUrl:
-          FEATURED_MODAL_CINEMATIC_IMAGES[index % FEATURED_MODAL_CINEMATIC_IMAGES.length],
+        imageUrl: propertyCoverImage(property),
         title: property.title,
         description:
           property.description ||
@@ -87,7 +76,9 @@ function Home() {
     [featuredProperties],
   )
   const signatureCollectionProperties = useMemo(() => {
-    const source = listingProperties.length ? listingProperties : properties
+    const source = (listingProperties.length ? listingProperties : properties).filter(
+      (property) => propertyCoverImage(property),
+    )
     const signatureOnly = source.filter(isSignatureProperty)
 
     // Keep stack rich in preview mode: prefer signature, then featured, then fill from remaining.
@@ -106,10 +97,9 @@ function Home() {
 
   const signatureScrollStackItems = useMemo(
     () =>
-      signatureCollectionProperties.map((property, index) => ({
+      signatureCollectionProperties.map((property) => ({
         ...property,
-        scrollStackCoverImage:
-          SIGNATURE_SCROLL_STACK_IMAGES[index % SIGNATURE_SCROLL_STACK_IMAGES.length],
+        scrollStackCoverImage: propertyCoverImage(property),
       })),
     [signatureCollectionProperties],
   )
@@ -141,7 +131,12 @@ function Home() {
     <>
       <Hero />
 
-      <section className="section section--light" id="featured-properties">
+      <section
+        className="section section--light"
+        id="featured-properties"
+        data-cms-page="home"
+        data-cms-section="featured"
+      >
         <div className="container home-featured-container">
           <SectionHeader
             eyebrow={get('home', 'featured', 'eyebrow')}
@@ -153,7 +148,11 @@ function Home() {
         </div>
       </section>
 
-      <section className="section section--alt home-scroll-stack-section">
+      <section
+        className="section section--alt home-scroll-stack-section"
+        data-cms-page="home"
+        data-cms-section="signature"
+      >
         <div className="container">
           <SectionHeader
             eyebrow={get('home', 'signature', 'eyebrow')}
@@ -194,7 +193,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="section section--light">
+      <section className="section section--light" data-cms-page="home" data-cms-section="services">
         <div className="container">
           <SectionHeader
             eyebrow={get('home', 'services', 'eyebrow')}
@@ -209,7 +208,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="section section--alt">
+      <section className="section section--alt" data-cms-page="home" data-cms-section="editorial">
         <div className="container home-editorial">
           <MotionDiv
             initial={{ opacity: 0, x: -18 }}
@@ -228,7 +227,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="section section--light">
+      <section className="section section--light" data-cms-page="home" data-cms-section="team">
         <div className="container">
           <SectionHeader
             eyebrow={get('home', 'team', 'eyebrow')}
@@ -243,7 +242,11 @@ function Home() {
         </div>
       </section>
 
-      <section className="section section--alt home-testimonials">
+      <section
+        className="section section--alt home-testimonials"
+        data-cms-page="home"
+        data-cms-section="testimonials"
+      >
         <div className="container home-testimonials__container">
           <SectionHeader
             eyebrow={get('home', 'testimonials', 'eyebrow')}
