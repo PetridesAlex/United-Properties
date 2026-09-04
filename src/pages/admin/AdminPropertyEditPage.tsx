@@ -1,4 +1,4 @@
-import {ArrowLeft, Check, ExternalLink} from 'lucide-react'
+import {ArrowLeft, Check, ExternalLink, LayoutTemplate, Save, Sparkles, Upload} from 'lucide-react'
 import {useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent} from 'react'
 import {Link, useNavigate, useParams} from 'react-router-dom'
 import toast from 'react-hot-toast'
@@ -13,9 +13,12 @@ import {
 } from '../../lib/properties/api'
 import {
   deletePropertyImage,
+  isFloorPlanImage,
+  isGalleryImage,
   reorderPropertyImages,
   setFeaturedImage,
   uploadPropertyImage,
+  type PropertyImageKind,
 } from '../../lib/properties/images'
 import {completedFromActive, revertCompleted} from '../../lib/properties/mappers'
 import {slugify} from '../../lib/properties/slug'
@@ -413,7 +416,7 @@ function toPayload(form: FormState) {
       (isApartmentRent ? 'Resale' : '') ||
       null,
     energy_efficiency: form.energy_efficiency.trim() || null,
-    short_description: form.short_description.trim() || null,
+    short_description: null,
     description: form.description.trim() || null,
     features: form.featuresText
       .split(',')
@@ -876,17 +879,22 @@ export default function AdminPropertyEditPage() {
     }
   }
 
-  async function onUpload(files: File[]) {
+  async function onUpload(files: File[], kind: PropertyImageKind = 'gallery') {
     if (!files.length || uploadingImages) return
     const needsRedirect = isNew || !property
     setUploadingImages(true)
     try {
       const propertyId = await ensurePropertyForUpload()
       for (const file of files) {
-        const row = await uploadPropertyImage(propertyId, file)
+        const row = await uploadPropertyImage(propertyId, file, kind)
         setImages((prev) => [...prev, row as PropertyImage])
       }
-      toast.success(files.length === 1 ? 'Image uploaded' : `${files.length} images uploaded`)
+      const label = kind === 'floor_plan' ? 'Floor plan' : 'Image'
+      toast.success(
+        files.length === 1
+          ? `${label} uploaded`
+          : `${files.length} ${kind === 'floor_plan' ? 'floor plans' : 'images'} uploaded`,
+      )
       if (needsRedirect) {
         navigate(`/admin/properties/${propertyId}/edit`, {replace: true})
       }
@@ -926,6 +934,8 @@ export default function AdminPropertyEditPage() {
   const revertTo = property ? revertCompleted(property.status) : null
   const stepActiveIndex = LISTING_STEPS.findIndex((s) => s.id === listingStep)
   const stepProgressPct = (stepActiveIndex / Math.max(LISTING_STEPS.length - 1, 1)) * 100
+  const galleryImages = images.filter(isGalleryImage)
+  const floorPlanImages = images.filter(isFloorPlanImage)
 
   return (
     <div className="admin-page admin-page--editor prop-edit">
@@ -1156,7 +1166,7 @@ export default function AdminPropertyEditPage() {
           <AdminFormSection
             eyebrow="Step 3"
             title="Location on the map"
-            lede="Drag the pin to the exact spot — same as posting on Bazaraki."
+            lede="Drag the pin to the exact spot — same as posting on Bazaraki. Add floor-plan images below for the website."
           >
             <PropertyMapPinPicker
               latitude={num(form.latitude)}
@@ -1175,6 +1185,122 @@ export default function AdminPropertyEditPage() {
                 setField('longitude', String(longitude))
               }}
             />
+
+            <div className="prop-edit__floor-plans">
+              <div className="prop-edit__floor-plans-head">
+                <span className="prop-edit__floor-plans-icon" aria-hidden>
+                  <LayoutTemplate size={18} strokeWidth={2} />
+                </span>
+                <div className="prop-edit__floor-plans-copy">
+                  <h3 className="prop-edit__floor-plans-title">Floor plans</h3>
+                  <p className="prop-edit__floor-plans-lede">
+                    Shown on the website property page. Upload clear layout images for buyers.
+                  </p>
+                </div>
+                {floorPlanImages.length ? (
+                  <span className="prop-edit__floor-plans-count">
+                    {floorPlanImages.length} uploaded
+                  </span>
+                ) : (
+                  <span className="prop-edit__floor-plans-optional">Optional</span>
+                )}
+              </div>
+
+              <label
+                className={`prop-edit__floor-plans-drop${uploadingImages ? ' is-busy' : ''}`}
+                htmlFor="property-floor-plans"
+              >
+                <span className="prop-edit__floor-plans-drop-icon" aria-hidden>
+                  <Upload size={20} strokeWidth={2.1} />
+                </span>
+                <span className="prop-edit__floor-plans-drop-title">
+                  {uploadingImages ? 'Uploading floor plans…' : 'Drop or choose floor-plan images'}
+                </span>
+                <span className="prop-edit__floor-plans-drop-hint">
+                  PNG, JPG or WEBP · multiple files allowed
+                </span>
+                <span className="prop-edit__floor-plans-drop-cta">Browse files</span>
+                <input
+                  id="property-floor-plans"
+                  className="prop-edit__floor-plans-input"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  disabled={uploadingImages}
+                  onChange={(e) => {
+                    const selected = e.target.files ? Array.from(e.target.files) : []
+                    e.target.value = ''
+                    void onUpload(selected, 'floor_plan')
+                  }}
+                />
+              </label>
+
+              {floorPlanImages.length ? (
+                <div className="prop-edit__floor-plans-grid">
+                  {floorPlanImages.map((img, index) => (
+                    <div className="prop-edit__floor-plan-tile" key={img.id}>
+                      <div className="prop-edit__floor-plan-tile-media">
+                        <img src={img.image_url} alt={img.alt_text || 'Floor plan'} />
+                        <span className="prop-edit__floor-plan-tile-badge">Plan {index + 1}</span>
+                      </div>
+                      <div className="prop-edit__floor-plan-tile-actions">
+                        <button
+                          type="button"
+                          disabled={index === 0}
+                          onClick={() => {
+                            const next = [...floorPlanImages]
+                            ;[next[index - 1], next[index]] = [next[index], next[index - 1]]
+                            setImages((prev) => [
+                              ...prev.filter(isGalleryImage),
+                              ...next,
+                            ])
+                            void reorderPropertyImages(
+                              next.map((row, position) => ({id: row.id, position})),
+                            )
+                          }}
+                        >
+                          ←
+                        </button>
+                        <button
+                          type="button"
+                          disabled={index === floorPlanImages.length - 1}
+                          onClick={() => {
+                            const next = [...floorPlanImages]
+                            ;[next[index + 1], next[index]] = [next[index], next[index + 1]]
+                            setImages((prev) => [
+                              ...prev.filter(isGalleryImage),
+                              ...next,
+                            ])
+                            void reorderPropertyImages(
+                              next.map((row, position) => ({id: row.id, position})),
+                            )
+                          }}
+                        >
+                          →
+                        </button>
+                        <button
+                          type="button"
+                          className="prop-edit__floor-plan-tile-delete"
+                          onClick={() =>
+                            void deletePropertyImage(img.id, img.storage_path).then(() => {
+                              setImages((prev) => prev.filter((row) => row.id !== img.id))
+                              toast.success('Floor plan removed')
+                            })
+                          }
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="prop-edit__floor-plans-empty">
+                  No floor plans yet — add one to show layouts on the live listing.
+                </p>
+              )}
+            </div>
+
             <div className="prop-edit__step-actions">
               <button type="button" className="admin-btn admin-btn--ghost" onClick={() => goToStep('location')}>
                 Back to location list
@@ -1829,7 +1955,7 @@ export default function AdminPropertyEditPage() {
                 />
               </div>
               <div className="admin-images">
-                {images.map((img, index) => (
+                {galleryImages.map((img, index) => (
                   <div className="admin-image-tile" key={img.id}>
                     <img src={img.image_url} alt={img.alt_text || ''} />
                     <div className="admin-image-tile__actions">
@@ -1838,7 +1964,11 @@ export default function AdminPropertyEditPage() {
                         onClick={() =>
                           void setFeaturedImage(img.property_id, img.id).then(() => {
                             setImages((prev) =>
-                              prev.map((row) => ({...row, is_featured: row.id === img.id})),
+                              prev.map((row) =>
+                                isGalleryImage(row)
+                                  ? {...row, is_featured: row.id === img.id}
+                                  : row,
+                              ),
                             )
                             toast.success('Featured image updated')
                           })
@@ -1850,9 +1980,12 @@ export default function AdminPropertyEditPage() {
                         type="button"
                         disabled={index === 0}
                         onClick={() => {
-                          const next = [...images]
+                          const next = [...galleryImages]
                           ;[next[index - 1], next[index]] = [next[index], next[index - 1]]
-                          setImages(next)
+                          setImages((prev) => [
+                            ...next,
+                            ...prev.filter(isFloorPlanImage),
+                          ])
                           void reorderPropertyImages(
                             next.map((row, position) => ({id: row.id, position})),
                           )
@@ -1862,11 +1995,14 @@ export default function AdminPropertyEditPage() {
                       </button>
                       <button
                         type="button"
-                        disabled={index === images.length - 1}
+                        disabled={index === galleryImages.length - 1}
                         onClick={() => {
-                          const next = [...images]
+                          const next = [...galleryImages]
                           ;[next[index + 1], next[index]] = [next[index], next[index + 1]]
-                          setImages(next)
+                          setImages((prev) => [
+                            ...next,
+                            ...prev.filter(isFloorPlanImage),
+                          ])
                           void reorderPropertyImages(
                             next.map((row, position) => ({id: row.id, position})),
                           )
@@ -1892,13 +2028,6 @@ export default function AdminPropertyEditPage() {
             </AdminFormSection>
 
             <AdminFormSection eyebrow="Content" title="Description" lede="Describe the property. Contact details are not allowed in the description on Bazaraki.">
-              <div className="admin-field">
-                <label>Short description</label>
-                <textarea
-                  value={form.short_description}
-                  onChange={(e) => setField('short_description', e.target.value)}
-                />
-              </div>
               <div className="admin-field">
                 <label>Description</label>
                 <textarea
@@ -2080,22 +2209,29 @@ export default function AdminPropertyEditPage() {
             <div className="prop-edit__save-primary">
               <button
                 type="button"
-                className="admin-btn admin-btn--ghost"
+                className="prop-edit__save-btn prop-edit__save-btn--draft"
                 disabled={saving}
                 onClick={() => void save({draft: true})}
               >
-                Save Draft
+                <Save size={15} strokeWidth={2.2} aria-hidden />
+                <span>Save Draft</span>
               </button>
-              <button type="submit" className="admin-btn admin-btn--gold" disabled={saving}>
-                Save Changes
+              <button
+                type="submit"
+                className="prop-edit__save-btn prop-edit__save-btn--save"
+                disabled={saving}
+              >
+                <Check size={16} strokeWidth={2.4} aria-hidden />
+                <span>Save Changes</span>
               </button>
               <button
                 type="button"
-                className="admin-btn admin-btn--gold"
+                className="prop-edit__save-btn prop-edit__save-btn--publish"
                 disabled={saving}
                 onClick={() => void save({publish: true})}
               >
-                Publish
+                <Sparkles size={16} strokeWidth={2.2} aria-hidden />
+                <span>Publish</span>
               </button>
             </div>
 

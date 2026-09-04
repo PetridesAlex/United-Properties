@@ -1,4 +1,7 @@
 import {supabase} from '../supabase/client'
+import type {PropertyImage} from '../../types/cms'
+
+export type PropertyImageKind = 'gallery' | 'floor_plan'
 
 export function validateImageFile(_file: File): string | null {
   return null
@@ -13,11 +16,23 @@ function fileExtension(file: File): string {
   return subtype || 'bin'
 }
 
-export async function uploadPropertyImage(propertyId: string, file: File) {
+export function isGalleryImage(image: Pick<PropertyImage, 'kind'>) {
+  return (image.kind || 'gallery') !== 'floor_plan'
+}
+
+export function isFloorPlanImage(image: Pick<PropertyImage, 'kind'>) {
+  return image.kind === 'floor_plan'
+}
+
+export async function uploadPropertyImage(
+  propertyId: string,
+  file: File,
+  kind: PropertyImageKind = 'gallery',
+) {
   if (!supabase) throw new Error('Supabase is not configured')
 
   const ext = fileExtension(file)
-  const path = `${propertyId}/${crypto.randomUUID()}.${ext}`
+  const path = `${propertyId}/${kind === 'floor_plan' ? 'floor-plans/' : ''}${crypto.randomUUID()}.${ext}`
   const contentType = file.type || 'application/octet-stream'
 
   const {error: uploadError} = await supabase.storage
@@ -32,9 +47,10 @@ export async function uploadPropertyImage(propertyId: string, file: File) {
     .from('property_images')
     .select('*', {count: 'exact', head: true})
     .eq('property_id', propertyId)
+    .eq('kind', kind)
 
   const position = count ?? 0
-  const isFeatured = position === 0
+  const isFeatured = kind === 'gallery' && position === 0
 
   const {data: row, error} = await supabase
     .from('property_images')
@@ -45,12 +61,13 @@ export async function uploadPropertyImage(propertyId: string, file: File) {
       alt_text: file.name,
       position,
       is_featured: isFeatured,
+      kind,
     })
     .select('*')
     .single()
 
   if (error) throw new Error(error.message)
-  return row
+  return row as PropertyImage
 }
 
 export async function deletePropertyImage(imageId: string, storagePath: string | null) {
@@ -68,6 +85,7 @@ export async function setFeaturedImage(propertyId: string, imageId: string) {
     .from('property_images')
     .update({is_featured: false})
     .eq('property_id', propertyId)
+    .eq('kind', 'gallery')
   const {error} = await supabase
     .from('property_images')
     .update({is_featured: true})

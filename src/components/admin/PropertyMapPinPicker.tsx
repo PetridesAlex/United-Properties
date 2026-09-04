@@ -17,6 +17,8 @@ type Props = {
 const mapContainerStyle = {
   width: '100%',
   height: '100%',
+  minWidth: 0,
+  minHeight: 0,
 } as const
 
 function ManualCoordsFallback({
@@ -32,29 +34,36 @@ function ManualCoordsFallback({
     const lat = Number(latStr)
     const lng = Number(lngStr)
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return
     onChange({latitude: lat, longitude: lng})
   }
 
   return (
-    <div className="admin-form__grid">
+    <div className="admin-form__grid admin-map-pin__manual">
       <div className="admin-field">
-        <label>Latitude</label>
+        <label htmlFor="admin-map-lat">Latitude</label>
         <input
+          id="admin-map-lat"
           type="number"
+          inputMode="decimal"
           step="any"
           value={latitude ?? ''}
           onChange={(e) => applyManual(e.target.value, String(longitude ?? ''))}
           placeholder="34.7071"
+          autoComplete="off"
         />
       </div>
       <div className="admin-field">
-        <label>Longitude</label>
+        <label htmlFor="admin-map-lng">Longitude</label>
         <input
+          id="admin-map-lng"
           type="number"
+          inputMode="decimal"
           step="any"
           value={longitude ?? ''}
           onChange={(e) => applyManual(String(latitude ?? ''), e.target.value)}
           placeholder="33.0226"
+          autoComplete="off"
         />
       </div>
     </div>
@@ -100,7 +109,9 @@ export default function PropertyMapPinPicker({
   const {apiKey, isLoaded, loadError} = useGoogleMapsLoader()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<google.maps.Map | null>(null)
+  const listenersCleanupRef = useRef<(() => void) | null>(null)
   const [authError, setAuthError] = useState(false)
+  const [mapReady, setMapReady] = useState(false)
 
   const hasPin = latitude != null && longitude != null
   const center = useMemo(() => {
@@ -113,21 +124,39 @@ export default function PropertyMapPinPicker({
     if (!map) return
     triggerMapResize(map)
     requestAnimationFrame(() => triggerMapResize(map))
-    window.setTimeout(() => triggerMapResize(map), 120)
-    window.setTimeout(() => triggerMapResize(map), 400)
+    window.setTimeout(() => triggerMapResize(map), 80)
+    window.setTimeout(() => triggerMapResize(map), 250)
+    window.setTimeout(() => triggerMapResize(map), 600)
   }, [])
 
   const onLoad = useCallback(
     (instance: google.maps.Map) => {
       mapRef.current = instance
+      setMapReady(true)
       scheduleResize(instance)
       instance.panTo(center)
+
+      const onViewportChange = () => scheduleResize(mapRef.current)
+      window.addEventListener('resize', onViewportChange)
+      window.addEventListener('orientationchange', onViewportChange)
+      window.visualViewport?.addEventListener('resize', onViewportChange)
+      window.visualViewport?.addEventListener('scroll', onViewportChange)
+
+      listenersCleanupRef.current = () => {
+        window.removeEventListener('resize', onViewportChange)
+        window.removeEventListener('orientationchange', onViewportChange)
+        window.visualViewport?.removeEventListener('resize', onViewportChange)
+        window.visualViewport?.removeEventListener('scroll', onViewportChange)
+      }
     },
     [center, scheduleResize],
   )
 
   const onUnmount = useCallback(() => {
+    listenersCleanupRef.current?.()
+    listenersCleanupRef.current = null
     mapRef.current = null
+    setMapReady(false)
   }, [])
 
   useEffect(() => {
@@ -148,7 +177,7 @@ export default function PropertyMapPinPicker({
     detectAuthError()
     const observer = new MutationObserver(detectAuthError)
     observer.observe(root, {childList: true, subtree: true, characterData: true})
-    const timer = window.setTimeout(detectAuthError, 600)
+    const timer = window.setTimeout(detectAuthError, 800)
 
     return () => {
       observer.disconnect()
@@ -157,15 +186,31 @@ export default function PropertyMapPinPicker({
   }, [isLoaded])
 
   useEffect(() => {
-    if (!isLoaded || !mapRef.current || !containerRef.current) return undefined
+    if (!isLoaded || !mapReady || !containerRef.current) return undefined
 
     const el = containerRef.current
     const ro = new ResizeObserver(() => scheduleResize(mapRef.current))
     ro.observe(el)
+
+    const io =
+      typeof IntersectionObserver !== 'undefined'
+        ? new IntersectionObserver(
+            (entries) => {
+              if (entries.some((entry) => entry.isIntersecting)) {
+                scheduleResize(mapRef.current)
+              }
+            },
+            {threshold: [0, 0.1, 0.5, 1]},
+          )
+        : null
+    io?.observe(el)
     scheduleResize(mapRef.current)
 
-    return () => ro.disconnect()
-  }, [isLoaded, scheduleResize])
+    return () => {
+      ro.disconnect()
+      io?.disconnect()
+    }
+  }, [isLoaded, mapReady, scheduleResize])
 
   if (!apiKey) {
     return (
@@ -228,6 +273,7 @@ export default function PropertyMapPinPicker({
         ) : null}
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
+          mapContainerClassName="admin-map-pin__map"
           center={center}
           zoom={hasPin || defaultCenter ? 14 : 8}
           onLoad={onLoad}
@@ -240,10 +286,20 @@ export default function PropertyMapPinPicker({
           }}
           options={{
             mapTypeControl: true,
+            mapTypeControlOptions: {
+              style:
+                typeof google !== 'undefined'
+                  ? google.maps.MapTypeControlStyle.DROPDOWN_MENU
+                  : undefined,
+            },
             streetViewControl: false,
             fullscreenControl: true,
+            zoomControl: true,
             clickableIcons: false,
+            // One-finger pan on phones/tablets so pin placement works in the wizard.
             gestureHandling: 'greedy',
+            disableDoubleClickZoom: false,
+            keyboardShortcuts: true,
           }}
         >
           {hasPin ? (
@@ -260,7 +316,9 @@ export default function PropertyMapPinPicker({
           ) : null}
         </GoogleMap>
         <div className="admin-map-pin__hint" role="status">
-          {hasPin ? 'Drag the pin to the exact spot.' : 'Click the map to drop a pin, then drag to fine-tune.'}
+          {hasPin
+            ? 'Drag the pin to the exact spot.'
+            : 'Tap or click the map to drop a pin, then drag to fine-tune.'}
         </div>
       </div>
       <p className="admin-map-pin__coords">
@@ -269,9 +327,13 @@ export default function PropertyMapPinPicker({
             {latitude!.toFixed(6)}, {longitude!.toFixed(6)}
           </>
         ) : (
-          'No pin yet — click the map to place one.'
+          'No pin yet — tap or click the map to place one.'
         )}
       </p>
+      <details className="admin-map-pin__manual-details">
+        <summary>Enter coordinates manually</summary>
+        <ManualCoordsFallback latitude={latitude} longitude={longitude} onChange={onChange} />
+      </details>
     </div>
   )
 }

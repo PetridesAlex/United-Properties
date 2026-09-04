@@ -26,6 +26,8 @@ export interface PropertyImage {
   alt_text: string | null
   position: number
   is_featured: boolean
+  /** gallery = listing photos; floor_plan = website floor plans */
+  kind?: 'gallery' | 'floor_plan'
   created_at: string
 }
 
@@ -269,6 +271,9 @@ export interface PublicPropertyCard {
   gallery: string[]
   featured: boolean
   category?: string
+  city?: string
+  area?: string
+  district?: string
   yearBuilt?: number
   parking?: number
   plotSize?: number
@@ -292,6 +297,14 @@ export interface PublicPropertyCard {
   registrationNumber?: number | null
   postalCode?: string | null
   mustHaves?: number[] | null
+  floorPlanUrl?: string
+  floorPlanImages?: string[]
+  brochureUrl?: string
+  brochureFilename?: string
+  latitude?: number | null
+  longitude?: number | null
+  /** How map coords were resolved for the public page */
+  mapCoordinateSource?: 'pin' | 'district' | 'area' | 'city'
 }
 
 export const PROPERTY_STATUS_LABELS: Record<PropertyStatus, string> = {

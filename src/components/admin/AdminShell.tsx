@@ -267,6 +267,7 @@ export default function AdminShell() {
       />
 
       <aside className="admin-shell__sidebar">
+        <div className="admin-shell__sidebar-glow" aria-hidden />
         <div className="admin-shell__drawer-head">
           <p className="admin-shell__drawer-title">Menu</p>
           <button
@@ -287,12 +288,14 @@ export default function AdminShell() {
               className="admin-shell__logo"
             />
           </Link>
+          <span className="admin-shell__brand-mark">Private CRM</span>
         </div>
 
         <div className="admin-shell__welcome">
           <div className="admin-shell__welcome-head">
             <span className="admin-shell__welcome-avatar" aria-hidden>
               {initials || 'UP'}
+              <span className="admin-shell__welcome-avatar-ring" aria-hidden />
             </span>
             <div className="admin-shell__welcome-copy">
               <p className="admin-shell__welcome-greeting">
@@ -307,13 +310,20 @@ export default function AdminShell() {
           <div className="admin-shell__clock" aria-live="polite">
             <div className="admin-shell__clock-icon" aria-hidden>
               <Clock3 size={15} strokeWidth={1.85} />
+              <span className="admin-shell__clock-pulse" />
             </div>
             <div className="admin-shell__clock-copy">
-              <time className="admin-shell__clock-time">{clock.time}</time>
+              <time className="admin-shell__clock-time" key={clock.time}>
+                {clock.time}
+              </time>
               <span className="admin-shell__clock-date">{clock.date}</span>
               <span className="admin-shell__clock-zone">{clock.timezone}</span>
             </div>
           </div>
+
+          <p key={agentQuote.tick} className="admin-shell__quote" aria-live="polite">
+            {agentQuote.quote}
+          </p>
 
           <div className="admin-shell__insights">
             <span className="admin-shell__status-pill">
@@ -355,7 +365,7 @@ export default function AdminShell() {
                     }
                   >
                     <span className="admin-shell__link-icon" aria-hidden>
-                      <item.icon size={17} strokeWidth={1.85} />
+                      <item.icon size={16} strokeWidth={1.85} />
                     </span>
                     <span className="admin-shell__link-label">{item.label}</span>
                     {item.badgeKey === 'enquiries' && newEnquiries > 0 ? (

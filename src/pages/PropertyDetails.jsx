@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useParams } from 'react-router-dom'
 import {
@@ -9,6 +9,7 @@ import {
   CalendarClock,
   LandPlot,
   MapPin,
+  ChevronLeft,
   ChevronRight,
   LayoutTemplate,
   Map,
@@ -18,6 +19,8 @@ import {
   Sparkles,
   FileDown,
   UserRound,
+  X,
+  ZoomIn,
 } from 'lucide-react'
 import { WhatsAppBrandIcon } from '../components/Navbar/SocialBrandIcons'
 import Gallery from '../components/Gallery/Gallery'
@@ -25,11 +28,13 @@ import InquiryForm from '../components/InquiryForm/InquiryForm'
 import SectionHeader from '../components/SectionHeader/SectionHeader'
 import PropertyCard from '../components/PropertyCard/PropertyCard'
 import AnimatedStatValue from '../components/PropertyDetails/AnimatedStatValue'
+import PropertyLocationMap from '../components/PropertyDetails/PropertyLocationMap'
 import { agents } from '../data/agents'
 import { useMergedProperties } from '../hooks/useMergedProperties'
 import { useSiteContent } from '../hooks/useSiteContent'
 import { useInViewOnce } from '../hooks/useCountUp'
 import { buildPublicPropertyAttributes } from '../lib/properties/publicAttributes'
+import { resolvePropertyCoordinates } from '../lib/properties/mapCoords'
 import './Properties.css'
 import './PropertyDetails.css'
 
@@ -108,6 +113,8 @@ function PropertyDetails() {
   const { list: allProperties, loading } = useMergedProperties()
   const [descriptionExpanded, setDescriptionExpanded] = useState(false)
   const [overviewRef, overviewInView] = useInViewOnce()
+  const [floorPlanIndex, setFloorPlanIndex] = useState(0)
+  const [floorPlanLightboxOpen, setFloorPlanLightboxOpen] = useState(false)
 
   const property = useMemo(
     () => allProperties.find((item) => item.slug === slug),
@@ -120,6 +127,42 @@ function PropertyDetails() {
     () => (property ? pickSimilarProperties(allProperties, property) : []),
     [allProperties, property],
   )
+
+  const floorPlanImages = useMemo(() => {
+    if (!property) return []
+    if (Array.isArray(property.floorPlanImages) && property.floorPlanImages.length) {
+      return property.floorPlanImages.filter(Boolean)
+    }
+    return property.floorPlanUrl ? [property.floorPlanUrl] : []
+  }, [property])
+
+  useEffect(() => {
+    setFloorPlanIndex(0)
+    setFloorPlanLightboxOpen(false)
+  }, [property?.id])
+
+  useEffect(() => {
+    if (!floorPlanLightboxOpen) return
+    function onKey(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setFloorPlanLightboxOpen(false)
+      } else if (e.key === 'ArrowLeft' && floorPlanImages.length > 1) {
+        e.preventDefault()
+        setFloorPlanIndex((i) => (i - 1 + floorPlanImages.length) % floorPlanImages.length)
+      } else if (e.key === 'ArrowRight' && floorPlanImages.length > 1) {
+        e.preventDefault()
+        setFloorPlanIndex((i) => (i + 1) % floorPlanImages.length)
+      }
+    }
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prev
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [floorPlanLightboxOpen, floorPlanImages.length])
 
   if (!property) {
     if (loading) {
@@ -169,6 +212,23 @@ function PropertyDetails() {
   const locationHeading = get('property', 'info_tiles', 'location_heading', 'Location')
   const {facts: attributeFacts, meta: attributeMeta} = buildPublicPropertyAttributes(property)
   const descriptionParagraphs = splitDescriptionParagraphs(property.description)
+  const hasFloorPlans = floorPlanImages.length > 0
+  const activeFloorPlan =
+    floorPlanImages[Math.min(floorPlanIndex, Math.max(floorPlanImages.length - 1, 0))]
+  const mapCoords = resolvePropertyCoordinates({
+    latitude: property.latitude,
+    longitude: property.longitude,
+    location: property.location,
+    address: property.address,
+    city: property.city,
+    area: property.area,
+    district: property.district,
+  })
+  const hasMapPin = Boolean(mapCoords)
+  const mapLatitude = mapCoords?.latitude ?? null
+  const mapLongitude = mapCoords?.longitude ?? null
+  const showInfoTiles = !hasFloorPlans || !hasMapPin
+  const mapZoom = mapCoords?.source === 'city' ? 12 : mapCoords?.source === 'pin' ? 15 : 14
 
   return (
     <>
@@ -461,72 +521,259 @@ function PropertyDetails() {
                 </section>
               ) : null}
 
-              <div className="property-details__info-tiles">
-                <div
-                  className={`property-details__info-tile ${property.floorPlanUrl ? 'property-details__info-tile--has-plan' : ''}`}
-                  role="group"
-                  aria-label={
-                    property.floorPlanUrl
-                      ? floorplanHeading
-                      : `${floorplanHeading} — available on request`
-                  }
+              {hasFloorPlans ? (
+                <section
+                  className="property-details__floorplans"
+                  aria-labelledby="floorplans-heading"
                 >
-                  <span className="property-details__info-tile-icon" aria-hidden="true">
-                    <LayoutTemplate size={22} strokeWidth={2} />
-                  </span>
-                  <div className="property-details__info-tile-copy">
-                    <h4>{floorplanHeading}</h4>
-                    {property.floorPlanUrl ? (
-                      <div className="property-details__floorplan-thumbWrap">
-                        <img
-                          className="property-details__floorplan-thumb"
-                          src={property.floorPlanUrl}
-                          alt={`${property.title} — floor plan`}
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      </div>
-                    ) : (
+                  <header className="property-details__floorplans-head">
+                    <div className="property-details__floorplans-head-copy">
+                      <span className="property-details__floorplans-eyebrow">
+                        <LayoutTemplate size={14} strokeWidth={2.2} aria-hidden />
+                        {get('property', 'floorplans', 'eyebrow', 'Layout')}
+                      </span>
+                      <h4 id="floorplans-heading">{floorplanHeading}</h4>
                       <p>
                         {get(
                           'property',
-                          'info_tiles',
-                          'floorplan_empty',
-                          'Detailed layout available on request from our team.',
+                          'floorplans',
+                          'lede',
+                          'Study the layout in detail — open any plan for a larger view.',
                         )}
                       </p>
-                    )}
-                  </div>
-                  <span className="property-details__info-tile-hint">
-                    {property.floorPlanUrl
-                      ? get('property', 'info_tiles', 'floorplan_hint_has', 'Listing')
-                      : get('property', 'info_tiles', 'floorplan_hint_request', 'Request')}
-                  </span>
-                </div>
-                <div
-                  className="property-details__info-tile"
-                  role="group"
-                  aria-label={`${locationHeading} map — coming soon`}
-                >
-                  <span className="property-details__info-tile-icon" aria-hidden="true">
-                    <Map size={22} strokeWidth={2} />
-                  </span>
-                  <div className="property-details__info-tile-copy">
-                    <h4>{locationHeading}</h4>
-                    <p>
-                      {get(
+                    </div>
+                    <span className="property-details__floorplans-count">
+                      {floorPlanImages.length}{' '}
+                      {floorPlanImages.length === 1
+                        ? get('property', 'floorplans', 'count_one', 'plan')
+                        : get('property', 'floorplans', 'count_many', 'plans')}
+                    </span>
+                  </header>
+
+                  <div className="property-details__floorplans-stage">
+                    <button
+                      type="button"
+                      className="property-details__floorplans-viewer"
+                      onClick={() => setFloorPlanLightboxOpen(true)}
+                      aria-label={get(
                         'property',
-                        'info_tiles',
-                        'location_body',
-                        'Map and neighbourhood context — integration in progress.',
+                        'floorplans',
+                        'open_label',
+                        'Open floor plan full size',
                       )}
-                    </p>
+                    >
+                      <img
+                        src={activeFloorPlan}
+                        alt={`${property.title} — ${floorplanHeading} ${floorPlanIndex + 1}`}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <span className="property-details__floorplans-zoom">
+                        <ZoomIn size={16} strokeWidth={2.2} aria-hidden />
+                        {get('property', 'floorplans', 'enlarge', 'Enlarge')}
+                      </span>
+                    </button>
+
+                    {floorPlanImages.length > 1 ? (
+                      <div className="property-details__floorplans-nav" role="group" aria-label="Floor plan navigation">
+                        <button
+                          type="button"
+                          className="property-details__floorplans-nav-btn"
+                          aria-label="Previous floor plan"
+                          onClick={() =>
+                            setFloorPlanIndex(
+                              (i) => (i - 1 + floorPlanImages.length) % floorPlanImages.length,
+                            )
+                          }
+                        >
+                          <ChevronLeft size={18} strokeWidth={2.2} aria-hidden />
+                        </button>
+                        <span className="property-details__floorplans-nav-label">
+                          {floorPlanIndex + 1} / {floorPlanImages.length}
+                        </span>
+                        <button
+                          type="button"
+                          className="property-details__floorplans-nav-btn"
+                          aria-label="Next floor plan"
+                          onClick={() =>
+                            setFloorPlanIndex((i) => (i + 1) % floorPlanImages.length)
+                          }
+                        >
+                          <ChevronRight size={18} strokeWidth={2.2} aria-hidden />
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
-                  <span className="property-details__info-tile-hint">
-                    {get('property', 'info_tiles', 'location_hint', 'Soon')}
-                  </span>
+
+                  {floorPlanImages.length > 1 ? (
+                    <div className="property-details__floorplans-thumbs" role="list">
+                      {floorPlanImages.map((src, index) => (
+                        <button
+                          type="button"
+                          role="listitem"
+                          key={`${src}-${index}`}
+                          className={`property-details__floorplans-thumb${
+                            index === floorPlanIndex ? ' is-active' : ''
+                          }`}
+                          aria-label={`${floorplanHeading} ${index + 1}`}
+                          aria-pressed={index === floorPlanIndex}
+                          onClick={() => setFloorPlanIndex(index)}
+                        >
+                          <img
+                            src={src}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                          />
+                          <span>Plan {index + 1}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </section>
+              ) : null}
+
+              {hasMapPin && mapLatitude != null && mapLongitude != null ? (
+                <PropertyLocationMap
+                  latitude={mapLatitude}
+                  longitude={mapLongitude}
+                  title={property.title}
+                  locationLabel={property.location || property.address || undefined}
+                  heading={locationHeading}
+                  zoom={mapZoom}
+                  lede={get(
+                    'property',
+                    'location_map',
+                    'lede',
+                    mapCoords?.source === 'pin'
+                      ? 'Exact pin from the listing — explore the neighbourhood on the map.'
+                      : 'Location based on the listing area — open Google Maps for directions.',
+                  )}
+                />
+              ) : null}
+
+              {showInfoTiles ? (
+                <div
+                  className={`property-details__info-tiles${
+                    !hasFloorPlans && !hasMapPin ? '' : ' property-details__info-tiles--single'
+                  }`}
+                >
+                  {!hasFloorPlans ? (
+                    <div
+                      className="property-details__info-tile"
+                      role="group"
+                      aria-label={`${floorplanHeading} — available on request`}
+                    >
+                      <span className="property-details__info-tile-icon" aria-hidden="true">
+                        <LayoutTemplate size={22} strokeWidth={2} />
+                      </span>
+                      <div className="property-details__info-tile-copy">
+                        <h4>{floorplanHeading}</h4>
+                        <p>
+                          {get(
+                            'property',
+                            'info_tiles',
+                            'floorplan_empty',
+                            'Detailed layout available on request from our team.',
+                          )}
+                        </p>
+                      </div>
+                      <span className="property-details__info-tile-hint">
+                        {get('property', 'info_tiles', 'floorplan_hint_request', 'Request')}
+                      </span>
+                    </div>
+                  ) : null}
+                  {!hasMapPin ? (
+                    <div
+                      className="property-details__info-tile"
+                      role="group"
+                      aria-label={`${locationHeading} map — pin not set`}
+                    >
+                      <span className="property-details__info-tile-icon" aria-hidden="true">
+                        <Map size={22} strokeWidth={2} />
+                      </span>
+                      <div className="property-details__info-tile-copy">
+                        <h4>{locationHeading}</h4>
+                        <p>
+                          {get(
+                            'property',
+                            'info_tiles',
+                            'location_empty',
+                            'Map pin will appear here once the listing location is set.',
+                          )}
+                        </p>
+                      </div>
+                      <span className="property-details__info-tile-hint">
+                        {get('property', 'info_tiles', 'location_hint_pending', 'Pending')}
+                      </span>
+                    </div>
+                  ) : null}
                 </div>
-              </div>
+              ) : null}
+
+              {floorPlanLightboxOpen && activeFloorPlan ? (
+                <div
+                  className="property-details__floorplan-lightbox"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label={floorplanHeading}
+                  onClick={() => setFloorPlanLightboxOpen(false)}
+                >
+                  <div
+                    className="property-details__floorplan-lightbox-panel"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="property-details__floorplan-lightbox-toolbar">
+                      <p>
+                        {floorplanHeading}
+                        {floorPlanImages.length > 1
+                          ? ` · ${floorPlanIndex + 1} / ${floorPlanImages.length}`
+                          : ''}
+                      </p>
+                      <button
+                        type="button"
+                        className="property-details__floorplan-lightbox-close"
+                        aria-label="Close floor plan"
+                        onClick={() => setFloorPlanLightboxOpen(false)}
+                      >
+                        <X size={20} strokeWidth={2.2} aria-hidden />
+                      </button>
+                    </div>
+                    <div className="property-details__floorplan-lightbox-stage">
+                      {floorPlanImages.length > 1 ? (
+                        <button
+                          type="button"
+                          className="property-details__floorplan-lightbox-nav property-details__floorplan-lightbox-nav--prev"
+                          aria-label="Previous floor plan"
+                          onClick={() =>
+                            setFloorPlanIndex(
+                              (i) => (i - 1 + floorPlanImages.length) % floorPlanImages.length,
+                            )
+                          }
+                        >
+                          <ChevronLeft size={22} strokeWidth={2.2} aria-hidden />
+                        </button>
+                      ) : null}
+                      <img
+                        src={activeFloorPlan}
+                        alt={`${property.title} — ${floorplanHeading} ${floorPlanIndex + 1}`}
+                      />
+                      {floorPlanImages.length > 1 ? (
+                        <button
+                          type="button"
+                          className="property-details__floorplan-lightbox-nav property-details__floorplan-lightbox-nav--next"
+                          aria-label="Next floor plan"
+                          onClick={() =>
+                            setFloorPlanIndex((i) => (i + 1) % floorPlanImages.length)
+                          }
+                        >
+                          <ChevronRight size={22} strokeWidth={2.2} aria-hidden />
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </article>
 
             <aside className="property-details__sidebar">

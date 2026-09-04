@@ -1,5 +1,6 @@
 import type {Property, PropertyStatus, PublicPropertyCard} from '../../types/cms'
 import {PROPERTY_STATUS_LABELS} from '../../types/cms'
+import {resolvePropertyCoordinates} from './mapCoords'
 
 const STATUS_TO_PUBLIC: Record<PropertyStatus, PublicPropertyCard['status']> = {
   for_sale: 'For Sale',
@@ -9,17 +10,21 @@ const STATUS_TO_PUBLIC: Record<PropertyStatus, PublicPropertyCard['status']> = {
 }
 
 export function mapPropertyToPublicCard(property: Property): PublicPropertyCard {
-  const images = [...(property.property_images ?? [])].sort(
+  const allImages = [...(property.property_images ?? [])].sort(
     (a, b) => a.position - b.position,
   )
+  const images = allImages.filter((img) => (img.kind || 'gallery') !== 'floor_plan')
+  const floorPlans = allImages.filter((img) => img.kind === 'floor_plan')
   const featuredImage =
     images.find((img) => img.is_featured)?.image_url ?? images[0]?.image_url ?? ''
   const gallery = images.map((img) => img.image_url).filter(Boolean)
+  const floorPlanImages = floorPlans.map((img) => img.image_url).filter(Boolean)
   const location =
     [property.area, property.city].filter(Boolean).join(', ') ||
     property.city ||
     property.district ||
     ''
+  const mapCoords = resolvePropertyCoordinates(property)
 
   return {
     id: property.id,
@@ -58,6 +63,14 @@ export function mapPropertyToPublicCard(property: Property): PublicPropertyCard 
     registrationNumber: property.registration_number,
     postalCode: property.postal_code,
     mustHaves: property.bazaraki_must_haves,
+    floorPlanUrl: floorPlanImages[0],
+    floorPlanImages,
+    latitude: mapCoords?.latitude ?? null,
+    longitude: mapCoords?.longitude ?? null,
+    mapCoordinateSource: mapCoords?.source,
+    city: property.city ?? undefined,
+    area: property.area ?? undefined,
+    district: property.district ?? undefined,
   }
 }
 

@@ -1,6 +1,7 @@
 import type {Property, PropertyInsert, PropertyStatus, PropertyUpdate} from '../../types/cms'
 import {supabase} from '../supabase/client'
 import {slugify} from './slug'
+import {withResolvedCoordinates} from './mapCoords'
 
 const PROPERTY_SELECT = `
   *,
@@ -195,14 +196,14 @@ export async function createProperty(
     slug = `${slugify(input.title)}-${n}`
   }
 
-  const payload = {
+  const payload = withResolvedCoordinates({
     ...input,
     slug,
     features: input.features ?? [],
     created_by: userId ?? null,
     updated_by: userId ?? null,
     published_at: input.published ? new Date().toISOString() : null,
-  }
+  })
 
   const {data, error} = await supabase
     .from('properties')
@@ -221,7 +222,10 @@ export async function updateProperty(
 ): Promise<Property> {
   if (!supabase) throw new Error('Supabase is not configured')
 
-  const patch: PropertyUpdate = {...input, updated_by: userId ?? null}
+  const patch: PropertyUpdate = withResolvedCoordinates({
+    ...input,
+    updated_by: userId ?? null,
+  })
   if (patch.slug) {
     const slug = patch.slug.trim()
     if (await slugTaken(slug, id)) throw new Error('Slug is already in use')
@@ -310,13 +314,14 @@ export async function duplicateProperty(id: string, userId?: string | null) {
   )
 
   if (property_images?.length && supabase) {
-    const rows = property_images.map((img, index) => ({
+    const rows = property_images.map((img) => ({
       property_id: copy.id,
       image_url: img.image_url,
       storage_path: img.storage_path,
       alt_text: img.alt_text,
-      position: index,
+      position: img.position,
       is_featured: img.is_featured,
+      kind: img.kind || 'gallery',
     }))
     await supabase.from('property_images').insert(rows)
   }

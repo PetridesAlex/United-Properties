@@ -241,26 +241,356 @@
   gap: 0.55rem;
 }
 
-.property-details__floorplan-thumbWrap {
-  margin-top: 0.55rem;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  border: 1px solid rgba(23, 38, 59, 0.12);
-  background: rgba(23, 38, 59, 0.04);
+.property-details__floorplans {
+  margin-top: 1.65rem;
+  padding: clamp(1.1rem, 2.2vw, 1.45rem);
+  border-radius: 18px;
+  border: 1px solid rgba(23, 38, 59, 0.1);
+  background:
+    linear-gradient(180deg, rgba(255, 252, 247, 0.98) 0%, rgba(248, 243, 234, 0.92) 100%);
+  box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: 1rem;
 }
 
-.property-details__floorplan-thumb {
+.property-details__floorplans-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem 1.1rem;
+  flex-wrap: wrap;
+}
+
+.property-details__floorplans-head-copy {
+  display: grid;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.property-details__floorplans-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: fit-content;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(166, 124, 50, 0.95);
+}
+
+.property-details__floorplans-head h4 {
+  margin: 0;
+  font-size: clamp(1.15rem, 2vw, 1.35rem);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+.property-details__floorplans-head p {
+  margin: 0;
+  max-width: 38rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: rgba(23, 38, 59, 0.62);
+}
+
+.property-details__floorplans-count {
+  flex-shrink: 0;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(196, 156, 92, 0.28);
+  background: rgba(255, 255, 255, 0.78);
+  color: rgba(120, 88, 42, 0.95);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.property-details__floorplans-stage {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.property-details__floorplans-viewer {
+  position: relative;
+  appearance: none;
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(23, 38, 59, 0.1);
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: zoom-in;
+  background:
+    linear-gradient(45deg, rgba(23, 38, 59, 0.035) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(23, 38, 59, 0.035) 25%, transparent 25%),
+    #fff;
+  background-size: 18px 18px;
+  background-position: 0 0, 0 9px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.property-details__floorplans-viewer:hover,
+.property-details__floorplans-viewer:focus-visible {
+  border-color: rgba(196, 156, 92, 0.45);
+  box-shadow:
+    0 12px 28px rgba(23, 38, 59, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  outline: none;
+}
+
+.property-details__floorplans-viewer img {
   display: block;
   width: 100%;
   height: auto;
-  max-height: 220px;
+  max-height: min(32rem, 68vh);
   object-fit: contain;
-  vertical-align: middle;
+  object-position: center;
+  margin-inline: auto;
+  padding: clamp(0.75rem, 2vw, 1.35rem);
+  background: transparent;
 }
 
-.property-details__info-tile--has-plan .property-details__info-tile-copy {
-  flex: 1 1 100%;
-  min-width: 0;
+.property-details__floorplans-zoom {
+  position: absolute;
+  right: 0.85rem;
+  bottom: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.42rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid rgba(23, 38, 59, 0.12);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-ink);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 8px 18px rgba(23, 38, 59, 0.12);
+  pointer-events: none;
+}
+
+.property-details__floorplans-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  justify-self: center;
+}
+
+.property-details__floorplans-nav-btn {
+  appearance: none;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 999px;
+  border: 1px solid rgba(23, 38, 59, 0.12);
+  background: #fff;
+  color: var(--color-ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.property-details__floorplans-nav-btn:hover {
+  border-color: rgba(196, 156, 92, 0.45);
+  background: rgba(255, 252, 247, 0.98);
+  transform: translateY(-1px);
+}
+
+.property-details__floorplans-nav-label {
+  min-width: 3.5rem;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(23, 38, 59, 0.7);
+  font-variant-numeric: tabular-nums;
+}
+
+.property-details__floorplans-thumbs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: 0.65rem;
+}
+
+.property-details__floorplans-thumb {
+  appearance: none;
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.4rem;
+  border-radius: 12px;
+  border: 1px solid rgba(23, 38, 59, 0.1);
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.property-details__floorplans-thumb img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  display: block;
+  border-radius: 8px;
+  background:
+    linear-gradient(45deg, rgba(23, 38, 59, 0.04) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(23, 38, 59, 0.04) 25%, transparent 25%),
+    #faf8f4;
+  background-size: 12px 12px;
+  background-position: 0 0, 0 6px;
+}
+
+.property-details__floorplans-thumb span {
+  padding: 0 0.15rem 0.1rem;
+  font-size: 0.68rem;
+  font-weight: 720;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(23, 38, 59, 0.55);
+}
+
+.property-details__floorplans-thumb:hover {
+  border-color: rgba(196, 156, 92, 0.4);
+  transform: translateY(-1px);
+}
+
+.property-details__floorplans-thumb.is-active {
+  border-color: rgba(196, 156, 92, 0.55);
+  box-shadow: 0 0 0 2px rgba(196, 156, 92, 0.18);
+}
+
+.property-details__floorplans-thumb.is-active span {
+  color: rgba(120, 88, 42, 0.95);
+}
+
+.property-details__floorplan-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: max(1rem, env(safe-area-inset-top, 0px)) max(1rem, env(safe-area-inset-right, 0px))
+    max(1rem, env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left, 0px));
+  background: rgba(10, 16, 28, 0.78);
+  backdrop-filter: blur(8px);
+}
+
+.property-details__floorplan-lightbox-panel {
+  width: min(1100px, 100%);
+  max-height: min(92vh, 920px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #0f1828;
+  box-shadow: 0 28px 64px rgba(0, 0, 0, 0.45);
+}
+
+.property-details__floorplan-lightbox-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.property-details__floorplan-lightbox-toolbar p {
+  margin: 0;
+  color: #f6f0e6;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.property-details__floorplan-lightbox-close {
+  appearance: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f6f0e6;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.property-details__floorplan-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.property-details__floorplan-lightbox-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 1rem;
+  background:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+    #121c2e;
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px;
+}
+
+.property-details__floorplan-lightbox-stage img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: min(78vh, 760px);
+  object-fit: contain;
+}
+
+.property-details__floorplan-lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  appearance: none;
+  width: 2.65rem;
+  height: 2.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(12, 18, 30, 0.72);
+  color: #f6f0e6;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.property-details__floorplan-lightbox-nav--prev {
+  left: 0.75rem;
+}
+
+.property-details__floorplan-lightbox-nav--next {
+  right: 0.75rem;
+}
+
+.property-details__floorplan-lightbox-nav:hover {
+  background: rgba(191, 152, 117, 0.28);
+  border-color: rgba(232, 210, 186, 0.4);
+}
+
+.property-details__info-tiles--single {
+  grid-template-columns: 1fr;
 }
 
 .property-details__head {
