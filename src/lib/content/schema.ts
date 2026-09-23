@@ -659,7 +659,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
             3,
           ),
           f('cta_primary', 'Primary button', 'Book a Valuation Call'),
-          f('cta_secondary', 'Secondary button', 'Explore all services'),
+          f('cta_secondary', 'Secondary button', 'Explore United Services'),
         ],
       },
       {
@@ -1605,9 +1605,9 @@ export const CONTENT_PAGES: ContentPageDef[] = [
   },
   {
     id: 'search',
-    title: 'Search panel',
-    description: 'Global property search overlay headings and labels.',
-    path: '/',
+    title: 'Search page',
+    description: 'Property search page — headings, filters, empty state, and map labels.',
+    path: '/search',
     sections: [
       {
         id: 'head',
@@ -1619,7 +1619,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
           f(
             'description',
             'Supporting text',
-            'Narrow your criteria in the filter column — results and map update as you go.',
+            'Filter by location, bedrooms, and budget. Results update as you refine.',
             'textarea',
             3,
           ),
@@ -1632,6 +1632,10 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         fields: [
           f('location_label', 'Location label', 'Location'),
           f('category_label', 'Listing type label', 'Listing type'),
+          f('bedrooms_label', 'Bedrooms label', 'Bedrooms'),
+          f('price_label', 'Price label', 'Price'),
+          f('price_min', 'Price minimum label', 'Minimum'),
+          f('price_max', 'Price maximum label', 'Maximum'),
           f('clear', 'Clear button', 'Clear all'),
           f(
             'search_placeholder',
@@ -1678,6 +1682,26 @@ export function getContentPage(pageId: string): ContentPageDef | undefined {
   return CONTENT_PAGES.find((p) => p.id === pageId)
 }
 
+/** Pages that share a URL with a real route page — never win path→page sync. */
+const NON_ROUTE_OWNER_IDS = new Set(['navbar', 'footer', 'cookies', 'inquiry'])
+
+/** Map a preview pathname to the main content page (not nav/footer/overlays). */
+export function getContentPageByPath(pathname: string): ContentPageDef | undefined {
+  const path = (pathname || '/').split('?')[0].split('#')[0] || '/'
+  const matches = CONTENT_PAGES.filter(
+    (page) => page.path === path && !NON_ROUTE_OWNER_IDS.has(page.id),
+  )
+  if (matches.length === 1) return matches[0]
+  if (path === '/') return getContentPage('home')
+  // Prefer the catalog “website” page when several definitions share a path.
+  const preferred = matches.find((page) =>
+    ['home', 'about', 'contact', 'services', 'sell', 'properties', 'agents', 'concierge', 'video'].includes(
+      page.id,
+    ),
+  )
+  return preferred ?? matches[0]
+}
+
 export function getDefaultContentMap(): Record<string, string> {
   const map: Record<string, string> = {}
   for (const page of CONTENT_PAGES) {
@@ -1698,8 +1722,10 @@ export function resolveContentValue(
   fallback?: string,
 ): string {
   const key = contentKey(page, section, fieldKey)
-  const fromDb = map[key]
-  if (fromDb != null && fromDb.trim() !== '') return fromDb
+  // Key present in the map (even as '') means it was saved — respect intentional blanks.
+  if (key in map) {
+    return map[key] ?? ''
+  }
   if (fallback != null) return fallback
   return getDefaultContentMap()[key] ?? ''
 }

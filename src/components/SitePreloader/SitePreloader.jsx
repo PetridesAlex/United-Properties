@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import './SitePreloader.css'
 
 /** Short minimum so the reveal does not flash away instantly (sync bar feel with `--sp-duration-bar`). */
-const MIN_MS = 900
+const MIN_MS = 480
 /** Never wait longer than this for window load; preloader dismisses at most ~MAX_MS + exit animation. */
-const MAX_MS = 3000
+const MAX_MS = 1800
 /** Must match `.site-preloader--exit` animation duration in CSS */
-const EXIT_MS = 780
-const EXIT_MS_REDUCED = 420
+const EXIT_MS = 520
+const EXIT_MS_REDUCED = 280
 
 function waitForWindowLoad() {
   if (typeof document === 'undefined') return Promise.resolve()

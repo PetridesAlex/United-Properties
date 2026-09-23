@@ -12,9 +12,9 @@ function SectionHeader({ eyebrow, title, description, center = false, className 
       viewport={{ once: true, amount: 0.4 }}
       transition={{ duration: 0.6 }}
     >
-      {eyebrow && <p className="section-header__eyebrow">{eyebrow}</p>}
-      <h2 id={headingId}>{title}</h2>
-      {description && <p className="section-header__description">{description}</p>}
+      {eyebrow ? <p className="section-header__eyebrow">{eyebrow}</p> : null}
+      {title ? <h2 id={headingId}>{title}</h2> : null}
+      {description ? <p className="section-header__description">{description}</p> : null}
     </motion.header>
   )
 }

@@ -14,6 +14,7 @@ const SITE_URL = 'https://www.unitedproperties.eu'
 
 const STATIC_PATHS = [
   '/',
+  '/search',
   '/buy',
   '/rent',
   '/contact',

@@ -164,21 +164,24 @@ function Home() {
           <ScrollStack
             className="home-scroll-stack"
             useWindowScroll
-            itemDistance={90}
-            itemScale={0.05}
-            itemStackDistance={26}
-            stackPosition="22%"
-            scaleEndPosition="12%"
-            baseScale={0.82}
+            itemDistance={240}
+            itemScale={0.03}
+            itemStackDistance={48}
+            stackPosition="12%"
+            scaleEndPosition="5%"
+            baseScale={0.86}
             rotationAmount={0}
+            blurAmount={1}
           >
             {signatureScrollStackItems.map((property) => (
               <ScrollStackItem key={`stack-${property.id}`} itemClassName="home-scroll-stack-card">
                 <img
                   src={property.scrollStackCoverImage}
                   alt={property.title}
-                  loading="lazy"
+                  loading="eager"
                   decoding="async"
+                  fetchPriority="low"
+                  sizes="(max-width: 820px) 96vw, min(1480px, 96vw)"
                 />
                 <div className="home-scroll-stack-card__overlay" />
                 <div className="home-scroll-stack-card__content">

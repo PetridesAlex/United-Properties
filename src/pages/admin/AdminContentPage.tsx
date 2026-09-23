@@ -7,7 +7,6 @@ import {
   LayoutTemplate,
   Menu,
   Monitor,
-  MousePointer2,
   RefreshCw,
   Save,
   Search,
@@ -22,15 +21,16 @@ import {
   CMS_PREVIEW_MESSAGE,
   CMS_PREVIEW_READY,
   isCmsBridgeMessage,
-  postCmsEditMode,
-  readAdminEditToolsPreference,
+  isCmsSharedChromePage,
+  normalizeCmsPathname,
+  previewPathForCmsPage,
   sameOrigin,
-  writeAdminEditToolsPreference,
 } from '../../lib/content/cmsPreview'
 import {
   contentKey,
   getContentCatalogGroups,
   getContentPage,
+  getContentPageByPath,
   getDefaultContentMap,
   type ContentPageDef,
   type ContentSectionDef,
@@ -166,19 +166,16 @@ export default function AdminContentPage() {
   const [previewOpen, setPreviewOpen] = useState(true)
   const [previewDevice, setPreviewDevice] = useState<PreviewDevice>('desktop')
   const [clickFlash, setClickFlash] = useState(false)
-  const [editToolsOn, setEditToolsOn] = useState(() => readAdminEditToolsPreference(true))
   const previewFrameRef = useRef<HTMLIFrameElement | null>(null)
   const pendingJumpRef = useRef<string | null>(null)
   const focusFromPreviewRef = useRef<(pageId: string, sectionId: string) => void>(() => {})
-  const editToolsRef = useRef(editToolsOn)
-  editToolsRef.current = editToolsOn
   /** Last path the preview iframe actually showed — keeps browse position across remounts. */
   const iframePathRef = useRef<string | null>(null)
 
   function captureIframePath() {
     try {
       const path = previewFrameRef.current?.contentWindow?.location?.pathname
-      if (path) iframePathRef.current = path
+      if (path) iframePathRef.current = normalizeCmsPathname(path)
     } catch {
       // Cross-origin — ignore.
     }
@@ -200,6 +197,8 @@ export default function AdminContentPage() {
   const persistTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const restoredScroll = useRef(false)
   const editorScrollRef = useRef<HTMLDivElement | null>(null)
+  /** While set, ignore iframe path→editor sync until the preview reaches this path. */
+  const awaitPreviewPathRef = useRef<string | null>(null)
 
   valuesRef.current = values
   savedRef.current = savedSnapshot
@@ -290,13 +289,42 @@ export default function AdminContentPage() {
       if (!sameOrigin(event.origin)) return
       const data = event.data
       if (isCmsBridgeMessage(data, CMS_PREVIEW_READY)) {
-        if (typeof data.pathname === 'string' && data.pathname.startsWith('/')) {
-          iframePathRef.current = data.pathname
-        } else {
-          captureIframePath()
+        const pathname =
+          typeof data.pathname === 'string' && data.pathname.startsWith('/')
+            ? normalizeCmsPathname(data.pathname)
+            : null
+        if (pathname) iframePathRef.current = pathname
+        else captureIframePath()
+
+        const readyPath = normalizeCmsPathname(iframePathRef.current || '/')
+        const awaiting = awaitPreviewPathRef.current
+        if (awaiting) {
+          if (readyPath === awaiting) {
+            awaitPreviewPathRef.current = null
+          } else {
+            // Stale ready from the previous preview route — don't snap the editor back.
+            return
+          }
         }
-        const frameWindow = previewFrameRef.current?.contentWindow
-        if (frameWindow) postCmsEditMode(editToolsRef.current, frameWindow)
+
+        const activeId = pageRef.current
+        // Shared chrome / overlays keep the current editor page; only update iframe path.
+        if (!activeId || isCmsSharedChromePage(activeId)) return
+
+        const activeDef = getContentPage(activeId)
+        const expectedForActive = normalizeCmsPathname(
+          previewPathForCmsPage(activeId, activeDef?.path || '/', readyPath),
+        )
+        if (readyPath === expectedForActive) return
+
+        // Preview navigated (e.g. menu link) — follow to that page's editor.
+        const browsed = getContentPageByPath(readyPath)
+        if (!browsed || browsed.id === activeId || isCmsSharedChromePage(browsed.id)) return
+
+        restoredScroll.current = true
+        setActivePageId(browsed.id)
+        setActiveSectionId(browsed.sections[0]?.id ?? null)
+        setQuery('')
         return
       }
       if (!isCmsBridgeMessage(data, CMS_PREVIEW_MESSAGE)) return
@@ -307,19 +335,6 @@ export default function AdminContentPage() {
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
   }, [])
-
-  useEffect(() => {
-    writeAdminEditToolsPreference(editToolsOn)
-    const frameWindow = previewFrameRef.current?.contentWindow
-    if (!frameWindow || !previewOpen) return
-
-    const push = () => postCmsEditMode(editToolsOn, frameWindow)
-    push()
-    const timers = [80, 200, 500, 1000, 2000].map((ms) => window.setTimeout(push, ms))
-    return () => {
-      for (const t of timers) window.clearTimeout(t)
-    }
-  }, [editToolsOn, previewOpen, previewKey, activePageId])
 
   useEffect(() => {
     if (!pendingJumpRef.current) return
@@ -383,16 +398,17 @@ export default function AdminContentPage() {
 
   const previewSrc = useMemo(() => {
     if (!activePage) return '/'
-    // Stay on wherever the iframe last was (e.g. browsed to /about), not always homepage.
-    const path = iframePathRef.current || activePage.path || '/'
+    // Content pages always remount to their own path. Shared chrome (nav/footer)
+    // keeps the last browsed URL so click-to-edit still works sitewide.
+    const path = previewPathForCmsPage(
+      activePage.id,
+      activePage.path || '/',
+      iframePathRef.current || activePage.path || '/',
+    )
     const url = new URL(path, window.location.origin)
     url.searchParams.set('cmsPreview', String(previewKey || 1))
-    // Bake edit mode only when the frame remounts — toggling must not change this URL.
-    if (editToolsRef.current) url.searchParams.set('cmsEdit', '1')
-    else url.searchParams.delete('cmsEdit')
+    url.searchParams.set('cmsEdit', '1')
     return `${url.pathname}${url.search}`
-    // editToolsOn intentionally omitted: toggle uses postMessage, not a remount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePage, previewKey])
 
   const previewFrameKey = `preview-${previewKey}`
@@ -403,14 +419,24 @@ export default function AdminContentPage() {
     setQuery('')
     setActivePageId(pageId)
     setActiveSectionId(page?.sections[0]?.id ?? null)
-    iframePathRef.current = page?.path || '/'
-    // Keep click-to-edit armed when entering any page.
-    if (!editToolsRef.current) {
-      setEditToolsOn(true)
-      writeAdminEditToolsPreference(true)
-    }
+    const nextPath = previewPathForCmsPage(
+      pageId,
+      page?.path || '/',
+      iframePathRef.current || page?.path || '/',
+    )
+    iframePathRef.current = nextPath
+    // Lock path→editor sync until the iframe actually reaches this page.
+    awaitPreviewPathRef.current = isCmsSharedChromePage(pageId)
+      ? null
+      : normalizeCmsPathname(nextPath)
     setPreviewKey((n) => n + 1)
     requestAnimationFrame(() => window.scrollTo(0, 0))
+  }
+
+  function switchStudioPage(pageId: string) {
+    if (!pageId || pageId === activePageId) return
+    if (dirty && !window.confirm('You have unsaved changes. Switch page anyway?')) return
+    openPage(pageId)
   }
 
   function jumpToSection(sectionId: string) {
@@ -419,6 +445,7 @@ export default function AdminContentPage() {
     requestAnimationFrame(() => {
       const el = document.getElementById(`cms-section-${sectionId}`)
       if (!el) return
+      el.scrollIntoView({behavior: 'smooth', block: 'nearest'})
       const field = el.querySelector('input, textarea')
       if (field instanceof HTMLElement) {
         field.focus({preventScroll: true})
@@ -439,24 +466,34 @@ export default function AdminContentPage() {
     const sectionTitle =
       page.sections.find((s) => s.id === nextSection)?.title || nextSection || 'section'
 
+    captureIframePath()
+    const currentPath = iframePathRef.current || '/'
+    const targetPath = previewPathForCmsPage(pageId, page.path || '/', currentPath)
+    const needsPreviewNav =
+      pageId !== activePageId &&
+      !isCmsSharedChromePage(pageId) &&
+      targetPath !== currentPath
+
     flushSync(() => {
       setPreviewOpen(true)
-      setEditToolsOn(true)
       setQuery('')
       setClickFlash(true)
-      writeAdminEditToolsPreference(true)
     })
     window.setTimeout(() => setClickFlash(false), 1000)
 
     if (pageId !== activePageId) {
       restoredScroll.current = true
       if (nextSection) pendingJumpRef.current = nextSection
-      // Preview is already on this page — don't force a remount back to another path.
-      iframePathRef.current = page.path || iframePathRef.current
+      iframePathRef.current = targetPath
+      awaitPreviewPathRef.current =
+        needsPreviewNav && !isCmsSharedChromePage(pageId)
+          ? normalizeCmsPathname(targetPath)
+          : null
       flushSync(() => {
         setActivePageId(pageId)
         setActiveSectionId(nextSection)
       })
+      if (needsPreviewNav) setPreviewKey((n) => n + 1)
       toast.success(`Editing · ${page.title} · ${sectionTitle}`)
       return
     }
@@ -480,31 +517,8 @@ export default function AdminContentPage() {
 
   function refreshPreview() {
     captureIframePath()
-    writeAdminEditToolsPreference(editToolsOn)
     setPreviewKey((n) => n + 1)
     toast.success('Preview refreshed')
-  }
-
-  function toggleEditTools() {
-    setEditToolsOn((on) => {
-      const next = !on
-      writeAdminEditToolsPreference(next)
-      // Stay on the current preview page — only flip tools via postMessage (no iframe remount).
-      captureIframePath()
-      const frameWindow = previewFrameRef.current?.contentWindow
-      if (frameWindow) {
-        postCmsEditMode(next, frameWindow)
-        window.setTimeout(() => postCmsEditMode(next, frameWindow), 120)
-        window.setTimeout(() => postCmsEditMode(next, frameWindow), 350)
-      }
-      toast.success(
-        next
-          ? 'Click-to-edit enabled — click a section in the preview'
-          : 'Browse mode — click the site normally',
-      )
-      return next
-    })
-    if (!previewOpen) setPreviewOpen(true)
   }
 
   async function onSavePage() {
@@ -527,15 +541,9 @@ export default function AdminContentPage() {
         savedSnapshot: nextSnapshot,
         scrollY: window.scrollY || 0,
       })
-      // Keep click-to-edit armed and stay on the same preview page after remount.
       captureIframePath()
-      writeAdminEditToolsPreference(editToolsOn)
       setPreviewKey((n) => n + 1)
-      toast.success(
-        editToolsOn
-          ? 'Saved — preview updated. Click-to-edit is still on.'
-          : 'Saved — preview updated',
-      )
+      toast.success('Saved — preview updated')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Save failed')
     } finally {
@@ -621,20 +629,32 @@ export default function AdminContentPage() {
             <p className="content-admin__eyebrow">Editing</p>
             <h1>{activePage.title}</h1>
             <p className="content-admin__path">{pathLabel(activePage.path)}</p>
+            <label className="content-admin__page-switch">
+              <select
+                value={activePage.id}
+                onChange={(e) => switchStudioPage(e.target.value)}
+                aria-label="Switch CMS page"
+              >
+                {catalogGroups.map((group) => (
+                  <optgroup key={group.id} label={group.title}>
+                    {group.ids.map((id) => {
+                      const page = getContentPage(id)
+                      if (!page) return null
+                      return (
+                        <option key={page.id} value={page.id}>
+                          {page.title}
+                        </option>
+                      )
+                    })}
+                  </optgroup>
+                ))}
+              </select>
+            </label>
           </div>
         </div>
 
         <div className="content-admin__studio-actions">
           {dirty ? <span className="content-admin__dirty">Unsaved changes</span> : null}
-          <button
-            type="button"
-            className={`admin-btn${editToolsOn ? ' admin-btn--gold' : ' admin-btn--ghost'}`}
-            aria-pressed={editToolsOn}
-            onClick={toggleEditTools}
-          >
-            <MousePointer2 size={15} aria-hidden />
-            {editToolsOn ? 'Click to edit: On' : 'Click to edit: Off'}
-          </button>
           <button
             type="button"
             className="admin-btn admin-btn--ghost"
@@ -673,8 +693,8 @@ export default function AdminContentPage() {
           <div className="content-admin__workspace-intro">
             <h2>Edit this section</h2>
             <p>
-              Pick a category below — or click it in the live preview (Click to edit stays on after
-              Save). Only the selected section is shown.
+              Click a section in the live preview — or pick a category below. Browse pages with the
+              site menu in the preview.
             </p>
           </div>
 
@@ -760,7 +780,7 @@ export default function AdminContentPage() {
                                 id={key}
                                 rows={field.rows ?? 4}
                                 value={value}
-                                placeholder={field.defaultValue}
+                                placeholder={field.defaultValue || 'Optional'}
                                 onChange={(e) =>
                                   setField(
                                     activePage.id,
@@ -774,7 +794,7 @@ export default function AdminContentPage() {
                               <input
                                 id={key}
                                 value={value}
-                                placeholder={field.defaultValue}
+                                placeholder={field.defaultValue || 'Optional'}
                                 onChange={(e) =>
                                   setField(
                                     activePage.id,
@@ -837,21 +857,13 @@ export default function AdminContentPage() {
                   src={previewSrc}
                   onLoad={() => {
                     captureIframePath()
-                    const frameWindow = previewFrameRef.current?.contentWindow
-                    if (!frameWindow) return
-                    const push = () => postCmsEditMode(editToolsRef.current, frameWindow)
-                    push()
-                    window.setTimeout(push, 100)
-                    window.setTimeout(push, 400)
-                    window.setTimeout(push, 900)
                   }}
                 />
               </div>
             </div>
-            <p className={`content-admin__preview-tip${editToolsOn ? ' is-edit-on' : ''}`}>
-              {editToolsOn
-                ? 'Edit mode on — click a gold-outlined section in the preview. Its fields open on the left.'
-                : 'Browse mode — use the site normally in the preview. Turn on “Click to edit” when you want to pick a section.'}
+            <p className="content-admin__preview-tip is-edit-on">
+              Click any outlined section to edit it. Use the site menu in the preview to open another
+              page.
             </p>
           </section>
         ) : null}

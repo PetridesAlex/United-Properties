@@ -33,28 +33,45 @@
 }
 
 .home-scroll-stack-section {
-  overflow: clip;
+  /* visible so pinned cards are never clipped mid-stack */
+  overflow: visible;
+  /* Clearance before Services so released cards never cover the next band */
+  padding-bottom: clamp(3.5rem, 8vh, 5.5rem);
+}
+
+.home-scroll-stack-section > .container {
+  width: min(1480px, 96vw);
 }
 
 .home-scroll-stack.scroll-stack-scroller {
   height: auto;
   overflow: visible;
+  /* No transform on the scroller — keeps layout offsets accurate for pinning */
+  transform: none;
+  -webkit-transform: none;
 }
 
 .home-scroll-stack .scroll-stack-inner {
-  padding: 4rem 0 30rem;
+  /* Room to unpin + ease out before the next section */
+  padding: 1.75rem 0 calc(22vh + 2rem);
   min-height: auto;
 }
 
 .home-scroll-stack-card {
   overflow: hidden;
-  border: 1px solid rgba(20, 20, 20, 0.15);
-  box-shadow: 0 24px 40px rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(20, 20, 20, 0.12);
+  border-radius: clamp(1.1rem, 1.8vw, 1.75rem);
+  box-shadow:
+    0 28px 56px rgba(0, 0, 0, 0.28),
+    0 8px 18px rgba(0, 0, 0, 0.16);
   padding: 0;
-  height: 29rem;
+  /* Slightly shorter than full viewport so each card reads as its own beat */
+  height: clamp(24rem, 58vh, 36rem);
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
   background: #111;
   isolation: isolate;
-  transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -63,7 +80,10 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: translateZ(0);
+  object-position: center;
+  display: block;
+  /* No nested transform — parent card owns motion */
+  transform: none;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   pointer-events: none;
@@ -73,7 +93,12 @@
 .home-scroll-stack-card__overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.1) 55%);
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.78) 0%,
+    rgba(0, 0, 0, 0.22) 42%,
+    rgba(0, 0, 0, 0.06) 70%
+  );
   pointer-events: none;
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -82,30 +107,34 @@
 
 .home-scroll-stack-card__content {
   position: absolute;
-  left: 2rem;
-  right: 2rem;
-  bottom: 2rem;
+  left: clamp(1.4rem, 3vw, 2.6rem);
+  right: clamp(1.4rem, 3vw, 2.6rem);
+  bottom: clamp(1.4rem, 3vw, 2.6rem);
   color: var(--color-white);
+  max-width: 38rem;
 }
 
 .home-scroll-stack-card__content p {
   margin: 0;
   color: var(--color-accent-light);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  font-size: clamp(0.72rem, 1.1vw, 0.84rem);
 }
 
 .home-scroll-stack-card__content h3 {
-  margin: 0.5rem 0 0.4rem;
-  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  margin: 0.55rem 0 0.45rem;
+  font-size: clamp(1.85rem, 3.4vw, 2.85rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
 }
 
 .home-scroll-stack-card__content span {
   display: block;
-  margin-bottom: 1rem;
-  font-size: 1.05rem;
-  color: rgba(248, 246, 241, 0.92);
+  margin-bottom: 1.15rem;
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  color: rgba(248, 246, 241, 0.94);
 }
 
 .home-dev-grid {
@@ -216,17 +245,23 @@
   }
 
   .home-scroll-stack .scroll-stack-inner {
-    padding: 2rem 0 22rem;
+    padding: 1.25rem 0 calc(18vh + 1.25rem);
   }
 
   .home-scroll-stack-card {
-    height: 22rem;
+    height: clamp(22rem, 62vh, 32rem);
+    border-radius: 1.1rem;
   }
 
   .home-scroll-stack-card__content {
-    left: 1.2rem;
-    right: 1.2rem;
-    bottom: 1.2rem;
+    left: 1.15rem;
+    right: 1.15rem;
+    bottom: 1.15rem;
+    max-width: none;
+  }
+
+  .home-scroll-stack-card__content h3 {
+    font-size: clamp(1.45rem, 6.2vw, 2rem);
   }
 
   .home-testimonials__grid {

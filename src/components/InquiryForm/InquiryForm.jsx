@@ -1,5 +1,5 @@
-import {useState} from 'react'
-import {Clock, Lock, Send, Sparkles} from 'lucide-react'
+import {useEffect, useId, useRef, useState} from 'react'
+import {ChevronDown, Clock, Lock, Send, Sparkles} from 'lucide-react'
 import {CONTACT_EMAIL, CONTACT_MAILTO_HREF} from '../../config/externalLinks'
 import {isSupabaseConfigured, supabase} from '../../lib/supabaseClient'
 import {useSiteContent} from '../../hooks/useSiteContent'
@@ -21,17 +21,35 @@ function openMailtoFallback(payload) {
   window.location.href = `${CONTACT_MAILTO_HREF}?subject=${subject}&body=${body}`
 }
 
-function InquiryForm({ className = '', propertyId = null, propertyInterestDefault = '' }) {
+function InquiryForm({
+  className = '',
+  propertyId = null,
+  propertyInterestDefault = '',
+  /** Property sidebar: premium CTA first, then expand the form. */
+  revealOnClick = false,
+}) {
   const {get} = useSiteContent()
+  const fieldsId = useId()
+  const firstFieldRef = useRef(null)
+  const [open, setOpen] = useState(!revealOnClick)
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState({type: '', message: ''})
 
+  const heading = get('inquiry', 'form', 'heading', 'Request a private consultation')
   const successMessage = get(
     'inquiry',
     'form',
     'success',
     'Inquiry sent. Our team will contact you shortly.',
   )
+
+  useEffect(() => {
+    if (!revealOnClick || !open) return undefined
+    const timer = window.setTimeout(() => {
+      firstFieldRef.current?.focus({preventScroll: true})
+    }, 280)
+    return () => window.clearTimeout(timer)
+  }, [open, revealOnClick])
 
   async function onSubmit(event) {
     event.preventDefault()
@@ -110,144 +128,244 @@ function InquiryForm({ className = '', propertyId = null, propertyInterestDefaul
     }
   }
 
+  const formClass = [
+    'inquiry-form',
+    revealOnClick ? 'inquiry-form--reveal' : '',
+    revealOnClick && open ? 'is-open' : '',
+    revealOnClick && !open ? 'is-collapsed' : '',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <form
-      className={`inquiry-form ${className}`.trim()}
+      className={formClass}
       onSubmit={onSubmit}
       aria-label="Property inquiry form"
+      data-open={revealOnClick ? (open ? 'true' : 'false') : undefined}
     >
       <header className="inquiry-form__header">
         <span className="inquiry-form__eyebrow">
           <Sparkles size={14} aria-hidden />
           {get('inquiry', 'form', 'eyebrow', 'Private inquiry')}
         </span>
-        <h3 className="inquiry-form__title">
-          {get('inquiry', 'form', 'heading', 'Request a private consultation')}
-        </h3>
-        <p className="inquiry-form__lede">
-          {get(
-            'inquiry',
-            'form',
-            'lede',
-            'Share a few details and we will respond with tailored guidance for your brief.',
-          )}
-        </p>
-        <ul className="inquiry-form__trust" aria-label="What to expect">
-          <li>
-            <Clock size={14} aria-hidden />
-            {get('inquiry', 'form', 'trust1', 'Reply within one business day')}
-          </li>
-          <li>
-            <Lock size={14} aria-hidden />
-            {get('inquiry', 'form', 'trust2', 'Your details stay confidential')}
-          </li>
-        </ul>
-      </header>
 
-      <div className="inquiry-form__fields">
-        <div className="inquiry-form__grid">
-          <label className="inquiry-form__field">
-            <span className="inquiry-form__label">
-              {get('inquiry', 'form', 'label_name', 'Full name')}
-            </span>
-            <input name="name" type="text" required autoComplete="name" />
-          </label>
-          <label className="inquiry-form__field">
-            <span className="inquiry-form__label">
-              {get('inquiry', 'form', 'label_email', 'Email')}
-            </span>
-            <input name="email" type="email" required autoComplete="email" />
-          </label>
-          <label className="inquiry-form__field">
-            <span className="inquiry-form__label">
-              {get('inquiry', 'form', 'label_phone', 'Phone')}
-            </span>
-            <input name="phone" type="tel" autoComplete="tel" />
-          </label>
-          <label className="inquiry-form__field">
-            <span className="inquiry-form__label">
-              {get('inquiry', 'form', 'label_subject', 'Subject')}
-            </span>
-            <input
-              name="subject"
-              type="text"
-              placeholder={get(
+        {revealOnClick ? (
+          <>
+            <p className="inquiry-form__invite" aria-hidden={!open}>
+              Ready when you are
+            </p>
+            <h3 className="inquiry-form__title inquiry-form__title--animated">
+              <span className="inquiry-form__title-shimmer">{heading}</span>
+            </h3>
+            <p className="inquiry-form__lede">
+              {get(
                 'inquiry',
                 'form',
-                'placeholder_subject',
-                'Buying / renting / investment',
+                'lede',
+                'Share a few details and we will respond with tailored guidance for your brief.',
               )}
-            />
-          </label>
+            </p>
+            <ul className="inquiry-form__trust" aria-label="What to expect">
+              <li>
+                <Clock size={14} aria-hidden />
+                {get('inquiry', 'form', 'trust1', 'Reply within one business day')}
+              </li>
+              <li>
+                <Lock size={14} aria-hidden />
+                {get('inquiry', 'form', 'trust2', 'Your details stay confidential')}
+              </li>
+            </ul>
+
+            <button
+              type="button"
+              className="inquiry-form__reveal-btn"
+              aria-expanded={open}
+              aria-controls={fieldsId}
+              onClick={() => setOpen((value) => !value)}
+            >
+              <span className="inquiry-form__reveal-btn-glow" aria-hidden />
+              <span className="inquiry-form__reveal-btn-label">
+                {open ? 'Hide inquiry form' : heading}
+              </span>
+              <ChevronDown
+                className="inquiry-form__reveal-btn-chevron"
+                size={20}
+                strokeWidth={2.2}
+                aria-hidden
+              />
+            </button>
+          </>
+        ) : (
+          <>
+            <h3 className="inquiry-form__title">{heading}</h3>
+            <p className="inquiry-form__lede">
+              {get(
+                'inquiry',
+                'form',
+                'lede',
+                'Share a few details and we will respond with tailored guidance for your brief.',
+              )}
+            </p>
+            <ul className="inquiry-form__trust" aria-label="What to expect">
+              <li>
+                <Clock size={14} aria-hidden />
+                {get('inquiry', 'form', 'trust1', 'Reply within one business day')}
+              </li>
+              <li>
+                <Lock size={14} aria-hidden />
+                {get('inquiry', 'form', 'trust2', 'Your details stay confidential')}
+              </li>
+            </ul>
+          </>
+        )}
+      </header>
+
+      <div
+        id={fieldsId}
+        className="inquiry-form__fields"
+        aria-hidden={revealOnClick && !open ? true : undefined}
+      >
+        <div className="inquiry-form__fields-inner">
+          <div className="inquiry-form__grid">
+            <label className="inquiry-form__field">
+              <span className="inquiry-form__label">
+                {get('inquiry', 'form', 'label_name', 'Full name')}
+              </span>
+              <input
+                ref={firstFieldRef}
+                name="name"
+                type="text"
+                required={open}
+                autoComplete="name"
+                tabIndex={revealOnClick && !open ? -1 : undefined}
+              />
+            </label>
+            <label className="inquiry-form__field">
+              <span className="inquiry-form__label">
+                {get('inquiry', 'form', 'label_email', 'Email')}
+              </span>
+              <input
+                name="email"
+                type="email"
+                required={open}
+                autoComplete="email"
+                tabIndex={revealOnClick && !open ? -1 : undefined}
+              />
+            </label>
+            <label className="inquiry-form__field">
+              <span className="inquiry-form__label">
+                {get('inquiry', 'form', 'label_phone', 'Phone')}
+              </span>
+              <input
+                name="phone"
+                type="tel"
+                autoComplete="tel"
+                tabIndex={revealOnClick && !open ? -1 : undefined}
+              />
+            </label>
+            <label className="inquiry-form__field">
+              <span className="inquiry-form__label">
+                {get('inquiry', 'form', 'label_subject', 'Subject')}
+              </span>
+              <input
+                name="subject"
+                type="text"
+                placeholder={get(
+                  'inquiry',
+                  'form',
+                  'placeholder_subject',
+                  'Buying / renting / investment',
+                )}
+                tabIndex={revealOnClick && !open ? -1 : undefined}
+              />
+            </label>
+            <label className="inquiry-form__field inquiry-form__field--full">
+              <span className="inquiry-form__label">
+                {get('inquiry', 'form', 'label_property', 'Interested property')}{' '}
+                <span className="inquiry-form__optional">
+                  {get('inquiry', 'form', 'optional', '(optional)')}
+                </span>
+              </span>
+              <input
+                name="propertyInterest"
+                type="text"
+                defaultValue={propertyInterestDefault}
+                tabIndex={revealOnClick && !open ? -1 : undefined}
+              />
+            </label>
+            <label className="inquiry-form__field">
+              <span className="inquiry-form__label">
+                {get('inquiry', 'form', 'label_preferred', 'Preferred contact')}
+              </span>
+              <select
+                name="preferredContact"
+                defaultValue="email"
+                tabIndex={revealOnClick && !open ? -1 : undefined}
+              >
+                <option value="email">{get('inquiry', 'form', 'option_email', 'Email')}</option>
+                <option value="phone">{get('inquiry', 'form', 'option_phone', 'Phone')}</option>
+                <option value="whatsapp">
+                  {get('inquiry', 'form', 'option_whatsapp', 'WhatsApp')}
+                </option>
+              </select>
+            </label>
+          </div>
+
+          <input
+            className="inquiry-form__honeypot"
+            name="company"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+          />
+
           <label className="inquiry-form__field inquiry-form__field--full">
             <span className="inquiry-form__label">
-              {get('inquiry', 'form', 'label_property', 'Interested property')}{' '}
-              <span className="inquiry-form__optional">
-                {get('inquiry', 'form', 'optional', '(optional)')}
-              </span>
+              {get('inquiry', 'form', 'label_message', 'Message')}
             </span>
-            <input
-              name="propertyInterest"
-              type="text"
-              defaultValue={propertyInterestDefault}
+            <textarea
+              name="message"
+              rows={5}
+              required={open}
+              tabIndex={revealOnClick && !open ? -1 : undefined}
             />
           </label>
-          <label className="inquiry-form__field">
-            <span className="inquiry-form__label">
-              {get('inquiry', 'form', 'label_preferred', 'Preferred contact')}
-            </span>
-            <select name="preferredContact" defaultValue="email">
-              <option value="email">{get('inquiry', 'form', 'option_email', 'Email')}</option>
-              <option value="phone">{get('inquiry', 'form', 'option_phone', 'Phone')}</option>
-              <option value="whatsapp">
-                {get('inquiry', 'form', 'option_whatsapp', 'WhatsApp')}
-              </option>
-            </select>
-          </label>
-        </div>
 
-        <input
-          className="inquiry-form__honeypot"
-          name="company"
-          type="text"
-          tabIndex={-1}
-          autoComplete="off"
-          aria-hidden="true"
-        />
-
-        <label className="inquiry-form__field inquiry-form__field--full">
-          <span className="inquiry-form__label">
-            {get('inquiry', 'form', 'label_message', 'Message')}
-          </span>
-          <textarea name="message" rows={5} required />
-        </label>
-
-        <button type="submit" className="inquiry-form__submit" disabled={submitting}>
-          <Send size={16} aria-hidden />
-          <span>
-            {submitting
-              ? get('inquiry', 'form', 'submitting', 'Sending…')
-              : get('inquiry', 'form', 'submit', 'Send inquiry')}
-          </span>
-        </button>
-
-        {result.message ? (
-          <p
-            className={`inquiry-form__status inquiry-form__status--${result.type || 'info'}`}
-            role="status"
+          <button
+            type="submit"
+            className="inquiry-form__submit"
+            disabled={submitting || (revealOnClick && !open)}
+            tabIndex={revealOnClick && !open ? -1 : undefined}
           >
-            {result.message}
-          </p>
-        ) : null}
+            <Send size={16} aria-hidden />
+            <span>
+              {submitting
+                ? get('inquiry', 'form', 'submitting', 'Sending…')
+                : get('inquiry', 'form', 'submit', 'Send inquiry')}
+            </span>
+          </button>
 
-        <p className="inquiry-form__footnote">
-          {get(
-            'inquiry',
-            'form',
-            'footnote',
-            'No spam. We only use your details to respond to this request.',
-          )}
-        </p>
+          {result.message ? (
+            <p
+              className={`inquiry-form__status inquiry-form__status--${result.type || 'info'}`}
+              role="status"
+            >
+              {result.message}
+            </p>
+          ) : null}
+
+          <p className="inquiry-form__footnote">
+            {get(
+              'inquiry',
+              'form',
+              'footnote',
+              'No spam. We only use your details to respond to this request.',
+            )}
+          </p>
+        </div>
       </div>
     </form>
   )

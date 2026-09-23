@@ -962,6 +962,7 @@ function PropertyDetails() {
                 </article>
               )}
               <InquiryForm
+                revealOnClick
                 propertyId={typeof property.id === 'string' ? property.id : null}
                 propertyInterestDefault={property.title}
               />

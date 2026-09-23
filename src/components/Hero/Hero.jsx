@@ -1,29 +1,21 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import SearchPanel from '../SearchPanel/SearchPanel'
+import { buildSearchPath } from '../../lib/search/searchPath'
 import { useSiteContent } from '../../hooks/useSiteContent'
 import './Hero.css'
 
 /** Served from `public/video/hero-video-optimize-united-properties.mp4` */
 const HERO_VIDEO_SRC = '/video/hero-video-optimize-united-properties.mp4'
+const HERO_VIDEO_POSTER = '/images/video/hero-luxury-real-estate-cyprus-poster.jpg'
 
 function Hero() {
   const { get } = useSiteContent()
   const sectionRef = useRef(null)
   const videoRef = useRef(null)
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false)
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [searchSeed, setSearchSeed] = useState(null)
-  const [searchSeedKey, setSearchSeedKey] = useState(0)
   const location = useLocation()
   const navigate = useNavigate()
-
-  const openSearchPanel = useCallback((nextSeed) => {
-    setSearchSeed(nextSeed)
-    setSearchSeedKey((key) => key + 1)
-    setIsSearchOpen(true)
-  }, [])
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
@@ -35,11 +27,19 @@ function Hero() {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry?.isIntersecting) return
-        setShouldLoadVideo(true)
-        observer.disconnect()
+        if (!entry) return
+        if (entry.isIntersecting) {
+          setShouldLoadVideo(true)
+          const el = videoRef.current
+          if (el) {
+            const p = el.play()
+            if (p && typeof p.catch === 'function') p.catch(() => {})
+          }
+        } else if (videoRef.current) {
+          videoRef.current.pause()
+        }
       },
-      { threshold: 0.12, rootMargin: '200px 0px' },
+      { threshold: 0.12, rootMargin: '120px 0px' },
     )
 
     observer.observe(section)
@@ -47,19 +47,16 @@ function Hero() {
   }, [])
 
   useEffect(() => {
-    const onOpenSearch = () => openSearchPanel(null)
+    const onOpenSearch = () => navigate(buildSearchPath())
     window.addEventListener('open-property-search-panel', onOpenSearch)
     return () => window.removeEventListener('open-property-search-panel', onOpenSearch)
-  }, [openSearchPanel])
+  }, [navigate])
 
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     if (params.get('openSearch') !== '1') return
-    openSearchPanel(null)
-    params.delete('openSearch')
-    const nextSearch = params.toString()
-    navigate(`${location.pathname}${nextSearch ? `?${nextSearch}` : ''}`, { replace: true })
-  }, [location.pathname, location.search, navigate, openSearchPanel])
+    navigate(buildSearchPath(), { replace: true })
+  }, [location.pathname, location.search, navigate])
 
   /** Browsers often need an explicit play() after dynamic src attach (muted + playsInline still). */
   useEffect(() => {
@@ -80,53 +77,51 @@ function Hero() {
   }, [shouldLoadVideo])
 
   return (
-    <>
-      <section
-        className="hero-section"
-        ref={sectionRef}
-        data-cms-page="home"
-        data-cms-section="hero"
-      >
-        <div className="hero-section__media" aria-hidden="true">
-          <video
-            ref={videoRef}
-            className="hero-section__video"
-            src={shouldLoadVideo ? HERO_VIDEO_SRC : undefined}
-            autoPlay={shouldLoadVideo}
-            muted
-            loop
-            playsInline
-            preload={shouldLoadVideo ? 'auto' : 'none'}
-            disablePictureInPicture
-          />
-        </div>
+    <section
+      className="hero-section"
+      ref={sectionRef}
+      data-cms-page="home"
+      data-cms-section="hero"
+    >
+      <div className="hero-section__media" aria-hidden="true">
+        <video
+          ref={videoRef}
+          className="hero-section__video"
+          src={shouldLoadVideo ? HERO_VIDEO_SRC : undefined}
+          poster={HERO_VIDEO_POSTER}
+          autoPlay={shouldLoadVideo}
+          muted
+          loop
+          playsInline
+          preload={shouldLoadVideo ? 'metadata' : 'none'}
+          disablePictureInPicture
+        />
+      </div>
 
-        <div className="hero-section__premium" aria-hidden="true">
-          <div className="hero-section__ambient" />
-          <div className="hero-section__vignette" />
-          <div className="hero-section__grain" />
-        </div>
+      <div className="hero-section__premium" aria-hidden="true">
+        <div className="hero-section__ambient" />
+        <div className="hero-section__vignette" />
+        <div className="hero-section__grain" />
+      </div>
 
-        <div className="hero-section__overlay" />
+      <div className="hero-section__overlay" />
 
-        <div className="hero-section__copy">
+      <div className="hero-section__copy">
+        {get('home', 'hero', 'eyebrow') ? (
           <p className="hero-section__eyebrow">{get('home', 'hero', 'eyebrow')}</p>
+        ) : null}
+        {get('home', 'hero', 'heading') ? (
           <h1 className="hero-section__heading">{get('home', 'hero', 'heading')}</h1>
+        ) : null}
+        {get('home', 'hero', 'description') ? (
           <p className="hero-section__lede">{get('home', 'hero', 'description')}</p>
-        </div>
+        ) : null}
+      </div>
 
-        <a className="hero-section__indicator" href="#featured-properties" aria-label="Scroll">
-          <ChevronDown size={22} />
-        </a>
-      </section>
-
-      <SearchPanel
-        open={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        seed={searchSeed}
-        seedKey={searchSeedKey}
-      />
-    </>
+      <a className="hero-section__indicator" href="#featured-properties" aria-label="Scroll">
+        <ChevronDown size={22} />
+      </a>
+    </section>
   )
 }
 

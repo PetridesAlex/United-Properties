@@ -376,12 +376,32 @@
   padding: 0.85rem 0.9rem 1rem;
 }
 
+.search-panel-card__price-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
 .search-panel-card__price {
   margin: 0;
   font-size: 1.05rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: #0f172a;
+}
+
+.search-panel-card__verified {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #22a06b;
+  box-shadow: 0 0 0 2px rgba(34, 160, 107, 0.18);
 }
 
 .search-panel-card__title {

@@ -27,6 +27,12 @@ function SellWithUs() {
   const reduceMotion = useReducedMotion()
   const { get } = useSiteContent()
 
+  const heroPrimaryCta =
+    get('sell', 'hero', 'cta_primary', 'Book a Valuation Call').trim() || 'Book a Valuation Call'
+  const heroSecondaryCta =
+    get('sell', 'hero', 'cta_secondary', 'Explore United Services').trim() ||
+    'Explore United Services'
+
   const PROCESS_STEPS = [
     {
       title: get('sell', 'process', 'step1_title', 'Step 1 — Discovery Consultation'),
@@ -223,17 +229,16 @@ function SellWithUs() {
               whileHover={heroPrimaryHover}
               whileTap={heroBtnTap}
             >
-              <span className="sell-with-us__hero-btn-label">
-                {get('sell', 'hero', 'cta_primary', 'Book a Valuation Call')}
-              </span>
+              <span className="sell-with-us__hero-btn-label">{heroPrimaryCta}</span>
             </MotionLink>
             <MotionLink
               to="/services"
               className="btn btn-outline-light sell-with-us__hero-btn-ghost"
               whileHover={heroGhostHover}
               whileTap={heroBtnTap}
+              aria-label={`${heroSecondaryCta} — open the United Services page`}
             >
-              {get('sell', 'hero', 'cta_secondary', 'Explore all services')}
+              <span className="sell-with-us__hero-btn-label">{heroSecondaryCta}</span>
             </MotionLink>
           </motion.div>
         </motion.div>

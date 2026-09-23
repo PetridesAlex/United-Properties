@@ -31,6 +31,75 @@ function formatCardPrice(value, status) {
   return status === 'For Rent' ? `EUR ${formatted} / month` : `EUR ${formatted}`
 }
 
+/** Break long listing copy into short, scannable paragraphs. */
+function splitIntoReadableParagraphs(text) {
+  const cleaned = String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!cleaned) return []
+
+  const sentences =
+    cleaned.match(/[^.!?]+[.!?]+|[^.!?]+$/g)?.map((s) => s.trim()).filter(Boolean) || [cleaned]
+
+  const paragraphs = []
+  for (let i = 0; i < sentences.length; i += 2) {
+    paragraphs.push(sentences.slice(i, i + 2).join(' '))
+  }
+  return paragraphs
+}
+
+/**
+ * Soft-emphasize facts that matter in a listing (counts, price, furnished, etc.)
+ * without turning the whole blurb into bold noise.
+ */
+function renderHighlightedCopy(text, keyPrefix) {
+  const pattern =
+    /\bEUR\s*[\d,.]+(?:\s*\/\s*month)?\b|\b\d+[\d,]*(?:\.\d+)?\s*(?:bedrooms?|baths?|bathrooms?|floors?|units?|m²|sq\.?\s*m|sqft)\b|\b(?:fully\s+furnished|semi\s+furnished|unfurnished|brand\s+new|newly\s+built|seafront|sea\s+view|private\s+pool|penthouse|covered\s+parking)\b/gi
+
+  const nodes = []
+  let lastIndex = 0
+  let match
+  let i = 0
+
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      nodes.push(text.slice(lastIndex, match.index))
+    }
+    nodes.push(
+      <strong key={`${keyPrefix}-m${i}`} className="modal-description__mark">
+        {match[0]}
+      </strong>,
+    )
+    i += 1
+    lastIndex = match.index + match[0].length
+  }
+
+  if (lastIndex < text.length) nodes.push(text.slice(lastIndex))
+  return nodes.length ? nodes : text
+}
+
+function ModalDescriptionBody({ description }) {
+  const paragraphs = splitIntoReadableParagraphs(description)
+  if (!paragraphs.length) return null
+
+  return (
+    <div className="modal-description__body" id="modal-cards-desc">
+      {paragraphs.map((paragraph, index) => (
+        <p
+          key={`desc-p-${index}`}
+          className={
+            index === 0
+              ? 'modal-description__text modal-description__text--lead'
+              : 'modal-description__text'
+          }
+        >
+          {renderHighlightedCopy(paragraph, `p${index}`)}
+        </p>
+      ))}
+    </div>
+  )
+}
+
 export default function ModalCards({ cards = [], className }) {
   const [selected, setSelected] = useState(/** @type {ModalCardItem | null} */ (null))
   const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false)
@@ -101,6 +170,9 @@ export default function ModalCards({ cards = [], className }) {
                   src={selected.imageUrl}
                   alt={selected.title}
                   loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
+                  sizes="(max-width: 640px) 96vw, min(72rem, 96vw)"
                 />
                 <div className="modal-expanded-overlay">
                   <div className="modal-expanded-overlay-content">
@@ -118,7 +190,7 @@ export default function ModalCards({ cards = [], className }) {
                       aria-label="Close"
                       onClick={() => setSelected(null)}
                     >
-                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden>
                         <path
                           d="M12 4L4 12M4 4L12 12"
                           stroke="currentColor"
@@ -134,9 +206,7 @@ export default function ModalCards({ cards = [], className }) {
                 <div className="modal-description__scroll">
                   <p className="modal-description__eyebrow">Property overview</p>
                   <div className="modal-description__rule" aria-hidden />
-                  <p className="modal-description__text" id="modal-cards-desc">
-                    {selected.description}
-                  </p>
+                  <ModalDescriptionBody description={selected.description} />
                 </div>
                 {selected.slug ? (
                   <div className="modal-description__actions">

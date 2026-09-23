@@ -236,10 +236,21 @@
 }
 
 .sell-with-us__hero-btn-ghost {
-  border-color: rgba(255, 255, 255, 0.42);
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(248, 246, 241, 0.96);
   backdrop-filter: blur(8px);
-  font-weight: 620;
-  letter-spacing: 0.06em;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  min-height: 3rem;
+  padding-inline: 1.35rem;
+  white-space: nowrap;
+}
+
+.page-hero.sell-with-us__hero .sell-with-us__hero-cta .sell-with-us__hero-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.85);
+  color: #fff;
 }
 
 @media (prefers-reduced-motion: reduce) {

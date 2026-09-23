@@ -4,8 +4,8 @@
   --sp-gold: var(--color-accent, #bf9875);
   --sp-gold-soft: var(--color-accent-light, #d5b59a);
   --sp-ink: rgba(248, 246, 241, 0.96);
-  --sp-duration-in: 1.35s;
-  --sp-duration-bar: 3s;
+  --sp-duration-in: 0.9s;
+  --sp-duration-bar: 1.6s;
   --sp-bar-delay: 0s;
   --sp-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --sp-ease-soft: cubic-bezier(0.45, 0, 0.55, 1);
@@ -44,7 +44,7 @@
 }
 
 .site-preloader--exit {
-  animation: sp-overlay-out 780ms var(--sp-ease-out) forwards;
+  animation: sp-overlay-out 520ms var(--sp-ease-out) forwards;
   pointer-events: none;
 }
 

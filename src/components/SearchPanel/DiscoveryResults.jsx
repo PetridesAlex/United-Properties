@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Check } from 'lucide-react'
 
 function formatPrice(value) {
   return new Intl.NumberFormat('en-US').format(value)
@@ -36,7 +37,7 @@ function DiscoveryResults({
           to={`/properties/${property.slug}`}
           className="search-panel-card"
           onClick={onNavigate}
-          aria-label={`${property.title}. ${property.location}. ${property.status}. EUR ${formatPrice(property.price)}`}
+          aria-label={`${property.title}. ${property.location}. ${property.status}. EUR ${formatPrice(property.price)}. Verified listing.`}
         >
           <div className="search-panel-card__media-wrap">
             {property.image ? (
@@ -53,10 +54,19 @@ function DiscoveryResults({
             <span className="search-panel-card__badge">{property.status}</span>
           </div>
           <div className="search-panel-card__body">
-            <p className="search-panel-card__price">
-              EUR {formatPrice(property.price)}
-              {property.status === 'For Rent' ? ' / month' : ''}
-            </p>
+            <div className="search-panel-card__price-row">
+              <p className="search-panel-card__price">
+                EUR {formatPrice(property.price)}
+                {property.status === 'For Rent' ? ' / month' : ''}
+              </p>
+              <span
+                className="search-panel-card__verified"
+                title="Active & verified"
+                aria-label="Active and verified listing"
+              >
+                <Check size={12} strokeWidth={3} aria-hidden />
+              </span>
+            </div>
             <h3 className="search-panel-card__title">{property.title}</h3>
             <p className="search-panel-card__location">{property.location}</p>
             <p className="search-panel-card__meta">

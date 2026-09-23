@@ -7,6 +7,12 @@
   cursor: crosshair !important;
 }
 
+/* Soft always-on guides so editable regions are obvious before hover. */
+.cms-preview-mode [data-cms-page][data-cms-section] {
+  outline: 1px dashed rgba(191, 152, 117, 0.4);
+  outline-offset: 2px;
+}
+
 .cms-preview-hot {
   outline: 2px solid rgba(191, 152, 117, 0.95) !important;
   outline-offset: 3px;

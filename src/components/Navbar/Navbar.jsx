@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ChevronDown, Search } from 'lucide-react'
 import StaggeredMenu from '../StaggeredMenu/StaggeredMenu'
 import { TELEGRAM_CHAT_URL, WHATSAPP_CHAT_URL } from '../../config/externalLinks'
+import { buildSearchPath } from '../../lib/search/searchPath'
 import { useSiteContent } from '../../hooks/useSiteContent'
 import './Navbar.css'
 
@@ -110,11 +111,7 @@ function Navbar() {
   } ${isScrolled ? 'navbar--scrolled' : ''}`.trim()
 
   function openGlobalSearch() {
-    if (isHome) {
-      window.dispatchEvent(new CustomEvent('open-property-search-panel'))
-      return
-    }
-    navigate('/?openSearch=1')
+    navigate(buildSearchPath())
   }
 
   function closeUnitedServicesMenu() {

@@ -33,7 +33,7 @@ function getMapViewport(activeCity) {
   }
 }
 
-function SearchMap({ properties, activeCity }) {
+function SearchMap({ properties, activeCity, className = '', interactive = false }) {
   const { apiKey, isLoaded, loadError } = useGoogleMapsLoader()
   const containerRef = useRef(null)
   const mapRef = useRef(null)
@@ -95,9 +95,11 @@ function SearchMap({ properties, activeCity }) {
 
   const viewport = useMemo(() => getMapViewport(activeCity), [activeCity])
 
+  const shellClass = ['search-panel-map', className].filter(Boolean).join(' ')
+
   if (!apiKey) {
     return (
-      <div className="search-panel-map search-panel-map--fallback">
+      <div className={`${shellClass} search-panel-map--fallback`}>
         <h3>Map preview unavailable</h3>
         <p>The Cyprus map will appear here once Maps access is restored on the live site.</p>
       </div>
@@ -106,7 +108,7 @@ function SearchMap({ properties, activeCity }) {
 
   if (!isLoaded) {
     return (
-      <div className="search-panel-map search-panel-map--fallback">
+      <div className={`${shellClass} search-panel-map--fallback`}>
         <h3>Loading map...</h3>
       </div>
     )
@@ -114,7 +116,7 @@ function SearchMap({ properties, activeCity }) {
 
   if (loadError) {
     return (
-      <div className="search-panel-map search-panel-map--fallback">
+      <div className={`${shellClass} search-panel-map--fallback`}>
         <h3>Map could not load</h3>
         <p>Please try again in a moment. You can still browse listings in the list view.</p>
       </div>
@@ -122,7 +124,11 @@ function SearchMap({ properties, activeCity }) {
   }
 
   return (
-    <div ref={containerRef} className="search-panel-map search-panel-map--live" aria-label="Cyprus locations map">
+    <div
+      ref={containerRef}
+      className={`${shellClass} search-panel-map--live`}
+      aria-label="Cyprus locations map"
+    >
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
         center={viewport.center}
@@ -134,9 +140,8 @@ function SearchMap({ properties, activeCity }) {
           streetViewControl: false,
           fullscreenControl: true,
           clickableIcons: false,
-          /* One-finger drags scroll the parent panel; two fingers pan/zoom the map (native app-like). */
-          gestureHandling: 'cooperative',
-          scrollwheel: false,
+          gestureHandling: interactive ? 'greedy' : 'cooperative',
+          scrollwheel: interactive,
           draggable: true,
           zoomControl: true,
         }}

@@ -113,6 +113,38 @@ export function cmsRegionProps(page, section) {
   }
 }
 
+/** Chrome / overlays that appear on many routes — preview should keep the browsed URL. */
+export const CMS_SHARED_CHROME_PAGE_IDS = new Set([
+  'navbar',
+  'footer',
+  'cookies',
+  'inquiry',
+])
+
+export function isCmsSharedChromePage(pageId) {
+  return CMS_SHARED_CHROME_PAGE_IDS.has(String(pageId || ''))
+}
+
+/** Canonical preview path for a CMS page id (shared chrome keeps currentPath). */
+export function previewPathForCmsPage(pageId, pagePath, currentPath = '/') {
+  const id = String(pageId || '')
+  // Enquiry form lives on Contact — always preview that route.
+  if (id === 'inquiry') {
+    return pagePath || '/contact'
+  }
+  if (isCmsSharedChromePage(id)) {
+    return currentPath && currentPath.startsWith('/') ? currentPath : pagePath || '/'
+  }
+  return pagePath || '/'
+}
+
+/** Normalize a pathname for CMS path matching (strip query/hash). */
+export function normalizeCmsPathname(pathname) {
+  const raw = String(pathname || '/')
+  const path = raw.split('?')[0].split('#')[0] || '/'
+  return path.startsWith('/') ? path : `/${path}`
+}
+
 /**
  * Fallback click targets when a node isn't wrapped with data-cms attrs yet.
  * First matching closest selector wins — prefer tagged nodes via resolveCmsTargetFromNode.

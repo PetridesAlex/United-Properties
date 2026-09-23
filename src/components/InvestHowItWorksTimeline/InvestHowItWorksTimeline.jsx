@@ -146,11 +146,13 @@ export default function InvestHowItWorksTimeline() {
 
   useEffect(() => {
     const el = ref.current
-    if (!el) return
+    if (!el) return undefined
 
     let raf = 0
+    let active = false
 
     const tick = () => {
+      if (!active) return
       const container = ref.current
       const first = firstNodeRef.current
       const last = lastNodeRef.current
@@ -179,8 +181,23 @@ export default function InvestHowItWorksTimeline() {
       raf = requestAnimationFrame(tick)
     }
 
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const next = Boolean(entry?.isIntersecting)
+        if (next === active) return
+        active = next
+        if (active) raf = requestAnimationFrame(tick)
+        else cancelAnimationFrame(raf)
+      },
+      { root: null, rootMargin: '15% 0px', threshold: 0 },
+    )
+    observer.observe(el)
+
+    return () => {
+      active = false
+      cancelAnimationFrame(raf)
+      observer.disconnect()
+    }
   }, [scrollYProgress])
 
   const lineScale = useTransform(scrollYProgress, [0, 1], [0, 1])

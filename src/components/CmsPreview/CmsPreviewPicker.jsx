@@ -1,56 +1,40 @@
 import {useEffect, useRef, useState} from 'react'
 import {useLocation, useNavigate} from 'react-router-dom'
 import {
-  CMS_EDIT_MODE_MESSAGE,
-  isCmsBridgeMessage,
-  isCmsEditMode,
   isCmsPreviewMode,
   postCmsReady,
   postCmsSelect,
   resolveCmsTargetFromNode,
-  sameOrigin,
-  setCmsEditToolsPreference,
   withCmsPreviewSearch,
 } from '../../lib/content/cmsPreview'
 import './CmsPreviewPicker.css'
 
 /**
  * Runs inside the public site when opened as the CMS preview iframe.
- * Keeps preview/edit query params across client navigations and always
- * rebinds click-to-edit so it works after save / refresh / page changes.
+ * Click any section to open its fields in the admin studio — always on in preview.
  */
 export default function CmsPreviewPicker() {
   const location = useLocation()
   const navigate = useNavigate()
-  const inPreview = isCmsPreviewMode()
-  const [editEnabled, setEditEnabled] = useState(() => isCmsEditMode())
-  const [hint, setHint] = useState('Click any section to edit it')
-  const editRef = useRef(editEnabled)
-  editRef.current = editEnabled
+  const [inPreview, setInPreview] = useState(() => isCmsPreviewMode())
+  const [hint, setHint] = useState('Click a section to edit it')
 
-  // Preserve ?cmsPreview / ?cmsEdit while browsing inside the iframe.
+  useEffect(() => {
+    setInPreview(isCmsPreviewMode())
+  }, [location.pathname, location.search])
+
+  // Keep preview markers on the URL while browsing pages inside the iframe.
   useEffect(() => {
     if (!inPreview) return
-    const next = withCmsPreviewSearch(location.pathname, location.search, {
-      edit: editRef.current || isCmsEditMode(),
-    })
+    const next = withCmsPreviewSearch(location.pathname, location.search, {edit: true})
     const current = `${location.pathname}${location.search || ''}`
     if (next !== current) {
       navigate(next, {replace: true})
     }
-  }, [inPreview, location.pathname, location.search, editEnabled, navigate])
+  }, [inPreview, location.pathname, location.search, navigate])
 
-  // Announce ready + accept parent edit-mode messages. Re-run on every route.
   useEffect(() => {
     if (!inPreview) return undefined
-
-    const syncFromEnv = () => {
-      const on = isCmsEditMode()
-      setEditEnabled(on)
-      editRef.current = on
-    }
-
-    syncFromEnv()
     postCmsReady()
     let pulses = 0
     const readyPulse = window.setInterval(() => {
@@ -58,25 +42,7 @@ export default function CmsPreviewPicker() {
       pulses += 1
       if (pulses >= 8) window.clearInterval(readyPulse)
     }, 700)
-
-    function onMessage(event) {
-      if (!sameOrigin(event.origin)) return
-      if (!isCmsBridgeMessage(event.data, CMS_EDIT_MODE_MESSAGE)) return
-      const enabled = Boolean(event.data.enabled)
-      setCmsEditToolsPreference(enabled)
-      editRef.current = enabled
-      setEditEnabled(enabled)
-    }
-
-    window.addEventListener('message', onMessage)
-    // Re-sync if the parent remounted the iframe with cmsEdit in the URL.
-    const t = window.setTimeout(syncFromEnv, 50)
-
-    return () => {
-      window.clearInterval(readyPulse)
-      window.clearTimeout(t)
-      window.removeEventListener('message', onMessage)
-    }
+    return () => window.clearInterval(readyPulse)
   }, [inPreview, location.key])
 
   useEffect(() => {
@@ -86,6 +52,7 @@ export default function CmsPreviewPicker() {
     }
 
     let hoverEl = null
+    let lastPickAt = 0
 
     function clearHover() {
       if (hoverEl) {
@@ -94,20 +61,17 @@ export default function CmsPreviewPicker() {
       }
     }
 
-    function toolsOn() {
-      return editRef.current || isCmsEditMode()
-    }
-
     function markHover(node) {
-      if (!toolsOn()) {
-        clearHover()
-        return
-      }
       const target = resolveCmsTargetFromNode(node)
       const el = node?.closest?.('[data-cms-page][data-cms-section]') || findSelectorEl(node)
       clearHover()
       if (!el || !target) {
-        setHint('Click any section to edit it')
+        setHint('Click a section to edit it')
+        return
+      }
+      // Don't highlight nav links as "edit" — those browse pages.
+      if (isInternalNavLink(node)) {
+        setHint('Open that page, then click a section')
         return
       }
       el.classList.add('cms-preview-hot')
@@ -115,17 +79,18 @@ export default function CmsPreviewPicker() {
       setHint(`Edit · ${prettySection(target.section)}`)
     }
 
-    let lastPickAt = 0
-
     function pickTarget(event) {
-      if (!toolsOn()) return false
-
-      // Avoid double-firing from pointerdown + click.
       const now = Date.now()
       if (now - lastPickAt < 350 && event.type === 'click') {
         event.preventDefault()
         event.stopPropagation()
         return true
+      }
+
+      // Internal links browse the site in the preview (About, Contact, etc.).
+      if (isInternalNavLink(event.target)) {
+        setHint('Opening page…')
+        return false
       }
 
       const target = resolveCmsTargetFromNode(event.target)
@@ -134,7 +99,7 @@ export default function CmsPreviewPicker() {
         event.stopPropagation()
         lastPickAt = now
         postCmsSelect(target.page, target.section)
-        setHint(`Opening “${prettySection(target.section)}”…`)
+        setHint(`Editing “${prettySection(target.section)}”`)
         return true
       }
 
@@ -156,7 +121,6 @@ export default function CmsPreviewPicker() {
     }
 
     function onPointerDown(event) {
-      // Capture early so nested handlers / Framer Motion don't swallow the pick.
       if (event.button != null && event.button !== 0) return
       pickTarget(event)
     }
@@ -169,13 +133,7 @@ export default function CmsPreviewPicker() {
       if (event.key === 'Escape') clearHover()
     }
 
-    function applyModeClass() {
-      if (toolsOn()) document.documentElement.classList.add('cms-preview-mode')
-      else document.documentElement.classList.remove('cms-preview-mode')
-    }
-
-    applyModeClass()
-
+    document.documentElement.classList.add('cms-preview-mode')
     document.addEventListener('pointermove', onPointerMove, true)
     document.addEventListener('pointerdown', onPointerDown, true)
     document.addEventListener('click', onClick, true)
@@ -189,14 +147,14 @@ export default function CmsPreviewPicker() {
       clearHover()
       document.documentElement.classList.remove('cms-preview-mode')
     }
-  }, [inPreview, editEnabled, location.pathname, location.key])
+  }, [inPreview, location.pathname, location.key])
 
-  if (!inPreview || !editEnabled) return null
+  if (!inPreview) return null
 
   return (
     <div className="cms-preview-banner" role="status">
       <span className="cms-preview-banner__pulse" aria-hidden />
-      <strong>Edit mode</strong>
+      <strong>Click to edit</strong>
       <span>{hint}</span>
     </div>
   )
@@ -215,4 +173,23 @@ function findSelectorEl(node) {
       'section, header, footer, .hero-section, .navbar, .cta-section, .footer, .page-hero',
     ) || null
   )
+}
+
+/** Same-site page links should navigate the preview, not open Navbar chrome. */
+function isInternalNavLink(node) {
+  if (!node || !(node instanceof Element)) return false
+  const link = node.closest('a[href]')
+  if (!link) return false
+  const href = link.getAttribute('href') || ''
+  if (!href || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#')) {
+    return false
+  }
+  if (/^https?:\/\//i.test(href)) {
+    try {
+      return new URL(href).origin === window.location.origin
+    } catch {
+      return false
+    }
+  }
+  return href.startsWith('/')
 }
