@@ -127,7 +127,11 @@ function Navbar() {
 
   return (
     <header className={navClass} data-cms-page="navbar" data-cms-section="nav">
-      <section className="navbar__ticker" aria-label="Premium services" role="region">
+      <section
+        className="navbar__ticker"
+        aria-label={get('navbar', 'nav', 'ticker_aria', 'Premium services')}
+        role="region"
+      >
         <div className="navbar__ticker-viewport">
           <div className="navbar__ticker-track" aria-hidden="true">
             <div className="navbar__ticker-row">
@@ -149,11 +153,15 @@ function Navbar() {
       </section>
 
       <div className="container navbar__inner navbar__inner--wide">
-        <Link to="/" className="navbar__logo" aria-label="United Properties — Home">
+        <Link
+          to="/"
+          className="navbar__logo"
+          aria-label={get('navbar', 'nav', 'logo_aria', 'United Properties — Home')}
+        >
           <img src="/images/logo/United_Properties_v2.1.svg" alt="" role="presentation" />
         </Link>
 
-        <nav className="navbar__center" aria-label="Main navigation">
+        <nav className="navbar__center" aria-label={get('navbar', 'nav', 'main_aria', 'Main navigation')}>
           <ul className="navbar__center-list">
             {centerNavLinks.map((item) => {
               const active = isCenterNavActive(location.pathname, location.hash, item.to)
@@ -187,7 +195,11 @@ function Navbar() {
                         <ChevronDown size={14} aria-hidden="true" />
                       </Link>
 
-                      <div className="navbar__center-dropdown-menu" role="menu" aria-label="United Services links">
+                      <div
+                        className="navbar__center-dropdown-menu"
+                        role="menu"
+                        aria-label={get('navbar', 'nav', 'services_menu_aria', 'United Services links')}
+                      >
                         {servicesDropdownLinks.map((serviceLink) => {
                           const serviceActive = isCenterNavActive(
                             location.pathname,
@@ -229,7 +241,7 @@ function Navbar() {
           <button
             type="button"
             className="navbar__search-pill"
-            aria-label="Search homes and agents"
+            aria-label={get('navbar', 'nav', 'search_aria', 'Search homes and agents')}
             onClick={openGlobalSearch}
           >
             <Search size={20} strokeWidth={2} aria-hidden="true" />
@@ -241,10 +253,10 @@ function Navbar() {
               position="right"
               items={staggeredMenuItems}
               socialItems={[
-                { label: 'Instagram', link: '#' },
-                { label: 'LinkedIn', link: '#' },
-                { label: 'WhatsApp', link: WHATSAPP_CHAT_URL },
-                { label: 'Telegram', link: TELEGRAM_CHAT_URL },
+                { label: get('navbar', 'social', 'instagram', 'Instagram'), link: '#' },
+                { label: get('navbar', 'social', 'linkedin', 'LinkedIn'), link: '#' },
+                { label: get('navbar', 'social', 'whatsapp', 'WhatsApp'), link: WHATSAPP_CHAT_URL },
+                { label: get('navbar', 'social', 'telegram', 'Telegram'), link: TELEGRAM_CHAT_URL },
               ]}
               displaySocials
               displayItemNumbering={false}

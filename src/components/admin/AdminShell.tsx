@@ -1,6 +1,7 @@
 import {useEffect, useMemo, useState} from 'react'
 import {Link, NavLink, Outlet, useLocation, useNavigate} from 'react-router-dom'
 import {
+  Activity,
   Building2,
   CalendarDays,
   Clock3,
@@ -73,6 +74,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Clients & channels',
     items: [
       {to: '/admin/clients', label: 'Clients', icon: Users},
+      {to: '/admin/activity', label: 'Team Activity', icon: Activity},
       {to: '/admin/enquiries', label: 'Enquiries', icon: Inbox, badgeKey: 'enquiries'},
       {to: '/admin/bazaraki', label: 'Bazaraki', icon: Share2},
     ],
@@ -365,7 +367,7 @@ export default function AdminShell() {
                     }
                   >
                     <span className="admin-shell__link-icon" aria-hidden>
-                      <item.icon size={16} strokeWidth={1.85} />
+                      <item.icon size={18} strokeWidth={1.9} />
                     </span>
                     <span className="admin-shell__link-label">{item.label}</span>
                     {item.badgeKey === 'enquiries' && newEnquiries > 0 ? (

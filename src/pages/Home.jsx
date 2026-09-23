@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import Hero from '../components/Hero/Hero'
@@ -9,6 +10,7 @@ import AgentCard from '../components/AgentCard/AgentCard'
 import TestimonialCard from '../components/TestimonialCard/TestimonialCard'
 import CTASection from '../components/CTASection/CTASection'
 import ScrollStack, { ScrollStackItem } from '../components/ScrollStack/ScrollStack'
+import CmsText from '../components/CmsPreview/CmsText'
 import { properties } from '../data/properties'
 import { services } from '../data/services'
 import { agents } from '../data/agents'
@@ -125,12 +127,22 @@ function Home() {
 
   const signatureViewCta = get('home', 'signature', 'view_cta', 'View Property')
 
-  useEffect(() => {
-    document.title = 'United Properties | Luxury Real Estate in Cyprus'
-  }, [])
-
   return (
     <>
+      <Helmet>
+        <title>
+          {get('home', 'seo', 'title', 'United Properties | Luxury Real Estate in Cyprus')}
+        </title>
+        <meta
+          name="description"
+          content={get(
+            'home',
+            'seo',
+            'description',
+            'Curated homes, seafront living, and private-client advisory across Limassol and beyond.',
+          )}
+        />
+      </Helmet>
       <Hero />
 
       <section
@@ -145,6 +157,8 @@ function Home() {
             title={get('home', 'featured', 'heading')}
             description={get('home', 'featured', 'description')}
             className="section-header--featured"
+            cmsPage="home"
+            cmsSection="featured"
           />
           <ModalCards cards={featuredModalCards} className="home-featured-modal-cards" />
         </div>
@@ -160,6 +174,8 @@ function Home() {
             eyebrow={get('home', 'signature', 'eyebrow')}
             title={get('home', 'signature', 'heading')}
             description={get('home', 'signature', 'description')}
+            cmsPage="home"
+            cmsSection="signature"
           />
           <ScrollStack
             className="home-scroll-stack"
@@ -204,6 +220,8 @@ function Home() {
             eyebrow={get('home', 'services', 'eyebrow')}
             title={get('home', 'services', 'heading')}
             description={get('home', 'services', 'description')}
+            cmsPage="home"
+            cmsSection="services"
           />
           <div className="grid-4">
             {homeServices.map((service) => (
@@ -221,9 +239,15 @@ function Home() {
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.6 }}
           >
-            <p className="home-editorial__eyebrow">{get('home', 'editorial', 'eyebrow')}</p>
-            <h2>{get('home', 'editorial', 'heading')}</h2>
-            <p>{get('home', 'editorial', 'body')}</p>
+            <CmsText page="home" section="editorial" field="eyebrow" as="p" className="home-editorial__eyebrow">
+              {get('home', 'editorial', 'eyebrow')}
+            </CmsText>
+            <CmsText page="home" section="editorial" field="heading" as="h2">
+              {get('home', 'editorial', 'heading')}
+            </CmsText>
+            <CmsText page="home" section="editorial" field="body" as="p">
+              {get('home', 'editorial', 'body')}
+            </CmsText>
           </MotionDiv>
           <img
             src="https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1600&q=80"
@@ -238,6 +262,8 @@ function Home() {
             eyebrow={get('home', 'team', 'eyebrow')}
             title={get('home', 'team', 'heading')}
             description={get('home', 'team', 'description')}
+            cmsPage="home"
+            cmsSection="team"
           />
           <div className="grid-3">
             {featuredAgents.map((agent) => (
@@ -257,6 +283,8 @@ function Home() {
             eyebrow={get('home', 'testimonials', 'eyebrow')}
             title={get('home', 'testimonials', 'heading')}
             className="home-testimonials__header"
+            cmsPage="home"
+            cmsSection="testimonials"
           />
           <div className="grid-3 home-testimonials__grid">
             {homeTestimonials.map((testimonial) => (

@@ -2,7 +2,8 @@ import { Helmet } from 'react-helmet-async'
 import { useMemo, useState } from 'react'
 import SectionHeader from '../components/SectionHeader/SectionHeader'
 import AgentCard from '../components/AgentCard/AgentCard'
-import { agents } from '../data/agents'
+import CmsText from '../components/CmsPreview/CmsText'
+import { agents as agentsSeed } from '../data/agents'
 import { useSiteContent } from '../hooks/useSiteContent'
 import './Agents.css'
 
@@ -10,10 +11,25 @@ function Agents() {
   const { get } = useSiteContent()
   const [specialty, setSpecialty] = useState('')
 
+  const agents = useMemo(
+    () =>
+      agentsSeed.map((agent) => {
+        const n = agent.id
+        return {
+          ...agent,
+          name: get('agents', 'team', `agent${n}_name`, agent.name),
+          role: get('agents', 'team', `agent${n}_role`, agent.role),
+          specialization: get('agents', 'team', `agent${n}_specialization`, agent.specialization),
+          bio: get('agents', 'team', `agent${n}_bio`, agent.bio),
+        }
+      }),
+    [get],
+  )
+
   const specialties = useMemo(() => {
     const values = agents.map((agent) => agent.specialization)
     return Array.from(new Set(values))
-  }, [])
+  }, [agents])
 
   const visibleAgents = specialty
     ? agents.filter((agent) => agent.specialization === specialty)
@@ -22,31 +38,48 @@ function Agents() {
   return (
     <>
       <Helmet>
-        <title>Agents | United Properties</title>
+        <title>{get('agents', 'seo', 'title', 'Agents | United Properties')}</title>
+        <meta
+          name="description"
+          content={get(
+            'agents',
+            'seo',
+            'description',
+            'Meet the United Properties advisory team — luxury homes, investments, and relocation specialists.',
+          )}
+        />
       </Helmet>
 
-      <section className="page-hero">
+      <section className="page-hero" data-cms-page="agents" data-cms-section="hero">
         <div className="container">
-          <p>{get('agents', 'hero', 'eyebrow', 'Advisory Team')}</p>
-          <h1>{get('agents', 'hero', 'heading', 'Meet Our Real Estate Professionals')}</h1>
-          <p>
+          <CmsText page="agents" section="hero" field="eyebrow" as="p">
+            {get('agents', 'hero', 'eyebrow', 'Advisory Team')}
+          </CmsText>
+          <CmsText page="agents" section="hero" field="heading" as="h1">
+            {get('agents', 'hero', 'heading', 'Meet Our Real Estate Professionals')}
+          </CmsText>
+          <CmsText page="agents" section="hero" field="description" as="p">
             {get(
               'agents',
               'hero',
               'description',
               'Specialists in luxury homes, investments, portfolio strategy, and international client guidance across Cyprus.',
             )}
-          </p>
+          </CmsText>
         </div>
       </section>
 
-      <section className="section section--light">
+      <section className="section section--light" data-cms-page="agents" data-cms-section="list">
         <div className="container">
-          <SectionHeader title={get('agents', 'list', 'heading', 'Advisors by Specialization')} />
+          <SectionHeader
+            title={get('agents', 'list', 'heading', 'Advisors by Specialization')}
+            cmsPage="agents"
+            cmsSection="list"
+          />
           <label htmlFor="specialty-filter" className="agents-filter">
-            <span className="agents-filter__label">
+            <CmsText page="agents" section="list" field="filter_label" as="span" className="agents-filter__label">
               {get('agents', 'list', 'filter_label', 'Filter by specialty')}
-            </span>
+            </CmsText>
             <select
               className="agents-filter__select"
               id="specialty-filter"
@@ -62,7 +95,7 @@ function Agents() {
             </select>
           </label>
 
-          <div className="grid-3 agents-grid">
+          <div className="grid-3 agents-grid" data-cms-page="agents" data-cms-section="team">
             {visibleAgents.map((agent) => (
               <AgentCard key={agent.id} agent={agent} />
             ))}

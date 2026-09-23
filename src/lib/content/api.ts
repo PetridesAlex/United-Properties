@@ -41,6 +41,37 @@ export async function savePageContent(
   if (error) throw new Error(error.message)
 }
 
+/** Upsert a single CMS field — used by the click-to-edit inline editor. */
+export async function saveContentValue(
+  page: string,
+  section: string,
+  fieldKey: string,
+  value: string,
+  userId?: string | null,
+) {
+  if (!supabase) throw new Error('Supabase is not configured')
+
+  const pageDef = CONTENT_PAGES.find((p) => p.id === page)
+  const field = pageDef?.sections
+    .find((s) => s.id === section)
+    ?.fields.find((f) => f.key === fieldKey)
+  const contentType = field?.type ?? 'text'
+
+  const {error} = await supabase.from('site_content').upsert(
+    {
+      page,
+      section,
+      content_key: fieldKey,
+      content_type: contentType,
+      value,
+      updated_by: userId ?? null,
+    },
+    {onConflict: 'page,section,content_key'},
+  )
+
+  if (error) throw new Error(error.message)
+}
+
 export function listManagedPages() {
   return CONTENT_PAGES
 }

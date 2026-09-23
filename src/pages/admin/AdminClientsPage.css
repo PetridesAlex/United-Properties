@@ -301,6 +301,75 @@
   font-weight: 700;
 }
 
+.clients-admin__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 0.85rem;
+  align-items: end;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(244, 239, 230, 0.1);
+  background: rgba(8, 16, 28, 0.35);
+}
+
+.clients-admin__filters label {
+  display: grid;
+  gap: 0.28rem;
+  min-width: 9rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 230, 0.55);
+}
+
+.clients-admin__filters select,
+.clients-admin__filters input[type='date'] {
+  appearance: none;
+  min-height: 2.2rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 10px;
+  border: 1px solid rgba(244, 239, 230, 0.14);
+  background: rgba(12, 22, 38, 0.9);
+  color: var(--admin-cream);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.clients-admin__check {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.2rem;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-size: 0.82rem !important;
+  color: var(--admin-cream) !important;
+}
+
+.clients-admin__crm-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.75rem;
+  align-items: center;
+  font-size: 0.78rem;
+  color: rgba(244, 239, 230, 0.7);
+}
+
+.clients-admin__stage-pill {
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(191, 152, 117, 0.35);
+  background: rgba(191, 152, 117, 0.14);
+  color: #e8d2ba;
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
 @media (max-width: 640px) {
   .clients-admin__hero .admin-btn {
     width: 100%;
@@ -318,5 +387,9 @@
   .clients-admin__delete {
     width: 100%;
     justify-content: center;
+  }
+
+  .clients-admin__filters label {
+    width: 100%;
   }
 }

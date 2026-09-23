@@ -11,6 +11,9 @@ export type Appointment = {
   notes: string
   createdAt: string
   updatedAt: string
+  clientId?: string | null
+  propertyId?: string | null
+  followUpId?: string | null
 }
 
 export const APPOINTMENT_TYPE_LABELS: Record<AppointmentType, string> = {

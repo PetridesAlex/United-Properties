@@ -122,7 +122,7 @@ export default function AdminClientEditPage() {
           user?.id,
         )
         toast.success('Client created')
-        navigate(`/admin/clients/${created.id}/edit`, {replace: true})
+        navigate(`/admin/clients/${created.id}`, {replace: true})
       } else {
         const updated = await updateClient(id!, {
           ...draft,

@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
+import CmsText from '../components/CmsPreview/CmsText'
 import { useSiteContent } from '../hooks/useSiteContent'
 
 function NotFound() {
@@ -8,22 +9,28 @@ function NotFound() {
   return (
     <>
       <Helmet>
-        <title>Page Not Found | United Properties</title>
+        <title>{get('not-found', 'hero', 'heading', 'Page Not Found')} | United Properties</title>
       </Helmet>
-      <section className="page-hero page-hero--404">
+      <section className="page-hero page-hero--404" data-cms-page="not-found" data-cms-section="hero">
         <div className="container" style={{ textAlign: 'center' }}>
-          <p>{get('not-found', 'hero', 'code', '404')}</p>
-          <h1>{get('not-found', 'hero', 'heading', 'Page Not Found')}</h1>
-          <p>
+          <CmsText page="not-found" section="hero" field="code" as="p">
+            {get('not-found', 'hero', 'code', '404')}
+          </CmsText>
+          <CmsText page="not-found" section="hero" field="heading" as="h1">
+            {get('not-found', 'hero', 'heading', 'Page Not Found')}
+          </CmsText>
+          <CmsText page="not-found" section="hero" field="description" as="p">
             {get(
               'not-found',
               'hero',
               'description',
               'The page you are looking for does not exist or has moved.',
             )}
-          </p>
+          </CmsText>
           <Link to="/" className="btn btn-gold">
-            {get('not-found', 'hero', 'cta', 'Back to Home')}
+            <CmsText page="not-found" section="hero" field="cta" as="span">
+              {get('not-found', 'hero', 'cta', 'Back to Home')}
+            </CmsText>
           </Link>
         </div>
       </section>

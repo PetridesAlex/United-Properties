@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async'
 import { Navigate, useLocation } from 'react-router-dom'
 import InvestWithUsSection from '../components/InvestWithUsSection/InvestWithUsSection'
 import CTASection from '../components/CTASection/CTASection'
+import CmsText from '../components/CmsPreview/CmsText'
 import { useSiteContent } from '../hooks/useSiteContent'
 import './Services.css'
 
@@ -20,7 +21,16 @@ function Services() {
   return (
     <>
       <Helmet>
-        <title>Services | United Properties</title>
+        <title>{get('services', 'seo', 'title', 'Services | United Properties')}</title>
+        <meta
+          name="description"
+          content={get(
+            'services',
+            'seo',
+            'description',
+            'Premium real estate services in Cyprus — sales, rentals, investment, and management.',
+          )}
+        />
       </Helmet>
 
       <section
@@ -30,28 +40,52 @@ function Services() {
       >
         <div className="container">
           {investDeepLink ? (
-            <div className="services-invest-hero">
-              <p className="services-invest-hero__eyebrow">{get('services', 'invest', 'eyebrow')}</p>
-              <h1 className="services-invest-hero__title">{get('services', 'invest', 'heading')}</h1>
-              <p className="services-invest-hero__lead">{get('services', 'invest', 'description')}</p>
+            <div className="services-invest-hero" data-cms-page="services" data-cms-section="invest">
+              <CmsText page="services" section="invest" field="eyebrow" as="p" className="services-invest-hero__eyebrow">
+                {get('services', 'invest', 'eyebrow')}
+              </CmsText>
+              <CmsText page="services" section="invest" field="heading" as="h1" className="services-invest-hero__title">
+                {get('services', 'invest', 'heading')}
+              </CmsText>
+              <CmsText page="services" section="invest" field="description" as="p" className="services-invest-hero__lead">
+                {get('services', 'invest', 'description')}
+              </CmsText>
             </div>
           ) : managementDeepLink ? (
-            <div className="services-invest-hero" id="property-management">
-              <p className="services-invest-hero__eyebrow">{get('services', 'management', 'eyebrow')}</p>
-              <h1 className="services-invest-hero__title">{get('services', 'management', 'heading')}</h1>
-              <p className="services-invest-hero__lead">{get('services', 'management', 'description')}</p>
+            <div className="services-invest-hero" id="property-management" data-cms-page="services" data-cms-section="management">
+              <CmsText page="services" section="management" field="eyebrow" as="p" className="services-invest-hero__eyebrow">
+                {get('services', 'management', 'eyebrow')}
+              </CmsText>
+              <CmsText page="services" section="management" field="heading" as="h1" className="services-invest-hero__title">
+                {get('services', 'management', 'heading')}
+              </CmsText>
+              <CmsText page="services" section="management" field="description" as="p" className="services-invest-hero__lead">
+                {get('services', 'management', 'description')}
+              </CmsText>
             </div>
           ) : rentDeepLink ? (
-            <div className="services-invest-hero" id="rent-your-property">
-              <p className="services-invest-hero__eyebrow">{get('services', 'rent_property', 'eyebrow')}</p>
-              <h1 className="services-invest-hero__title">{get('services', 'rent_property', 'heading')}</h1>
-              <p className="services-invest-hero__lead">{get('services', 'rent_property', 'description')}</p>
+            <div className="services-invest-hero" id="rent-your-property" data-cms-page="services" data-cms-section="rent_property">
+              <CmsText page="services" section="rent_property" field="eyebrow" as="p" className="services-invest-hero__eyebrow">
+                {get('services', 'rent_property', 'eyebrow')}
+              </CmsText>
+              <CmsText page="services" section="rent_property" field="heading" as="h1" className="services-invest-hero__title">
+                {get('services', 'rent_property', 'heading')}
+              </CmsText>
+              <CmsText page="services" section="rent_property" field="description" as="p" className="services-invest-hero__lead">
+                {get('services', 'rent_property', 'description')}
+              </CmsText>
             </div>
           ) : (
             <>
-              <p>{get('services', 'hero', 'eyebrow')}</p>
-              <h1>{get('services', 'hero', 'heading')}</h1>
-              <p>{get('services', 'hero', 'description')}</p>
+              <CmsText page="services" section="hero" field="eyebrow" as="p">
+                {get('services', 'hero', 'eyebrow')}
+              </CmsText>
+              <CmsText page="services" section="hero" field="heading" as="h1">
+                {get('services', 'hero', 'heading')}
+              </CmsText>
+              <CmsText page="services" section="hero" field="description" as="p">
+                {get('services', 'hero', 'description')}
+              </CmsText>
             </>
           )}
         </div>
@@ -65,7 +99,9 @@ function Services() {
           data-cms-section="management"
         >
           <div className="container">
-            <p>{get('services', 'management', 'body')}</p>
+            <CmsText page="services" section="management" field="body" as="p">
+              {get('services', 'management', 'body')}
+            </CmsText>
           </div>
         </section>
       ) : rentDeepLink ? (
@@ -76,7 +112,9 @@ function Services() {
           data-cms-section="rent_property"
         >
           <div className="container">
-            <p>{get('services', 'rent_property', 'body')}</p>
+            <CmsText page="services" section="rent_property" field="body" as="p">
+              {get('services', 'rent_property', 'body')}
+            </CmsText>
           </div>
         </section>
       ) : (
@@ -91,10 +129,18 @@ function Services() {
                 data-cms-section="management"
               >
                 <div className="container">
-                  <p className="section-eyebrow">{get('services', 'management', 'eyebrow')}</p>
-                  <h2>{get('services', 'management', 'heading')}</h2>
-                  <p>{get('services', 'management', 'description')}</p>
-                  <p>{get('services', 'management', 'body')}</p>
+                  <CmsText page="services" section="management" field="eyebrow" as="p" className="section-eyebrow">
+                    {get('services', 'management', 'eyebrow')}
+                  </CmsText>
+                  <CmsText page="services" section="management" field="heading" as="h2">
+                    {get('services', 'management', 'heading')}
+                  </CmsText>
+                  <CmsText page="services" section="management" field="description" as="p">
+                    {get('services', 'management', 'description')}
+                  </CmsText>
+                  <CmsText page="services" section="management" field="body" as="p">
+                    {get('services', 'management', 'body')}
+                  </CmsText>
                 </div>
               </section>
               <section
@@ -104,10 +150,18 @@ function Services() {
                 data-cms-section="rent_property"
               >
                 <div className="container">
-                  <p className="section-eyebrow">{get('services', 'rent_property', 'eyebrow')}</p>
-                  <h2>{get('services', 'rent_property', 'heading')}</h2>
-                  <p>{get('services', 'rent_property', 'description')}</p>
-                  <p>{get('services', 'rent_property', 'body')}</p>
+                  <CmsText page="services" section="rent_property" field="eyebrow" as="p" className="section-eyebrow">
+                    {get('services', 'rent_property', 'eyebrow')}
+                  </CmsText>
+                  <CmsText page="services" section="rent_property" field="heading" as="h2">
+                    {get('services', 'rent_property', 'heading')}
+                  </CmsText>
+                  <CmsText page="services" section="rent_property" field="description" as="p">
+                    {get('services', 'rent_property', 'description')}
+                  </CmsText>
+                  <CmsText page="services" section="rent_property" field="body" as="p">
+                    {get('services', 'rent_property', 'body')}
+                  </CmsText>
                 </div>
               </section>
             </>

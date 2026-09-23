@@ -601,7 +601,18 @@ function PropertyDetails() {
                   aria-labelledby="property-attributes-title"
                 >
                   <div className="property-details__attrs-heading">
-                    <span className="property-details__attrs-eyebrow">Specifications</span>
+                    <span
+                      className="property-details__attrs-eyebrow"
+                      {...{
+                        'data-cms-page': 'property',
+                        'data-cms-section': 'stats',
+                        'data-cms-field': 'specs_eyebrow',
+                        'data-cms-keys': 'property.stats.specs_eyebrow',
+                        'data-cms-editable': '1',
+                      }}
+                    >
+                      {get('property', 'stats', 'specs_eyebrow', 'Specifications')}
+                    </span>
                     <h4 id="property-attributes-title" className="property-details__attrs-title">
                       Property details
                     </h4>
@@ -986,6 +997,8 @@ function PropertyDetails() {
                     'description',
                     'More listings that fit this home—matched by area, status, or price band.',
                   )}
+                  cmsPage="property"
+                  cmsSection="similar"
                 />
               </div>
             </div>

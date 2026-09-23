@@ -6,6 +6,7 @@ import {
   MessageCircle,
 } from 'lucide-react'
 import { useSiteContent } from '../../hooks/useSiteContent'
+import CmsText from '../CmsPreview/CmsText'
 import './Footer.css'
 
 function Footer() {
@@ -30,7 +31,9 @@ function Footer() {
 
         <div className="footer__col footer__col--links">
           <h4 className="footer__section-title">
-            {get('footer', 'quick_links', 'heading', 'Quick Links')}
+            <CmsText page="footer" section="quick_links" field="heading" as="span">
+              {get('footer', 'quick_links', 'heading', 'Quick Links')}
+            </CmsText>
           </h4>
           <ul className="footer__list footer__list--links">
             <li>
@@ -54,7 +57,9 @@ function Footer() {
 
         <div className="footer__col footer__col--services">
           <h4 className="footer__section-title">
-            {get('footer', 'services', 'heading', 'Services')}
+            <CmsText page="footer" section="services" field="heading" as="span">
+              {get('footer', 'services', 'heading', 'Services')}
+            </CmsText>
           </h4>
           <ul className="footer__list footer__list--services">
             <li>{get('footer', 'services', 'item1', 'Property Sales')}</li>
@@ -66,7 +71,9 @@ function Footer() {
 
         <div className="footer__col footer__col--contact footer__contact-block">
           <h4 className="footer__section-title">
-            {get('footer', 'contact', 'heading', 'Contact')}
+            <CmsText page="footer" section="contact" field="heading" as="span">
+              {get('footer', 'contact', 'heading', 'Contact')}
+            </CmsText>
           </h4>
           <ul className="footer__list footer__list--contact">
             <li>
@@ -86,16 +93,21 @@ function Footer() {
             </li>
           </ul>
           <div className="footer__socials">
-            <a href="#" aria-label="Instagram">
+            <a href="#" aria-label={get('footer', 'social', 'instagram', 'Instagram')}>
               <Instagram size={16} />
             </a>
-            <a href="#" aria-label="LinkedIn">
+            <a href="#" aria-label={get('footer', 'social', 'linkedin', 'LinkedIn')}>
               <Linkedin size={16} />
             </a>
-            <a href="#" aria-label="Facebook">
+            <a href="#" aria-label={get('footer', 'social', 'facebook', 'Facebook')}>
               <Facebook size={16} />
             </a>
-            <a href="https://wa.me/35700000000" aria-label="WhatsApp" target="_blank" rel="noreferrer">
+            <a
+              href="https://wa.me/35700000000"
+              aria-label={get('footer', 'social', 'whatsapp', 'WhatsApp')}
+              target="_blank"
+              rel="noreferrer"
+            >
               <MessageCircle size={16} />
             </a>
           </div>
@@ -103,7 +115,11 @@ function Footer() {
       </div>
 
       <div className="container footer__newsletter">
-        <h4>{get('footer', 'newsletter', 'heading', 'Private Market Updates')}</h4>
+        <h4>
+          <CmsText page="footer" section="newsletter" field="heading" as="span">
+            {get('footer', 'newsletter', 'heading', 'Private Market Updates')}
+          </CmsText>
+        </h4>
         <form onSubmit={(event) => event.preventDefault()}>
           <label htmlFor="newsletter-email" className="sr-only">
             Email address
@@ -127,7 +143,10 @@ function Footer() {
                 —
               </span>{' '}
               <span className="footer__copyright-year">© {new Date().getFullYear()}</span>
-              <span className="footer__copyright-brand"> United Properties</span>
+              <span className="footer__copyright-brand">
+                {' '}
+                {get('footer', 'legal', 'brand', 'United Properties')}
+              </span>
               <span className="footer__copyright-dot"> · </span>
               <span className="footer__copyright-rights">
                 {get('footer', 'legal', 'rights', 'All rights reserved')}

@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import {useAdminAuth} from '../../lib/auth/AdminAuthProvider'
 import {resolveAdminDisplay} from '../../lib/auth/displayName'
-import {listUpcomingAppointments} from '../../lib/appointments/storage'
+import {listUpcomingAppointments} from '../../lib/appointments/api'
 import {APPOINTMENT_TYPE_LABELS} from '../../lib/appointments/types'
 import {useAgentQuote} from '../../lib/admin/agentQuotes'
 import {fetchRecentClients} from '../../lib/clients/api'
@@ -75,11 +75,23 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [refreshedAt, setRefreshedAt] = useState<Date | null>(null)
-  const [upcomingMeetings, setUpcomingMeetings] = useState(() => listUpcomingAppointments(5))
+  const [upcomingMeetings, setUpcomingMeetings] = useState<
+    Awaited<ReturnType<typeof listUpcomingAppointments>>
+  >([])
   const [recentClients, setRecentClients] = useState<Client[]>([])
 
   useEffect(() => {
-    setUpcomingMeetings(listUpcomingAppointments(5))
+    let cancelled = false
+    void listUpcomingAppointments(5)
+      .then((rows) => {
+        if (!cancelled) setUpcomingMeetings(rows)
+      })
+      .catch(() => {
+        if (!cancelled) setUpcomingMeetings([])
+      })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   useEffect(() => {
@@ -296,7 +308,7 @@ export default function AdminDashboardPage() {
           <ul className="dash-admin__clients-list">
             {recentClients.map((row) => (
               <li key={row.id}>
-                <Link to={`/admin/clients/${row.id}/edit`} className="dash-admin__client-card">
+                <Link to={`/admin/clients/${row.id}`} className="dash-admin__client-card">
                   <span className="dash-admin__client-avatar" aria-hidden>
                     {clientInitials(row)}
                   </span>

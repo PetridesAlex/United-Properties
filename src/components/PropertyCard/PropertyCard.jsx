@@ -56,6 +56,8 @@ function PropertyCard({
       }`.trim()}
       whileHover={isCover ? { y: -2 } : { y: -4 }}
       transition={{ duration: 0.22 }}
+      data-cms-property-id={property.id || undefined}
+      data-cms-property-slug={property.slug || undefined}
     >
       {isCover ? (
         <Link

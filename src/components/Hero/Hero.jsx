@@ -3,6 +3,7 @@ import { ChevronDown } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { buildSearchPath } from '../../lib/search/searchPath'
 import { useSiteContent } from '../../hooks/useSiteContent'
+import CmsText from '../CmsPreview/CmsText'
 import './Hero.css'
 
 /** Served from `public/video/hero-video-optimize-united-properties.mp4` */
@@ -108,13 +109,19 @@ function Hero() {
 
       <div className="hero-section__copy">
         {get('home', 'hero', 'eyebrow') ? (
-          <p className="hero-section__eyebrow">{get('home', 'hero', 'eyebrow')}</p>
+          <CmsText page="home" section="hero" field="eyebrow" as="p" className="hero-section__eyebrow">
+            {get('home', 'hero', 'eyebrow')}
+          </CmsText>
         ) : null}
         {get('home', 'hero', 'heading') ? (
-          <h1 className="hero-section__heading">{get('home', 'hero', 'heading')}</h1>
+          <CmsText page="home" section="hero" field="heading" as="h1" className="hero-section__heading">
+            {get('home', 'hero', 'heading')}
+          </CmsText>
         ) : null}
         {get('home', 'hero', 'description') ? (
-          <p className="hero-section__lede">{get('home', 'hero', 'description')}</p>
+          <CmsText page="home" section="hero" field="description" as="p" className="hero-section__lede">
+            {get('home', 'hero', 'description')}
+          </CmsText>
         ) : null}
       </div>
 

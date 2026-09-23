@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async'
 import CTASection from '../components/CTASection/CTASection'
+import CmsText from '../components/CmsPreview/CmsText'
 import { useSiteContent } from '../hooks/useSiteContent'
 
 function Concierge() {
@@ -11,28 +12,44 @@ function Concierge() {
         <title>{get('concierge', 'hero', 'heading')} | United Properties</title>
       </Helmet>
 
-      <section className="page-hero">
+      <section className="page-hero" data-cms-page="concierge" data-cms-section="hero">
         <div className="container">
-          <p>{get('concierge', 'hero', 'eyebrow')}</p>
-          <h1>{get('concierge', 'hero', 'heading')}</h1>
-          <p>{get('concierge', 'hero', 'description')}</p>
+          <CmsText page="concierge" section="hero" field="eyebrow" as="p">
+            {get('concierge', 'hero', 'eyebrow')}
+          </CmsText>
+          <CmsText page="concierge" section="hero" field="heading" as="h1">
+            {get('concierge', 'hero', 'heading')}
+          </CmsText>
+          <CmsText page="concierge" section="hero" field="description" as="p">
+            {get('concierge', 'hero', 'description')}
+          </CmsText>
         </div>
       </section>
 
-      <section className="section section--light">
+      <section className="section section--light" data-cms-page="concierge" data-cms-section="story">
         <div className="container">
-          <p className="section-eyebrow">{get('concierge', 'story', 'eyebrow')}</p>
-          <h2>{get('concierge', 'story', 'heading')}</h2>
-          <p className="section-lede">{get('concierge', 'story', 'body')}</p>
+          <CmsText page="concierge" section="story" field="eyebrow" as="p" className="section-eyebrow">
+            {get('concierge', 'story', 'eyebrow')}
+          </CmsText>
+          <CmsText page="concierge" section="story" field="heading" as="h2">
+            {get('concierge', 'story', 'heading')}
+          </CmsText>
+          <CmsText page="concierge" section="story" field="body" as="p" className="section-lede">
+            {get('concierge', 'story', 'body')}
+          </CmsText>
         </div>
       </section>
 
-      <section className="section section--alt">
+      <section className="section section--alt" data-cms-page="concierge" data-cms-section="services">
         <div className="container grid-3">
           {[1, 2, 3].map((n) => (
-            <article key={n} className="card-luxury" style={{ padding: '1.25rem' }}>
-              <h3>{get('concierge', 'services', `point${n}_title`)}</h3>
-              <p>{get('concierge', 'services', `point${n}_body`)}</p>
+            <article key={n} className="card-luxury" style={{padding: '1.25rem'}}>
+              <CmsText page="concierge" section="services" field={`point${n}_title`} as="h3">
+                {get('concierge', 'services', `point${n}_title`)}
+              </CmsText>
+              <CmsText page="concierge" section="services" field={`point${n}_body`} as="p">
+                {get('concierge', 'services', `point${n}_body`)}
+              </CmsText>
             </article>
           ))}
         </div>
@@ -43,6 +60,8 @@ function Concierge() {
         description={get('concierge', 'cta', 'description')}
         primaryTo="/contact"
         primaryLabel={get('concierge', 'cta', 'button')}
+        cmsPage="concierge"
+        cmsSection="cta"
       />
     </>
   )

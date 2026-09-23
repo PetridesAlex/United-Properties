@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import InvestHowItWorksTimeline from '../InvestHowItWorksTimeline/InvestHowItWorksTimeline'
+import CmsText from '../CmsPreview/CmsText'
 import { useSiteContent } from '../../hooks/useSiteContent'
 import './InvestWithUsSection.css'
 
@@ -23,12 +24,12 @@ function InvestWithUsSection() {
           transition={{ duration: 0.55 }}
         >
           <header className="invest-with-us__header">
-            <p className="invest-with-us__eyebrow">
+            <CmsText page="services" section="invest_body" field="eyebrow" as="p" className="invest-with-us__eyebrow">
               {get('services', 'invest_body', 'eyebrow', 'United Services')}
-            </p>
-            <h2 id="invest-with-us-heading">
+            </CmsText>
+            <CmsText page="services" section="invest_body" field="heading" as="h2" id="invest-with-us-heading">
               {get('services', 'invest_body', 'heading', 'Invest With Us')}
-            </h2>
+            </CmsText>
           </header>
 
           <div className="invest-with-us__prose">
@@ -86,7 +87,9 @@ function InvestWithUsSection() {
             <span className="invest-with-us__network-perf" aria-hidden />
             <div className="invest-with-us__network-ticket-copy">
               <h3 className="invest-with-us__network-title">
-                {get('services', 'invest_network', 'heading', 'A curated, united network of experts')}
+                <CmsText page="services" section="invest_network" field="heading" as="span">
+                  {get('services', 'invest_network', 'heading', 'A curated, united network of experts')}
+                </CmsText>
               </h3>
               <p className="invest-with-us__network-body">
                 {get(

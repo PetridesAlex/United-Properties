@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLocation } from 'react-router-dom'
 import PropertyCard from '../components/PropertyCard/PropertyCard'
+import CmsText from '../components/CmsPreview/CmsText'
 import { useMergedProperties } from '../hooks/useMergedProperties'
 import { useSiteContent } from '../hooks/useSiteContent'
 import { matchesListingLocation } from '../lib/matchesListingLocation'
@@ -310,6 +311,8 @@ function Properties() {
   }, [filters, allProperties])
 
   const visibleProperties = filtered.slice(0, visibleCount)
+  const heroSection = heroContent.cmsSection || 'hero_buy'
+  const discoverySection = getDiscoveryCmsSection(mode)
 
   return (
     <>
@@ -320,14 +323,34 @@ function Properties() {
       <section
         className={`page-hero properties-hero ${heroContent.modeClass}`.trim()}
         data-cms-page="properties"
-        data-cms-section={heroContent.cmsSection || 'hero_buy'}
+        data-cms-section={heroSection}
       >
         <div className="container">
-          <p className="properties-hero__eyebrow">{heroContent.eyebrow}</p>
-          <h1>{heroContent.title}</h1>
-          <p className="properties-hero__description">{heroContent.description}</p>
+          <CmsText
+            page="properties"
+            section={heroSection}
+            field="eyebrow"
+            as="p"
+            className="properties-hero__eyebrow"
+          >
+            {heroContent.eyebrow}
+          </CmsText>
+          <CmsText page="properties" section={heroSection} field="heading" as="h1">
+            {heroContent.title}
+          </CmsText>
+          <CmsText
+            page="properties"
+            section={heroSection}
+            field="description"
+            as="p"
+            className="properties-hero__description"
+          >
+            {heroContent.description}
+          </CmsText>
           <a href="#properties-discovery" className="btn btn-gold properties-hero__jump">
-            {heroContent.jumpCta}
+            <CmsText page="properties" section={heroSection} field="jump_cta" as="span">
+              {heroContent.jumpCta}
+            </CmsText>
           </a>
         </div>
       </section>
@@ -336,13 +359,31 @@ function Properties() {
         className="section section--light"
         id="properties-discovery"
         data-cms-page="properties"
-        data-cms-section={getDiscoveryCmsSection(mode)}
+        data-cms-section={discoverySection}
       >
         <div className="container">
           <header className="properties-discovery__header properties-discovery__header--limassol">
-            <p className="properties-discovery__eyebrow">{discoveryIntro.eyebrow}</p>
-            <h2>{discoveryIntro.title}</h2>
-            <p className="properties-discovery__description">{discoveryIntro.description}</p>
+            <CmsText
+              page="properties"
+              section={discoverySection}
+              field="eyebrow"
+              as="p"
+              className="properties-discovery__eyebrow"
+            >
+              {discoveryIntro.eyebrow}
+            </CmsText>
+            <CmsText page="properties" section={discoverySection} field="title" as="h2">
+              {discoveryIntro.title}
+            </CmsText>
+            <CmsText
+              page="properties"
+              section={discoverySection}
+              field="description"
+              as="p"
+              className="properties-discovery__description"
+            >
+              {discoveryIntro.description}
+            </CmsText>
           </header>
 
           <div className="properties-results-zone">

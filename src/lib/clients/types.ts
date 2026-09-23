@@ -27,7 +27,10 @@ export function clientInitials(client: Pick<Client, 'first_name' | 'last_name'>)
   return `${first}${last}`.toUpperCase() || 'UP'
 }
 
-export function emptyClient(): Omit<Client, 'id' | 'created_at' | 'updated_at' | 'created_by' | 'enquiry_count'> {
+export function emptyClient(): Omit<
+  Client,
+  'id' | 'created_at' | 'updated_at' | 'created_by' | 'enquiry_count' | 'assigned_name' | 'properties_count' | 'next_follow_up_at' | 'last_activity_at'
+> {
   return {
     first_name: '',
     last_name: '',
@@ -36,6 +39,24 @@ export function emptyClient(): Omit<Client, 'id' | 'created_at' | 'updated_at' |
     notes: '',
     source: 'manual',
     status: 'active',
+    process_stage: 'new_lead',
+    client_type: null,
+    assigned_to: null,
     last_contact_at: null,
   }
 }
+
+export {
+  CLIENT_PROCESS_STAGES,
+  CLIENT_PROCESS_STAGE_LABELS,
+  CLIENT_TYPE_LABELS,
+  CLIENT_PROPERTY_INTEREST_STATUSES,
+  CLIENT_PROPERTY_INTEREST_LABELS,
+  CLIENT_FOLLOW_UP_TYPES,
+  CLIENT_FOLLOW_UP_TYPE_LABELS,
+  CLIENT_FOLLOW_UP_STATUS_LABELS,
+  stageLabel,
+  interestLabel,
+  followUpTypeLabel,
+  formatCrmDate,
+} from './crmLabels'

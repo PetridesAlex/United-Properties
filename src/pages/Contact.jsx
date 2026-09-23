@@ -10,8 +10,10 @@ const MotionA = motion.a
 const contactMethodVariants = ['whatsapp', 'email', 'call']
 import InquiryForm from '../components/InquiryForm/InquiryForm'
 import { TelegramBrandIcon } from '../components/Navbar/SocialBrandIcons'
+import CmsText from '../components/CmsPreview/CmsText'
 import { TELEGRAM_CHAT_URL, WHATSAPP_CHAT_URL } from '../config/externalLinks'
 import { useSiteContent } from '../hooks/useSiteContent'
+import { cmsFieldProps } from '../lib/content/schema'
 import './Contact.css'
 
 function Contact() {
@@ -51,14 +53,29 @@ function Contact() {
   return (
     <>
       <Helmet>
-        <title>Contact | United Properties</title>
+        <title>{get('contact', 'seo', 'title', 'Contact | United Properties')}</title>
+        <meta
+          name="description"
+          content={get(
+            'contact',
+            'seo',
+            'description',
+            'Contact United Properties for sales, rentals, relocation, and investment strategy in Cyprus.',
+          )}
+        />
       </Helmet>
 
       <section className="page-hero page-hero--contact" data-cms-page="contact" data-cms-section="hero">
         <div className="container">
-          <p>{get('contact', 'hero', 'eyebrow')}</p>
-          <h1>{get('contact', 'hero', 'heading')}</h1>
-          <p>{get('contact', 'hero', 'description')}</p>
+          <CmsText page="contact" section="hero" field="eyebrow" as="p">
+            {get('contact', 'hero', 'eyebrow')}
+          </CmsText>
+          <CmsText page="contact" section="hero" field="heading" as="h1">
+            {get('contact', 'hero', 'heading')}
+          </CmsText>
+          <CmsText page="contact" section="hero" field="description" as="p">
+            {get('contact', 'hero', 'description')}
+          </CmsText>
         </div>
       </section>
 
@@ -82,6 +99,7 @@ function Contact() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.35 }}
               transition={{ duration: 0.45 }}
+              {...cmsFieldProps('contact', 'intro', 'eyebrow')}
             >
               {get('contact', 'intro', 'eyebrow')}
             </MotionP>
@@ -92,6 +110,7 @@ function Contact() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.35 }}
               transition={{ duration: 0.48, delay: 0.06 }}
+              {...cmsFieldProps('contact', 'intro', 'heading')}
             >
               {get('contact', 'intro', 'heading')}
             </MotionH2>
@@ -101,6 +120,7 @@ function Contact() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.35 }}
               transition={{ duration: 0.48, delay: 0.12 }}
+              {...cmsFieldProps('contact', 'intro', 'description')}
             >
               {get('contact', 'intro', 'description')}
             </MotionP>

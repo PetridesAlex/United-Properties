@@ -1,8 +1,8 @@
 /** CMS click-to-edit preview bridge (iframe ↔ admin). */
 
-export const CMS_PREVIEW_MESSAGE = 'up-cms-select'
 export const CMS_PREVIEW_READY = 'up-cms-ready'
 export const CMS_EDIT_MODE_MESSAGE = 'up-cms-edit-mode'
+export const CMS_SAVED_MESSAGE = 'up-cms-saved'
 export const CMS_PREVIEW_QUERY = 'cmsPreview'
 export const CMS_EDIT_QUERY = 'cmsEdit'
 /** Survives in-iframe client navigations that drop ?cmsPreview= */
@@ -119,6 +119,7 @@ export const CMS_SHARED_CHROME_PAGE_IDS = new Set([
   'footer',
   'cookies',
   'inquiry',
+  'search',
 ])
 
 export function isCmsSharedChromePage(pageId) {
@@ -128,9 +129,16 @@ export function isCmsSharedChromePage(pageId) {
 /** Canonical preview path for a CMS page id (shared chrome keeps currentPath). */
 export function previewPathForCmsPage(pageId, pagePath, currentPath = '/') {
   const id = String(pageId || '')
-  // Enquiry form lives on Contact — always preview that route.
   if (id === 'inquiry') {
     return pagePath || '/contact'
+  }
+  if (id === 'not-found') {
+    return '/__cms-preview-404__'
+  }
+  if (id === 'property') {
+    return currentPath && currentPath.startsWith('/properties/')
+      ? currentPath
+      : pagePath || '/properties'
   }
   if (isCmsSharedChromePage(id)) {
     return currentPath && currentPath.startsWith('/') ? currentPath : pagePath || '/'
@@ -143,73 +151,6 @@ export function normalizeCmsPathname(pathname) {
   const raw = String(pathname || '/')
   const path = raw.split('?')[0].split('#')[0] || '/'
   return path.startsWith('/') ? path : `/${path}`
-}
-
-/**
- * Fallback click targets when a node isn't wrapped with data-cms attrs yet.
- * First matching closest selector wins — prefer tagged nodes via resolveCmsTargetFromNode.
- */
-export const CMS_SELECTOR_TARGETS = [
-  {page: 'home', section: 'hero', selector: '.hero-section'},
-  {page: 'home', section: 'featured', selector: '#featured-properties'},
-  {page: 'home', section: 'signature', selector: '.home-scroll-stack-section'},
-  {page: 'home', section: 'services', selector: '[data-cms-page="home"][data-cms-section="services"]'},
-  {page: 'home', section: 'editorial', selector: '[data-cms-page="home"][data-cms-section="editorial"]'},
-  {page: 'home', section: 'team', selector: '[data-cms-page="home"][data-cms-section="team"]'},
-  {page: 'home', section: 'testimonials', selector: '.home-testimonials'},
-  {page: 'home', section: 'cta', selector: '.cta-section[data-cms-page="home"]'},
-  {page: 'about', section: 'hero', selector: '[data-cms-page="about"][data-cms-section="hero"]'},
-  {page: 'about', section: 'story', selector: '[data-cms-page="about"][data-cms-section="story"]'},
-  {page: 'about', section: 'why', selector: '[data-cms-page="about"][data-cms-section="why"]'},
-  {page: 'about', section: 'team', selector: '[data-cms-page="about"][data-cms-section="team"]'},
-  {page: 'about', section: 'cta', selector: '.cta-section[data-cms-page="about"]'},
-  {page: 'contact', section: 'hero', selector: '[data-cms-page="contact"][data-cms-section="hero"]'},
-  {page: 'contact', section: 'intro', selector: '[data-cms-page="contact"][data-cms-section="intro"]'},
-  {page: 'contact', section: 'methods', selector: '[data-cms-page="contact"][data-cms-section="methods"]'},
-  {page: 'contact', section: 'office', selector: '[data-cms-page="contact"][data-cms-section="office"]'},
-  {page: 'services', section: 'hero', selector: '[data-cms-page="services"][data-cms-section="hero"]'},
-  {page: 'services', section: 'invest_body', selector: '[data-cms-page="services"][data-cms-section="invest_body"]'},
-  {page: 'services', section: 'invest', selector: '[data-cms-page="services"][data-cms-section="invest"]'},
-  {page: 'services', section: 'management', selector: '[data-cms-page="services"][data-cms-section="management"]'},
-  {page: 'services', section: 'rent_property', selector: '[data-cms-page="services"][data-cms-section="rent_property"]'},
-  {page: 'services', section: 'cta', selector: '.cta-section[data-cms-page="services"]'},
-  {page: 'sell', section: 'hero', selector: '[data-cms-page="sell"][data-cms-section="hero"]'},
-  {page: 'sell', section: 'problem', selector: '[data-cms-page="sell"][data-cms-section="problem"]'},
-  {page: 'sell', section: 'process', selector: '[data-cms-page="sell"][data-cms-section="process"]'},
-  {page: 'sell', section: 'why', selector: '[data-cms-page="sell"][data-cms-section="why"]'},
-  {page: 'sell', section: 'proof', selector: '[data-cms-page="sell"][data-cms-section="proof"]'},
-  {page: 'sell', section: 'compare', selector: '[data-cms-page="sell"][data-cms-section="compare"]'},
-  {page: 'sell', section: 'cta', selector: '.cta-section[data-cms-page="sell"]'},
-  {page: 'properties', section: 'hero_buy', selector: '[data-cms-page="properties"][data-cms-section="hero_buy"]'},
-  {page: 'properties', section: 'hero_rent', selector: '[data-cms-page="properties"][data-cms-section="hero_rent"]'},
-  {page: 'properties', section: 'hero_sold', selector: '[data-cms-page="properties"][data-cms-section="hero_sold"]'},
-  {page: 'properties', section: 'hero_rented', selector: '[data-cms-page="properties"][data-cms-section="hero_rented"]'},
-  {page: 'properties', section: 'hero_featured', selector: '[data-cms-page="properties"][data-cms-section="hero_featured"]'},
-  {page: 'properties', section: 'hero_signature', selector: '[data-cms-page="properties"][data-cms-section="hero_signature"]'},
-  {page: 'navbar', section: 'nav', selector: '.navbar'},
-  {page: 'footer', section: 'brand', selector: '.footer'},
-  {page: 'cookies', section: 'modal', selector: '.cookie-preferences__bar, .cookie-preferences'},
-  {page: 'search', section: 'panel', selector: '.search-panel'},
-]
-
-export function resolveCmsTargetFromNode(node) {
-  if (!node || !(node instanceof Element)) return null
-
-  const marked = node.closest('[data-cms-page][data-cms-section]')
-  if (marked) {
-    return {
-      page: marked.getAttribute('data-cms-page') || '',
-      section: marked.getAttribute('data-cms-section') || '',
-    }
-  }
-
-  for (const target of CMS_SELECTOR_TARGETS) {
-    if (node.closest(target.selector)) {
-      return {page: target.page, section: target.section}
-    }
-  }
-
-  return null
 }
 
 function sameOrigin(eventOrigin) {
@@ -236,19 +177,6 @@ export function isCmsBridgeMessage(data, type) {
   return Boolean(data && data.source === 'united-properties-cms' && data.type === type)
 }
 
-export function postCmsSelect(page, section) {
-  if (typeof window === 'undefined') return
-  const payload = {
-    source: 'united-properties-cms',
-    type: CMS_PREVIEW_MESSAGE,
-    page,
-    section,
-  }
-  const target = window.parent && window.parent !== window ? window.parent : null
-  if (!target) return
-  target.postMessage(payload, '*')
-}
-
 export function postCmsReady() {
   if (typeof window === 'undefined') return
   const payload = {
@@ -261,11 +189,28 @@ export function postCmsReady() {
   target.postMessage(payload, '*')
 }
 
+export function postCmsSaved({page, section, key, label, value}) {
+  if (typeof window === 'undefined') return
+  const target = window.parent && window.parent !== window ? window.parent : null
+  if (!target) return
+  target.postMessage(
+    {
+      source: 'united-properties-cms',
+      type: CMS_SAVED_MESSAGE,
+      page,
+      section,
+      key,
+      label,
+      value,
+    },
+    '*',
+  )
+}
+
 /** Parent → iframe: turn click-to-edit tools on/off. */
 export function postCmsEditMode(enabled, targetWindow) {
   if (!targetWindow) return
   try {
-    // Prefer writing into the iframe's storage when possible (same-origin).
     targetWindow.sessionStorage?.setItem(CMS_EDIT_STORAGE_KEY, enabled ? '1' : '0')
   } catch {
     setCmsEditToolsPreference(enabled)

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import CTASection from '../components/CTASection/CTASection'
 import { useSiteContent } from '../hooks/useSiteContent'
+import { cmsFieldProps } from '../lib/content/schema'
 import './SellWithUs.css'
 
 const MotionLink = motion.create(Link)
@@ -185,10 +186,15 @@ function SellWithUs() {
   return (
     <>
       <Helmet>
-        <title>Sell With Us | United Properties</title>
+        <title>{get('sell', 'seo', 'title', 'Sell With Us | United Properties')}</title>
         <meta
           name="description"
-          content="Sell with confidence in Cyprus. United Properties offers boutique attention, bespoke marketing, and MBA-level advisory for luxury and residential sales in Limassol."
+          content={get(
+            'sell',
+            'seo',
+            'description',
+            'Sell your Cyprus property with a boutique strategy — valuation, marketing, and private-client service.',
+          )}
         />
       </Helmet>
 
@@ -208,13 +214,25 @@ function SellWithUs() {
           initial="hidden"
           animate="visible"
         >
-          <motion.p className="sell-with-us__hero-kicker" variants={heroItem}>
+          <motion.p
+            className="sell-with-us__hero-kicker"
+            variants={heroItem}
+            {...cmsFieldProps('sell', 'hero', 'eyebrow')}
+          >
             {get('sell', 'hero', 'eyebrow', 'United Services')}
           </motion.p>
-          <motion.h1 className="sell-with-us__hero-headline" variants={heroItem}>
+          <motion.h1
+            className="sell-with-us__hero-headline"
+            variants={heroItem}
+            {...cmsFieldProps('sell', 'hero', 'heading')}
+          >
             {get('sell', 'hero', 'heading', 'Sell With Confidence. Sell With United.')}
           </motion.h1>
-          <motion.p className="sell-with-us__hero-sub" variants={heroItem}>
+          <motion.p
+            className="sell-with-us__hero-sub"
+            variants={heroItem}
+            {...cmsFieldProps('sell', 'hero', 'description')}
+          >
             {get(
               'sell',
               'hero',

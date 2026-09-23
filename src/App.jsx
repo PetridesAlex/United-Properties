@@ -2,23 +2,25 @@ import { useState } from 'react'
 import { BrowserRouter, useLocation } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { ThemeProvider } from 'next-themes'
+import { Toaster } from 'react-hot-toast'
 import Navbar from './components/Navbar/Navbar'
 import Footer from './components/Footer/Footer'
 import ScrollToTop from './components/ScrollToTop/ScrollToTop'
 import CookiePreferences from './components/CookiePreferences/CookiePreferences'
 import QuickContactFab from './components/QuickContactFab/QuickContactFab'
 import SitePreloader from './components/SitePreloader/SitePreloader'
-import CmsPreviewPicker from './components/CmsPreview/CmsPreviewPicker'
+import CmsInlineEditor from './components/CmsPreview/InlineEditor'
 import AppRouter from './router/AppRouter'
 import { MergedPropertiesProvider } from './hooks/useMergedProperties'
 import { SiteContentProvider } from './hooks/useSiteContent'
 import { GoogleMapsProvider } from './providers/GoogleMapsProvider'
-import { isCmsPreviewMode } from './lib/content/cmsPreview'
+import { isCmsEditMode, isCmsPreviewMode } from './lib/content/cmsPreview'
 
 function AppChrome({ cmsPreview }) {
   const {pathname} = useLocation()
   const isAdmin = pathname.startsWith('/admin')
   const hideOverlays = cmsPreview || isAdmin
+  const showCookiesInEdit = cmsPreview && isCmsEditMode()
 
   return (
     <>
@@ -29,9 +31,10 @@ function AppChrome({ cmsPreview }) {
       </main>
       <Footer />
       {!hideOverlays ? <QuickContactFab /> : null}
-      {/* Cookie bar steals CMS preview clicks and clutters the admin studio. */}
-      {!hideOverlays ? <CookiePreferences /> : null}
-      <CmsPreviewPicker />
+      {/* Cookie bar steals clicks on the live site; show it in CMS edit so its text can be edited. */}
+      {!hideOverlays || showCookiesInEdit ? <CookiePreferences /> : null}
+      <CmsInlineEditor />
+      {cmsPreview ? <Toaster position="top-center" toastOptions={{duration: 2200}} /> : null}
     </>
   )
 }

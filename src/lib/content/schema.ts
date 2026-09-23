@@ -5,6 +5,8 @@
 import {
   f,
   contentKey,
+  cmsFieldProps,
+  parseContentKey,
   type ContentFieldDef,
   type ContentFieldType,
   type ContentPageDef,
@@ -12,7 +14,7 @@ import {
 } from './types'
 
 export type {ContentFieldDef, ContentFieldType, ContentPageDef, ContentSectionDef}
-export {contentKey, f}
+export {contentKey, cmsFieldProps, f, parseContentKey}
 
 export const CONTENT_PAGES: ContentPageDef[] = [
   {
@@ -218,6 +220,21 @@ export const CONTENT_PAGES: ContentPageDef[] = [
           f('btn_whatsapp', 'WhatsApp button', 'WhatsApp'),
         ],
       },
+      {
+        id: 'seo',
+        title: 'SEO / browser title',
+        description: 'Homepage title and description for search engines.',
+        fields: [
+          f('title', 'Browser title', 'United Properties | Luxury Real Estate in Cyprus'),
+          f(
+            'description',
+            'Meta description',
+            'Curated homes, seafront living, and private-client advisory across Limassol and beyond.',
+            'textarea',
+            2,
+          ),
+        ],
+      },
     ],
   },
   {
@@ -333,6 +350,24 @@ export const CONTENT_PAGES: ContentPageDef[] = [
             'textarea',
             3,
           ),
+          f('btn_listings', 'Listings button', 'View Listings'),
+          f('btn_contact', 'Contact button', 'Contact Our Team'),
+          f('btn_whatsapp', 'WhatsApp button', 'WhatsApp'),
+        ],
+      },
+      {
+        id: 'seo',
+        title: 'SEO / browser title',
+        description: 'Page title and description for search engines (edit via All texts drawer).',
+        fields: [
+          f('title', 'Browser title', 'About | United Properties'),
+          f(
+            'description',
+            'Meta description',
+            'Trusted Cyprus real estate advisory for luxury homes, investments, and relocation.',
+            'textarea',
+            2,
+          ),
         ],
       },
     ],
@@ -414,6 +449,21 @@ export const CONTENT_PAGES: ContentPageDef[] = [
             2,
           ),
           f('link_label', 'Link label', 'Telegram'),
+        ],
+      },
+      {
+        id: 'seo',
+        title: 'SEO / browser title',
+        description: 'Page title and description for search engines.',
+        fields: [
+          f('title', 'Browser title', 'Contact | United Properties'),
+          f(
+            'description',
+            'Meta description',
+            'Contact United Properties for sales, rentals, relocation, and investment strategy in Cyprus.',
+            'textarea',
+            2,
+          ),
         ],
       },
       {
@@ -634,6 +684,31 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         description: 'Closing banner on the Services page.',
         fields: [
           f('heading', 'Heading', 'Discuss Your Property Goals With Our Advisory Team'),
+          f(
+            'description',
+            'Supporting text',
+            'Connect with our advisors for a tailored strategy across premium Cyprus locations.',
+            'textarea',
+            3,
+          ),
+          f('btn_listings', 'Listings button', 'View Listings'),
+          f('btn_contact', 'Contact button', 'Contact Our Team'),
+          f('btn_whatsapp', 'WhatsApp button', 'WhatsApp'),
+        ],
+      },
+      {
+        id: 'seo',
+        title: 'SEO / browser title',
+        description: 'Page title and description for search engines.',
+        fields: [
+          f('title', 'Browser title', 'Services | United Properties'),
+          f(
+            'description',
+            'Meta description',
+            'Premium real estate services in Cyprus — sales, rentals, investment, and management.',
+            'textarea',
+            2,
+          ),
         ],
       },
     ],
@@ -855,6 +930,24 @@ export const CONTENT_PAGES: ContentPageDef[] = [
             'Book a valuation call with our team — confidential, structured, and tailored to your property.',
             'textarea',
             3,
+          ),
+          f('btn_listings', 'Listings button', 'View Listings'),
+          f('btn_contact', 'Contact button', 'Contact Our Team'),
+          f('btn_whatsapp', 'WhatsApp button', 'WhatsApp'),
+        ],
+      },
+      {
+        id: 'seo',
+        title: 'SEO / browser title',
+        description: 'Page title and description for search engines.',
+        fields: [
+          f('title', 'Browser title', 'Sell With Us | United Properties'),
+          f(
+            'description',
+            'Meta description',
+            'Sell your Cyprus property with a boutique strategy — valuation, marketing, and private-client service.',
+            'textarea',
+            2,
           ),
         ],
       },
@@ -1116,6 +1209,68 @@ export const CONTENT_PAGES: ContentPageDef[] = [
           f('filter_all', 'All specialties option', 'All specialties'),
         ],
       },
+      {
+        id: 'team',
+        title: 'Advisor profiles',
+        description: 'Names, roles, and bios shown on agent cards.',
+        fields: [
+          f('agent1_name', 'Agent 1 name', 'Andreas Kyriakou'),
+          f('agent1_role', 'Agent 1 role', 'Managing Partner'),
+          f('agent1_specialization', 'Agent 1 specialty', 'Luxury Villas and Seafront Estates'),
+          f(
+            'agent1_bio',
+            'Agent 1 bio',
+            'Advises high-net-worth clients across prime Cyprus coastal markets with discreet, data-led guidance.',
+            'textarea',
+            3,
+          ),
+          f('agent2_name', 'Agent 2 name', 'Elena Demetriou'),
+          f('agent2_role', 'Agent 2 role', 'Senior Property Consultant'),
+          f('agent2_specialization', 'Agent 2 specialty', 'Limassol and Nicosia Apartments'),
+          f(
+            'agent2_bio',
+            'Agent 2 bio',
+            'Focuses on city luxury stock, relocation clients, and premium buy-to-let opportunities.',
+            'textarea',
+            3,
+          ),
+          f('agent3_name', 'Agent 3 name', 'Marios Petrou'),
+          f('agent3_role', 'Agent 3 role', 'Investment Advisor'),
+          f('agent3_specialization', 'Agent 3 specialty', 'Project & Yield Investments'),
+          f(
+            'agent3_bio',
+            'Agent 3 bio',
+            'Supports international investors with portfolio strategy, market due diligence, and acquisition structuring.',
+            'textarea',
+            3,
+          ),
+          f('agent4_name', 'Agent 4 name', 'Sofia Nicolaou'),
+          f('agent4_role', 'Agent 4 role', 'Client Success Lead'),
+          f('agent4_specialization', 'Agent 4 specialty', 'Relocation and International Buyers'),
+          f(
+            'agent4_bio',
+            'Agent 4 bio',
+            'Coordinates full relocation pathways for families, executives, and overseas buyers moving to Cyprus.',
+            'textarea',
+            3,
+          ),
+        ],
+      },
+      {
+        id: 'seo',
+        title: 'SEO / browser title',
+        description: 'Page title and description for search engines.',
+        fields: [
+          f('title', 'Browser title', 'Agents | United Properties'),
+          f(
+            'description',
+            'Meta description',
+            'Meet the United Properties advisory team — luxury homes, investments, and relocation specialists.',
+            'textarea',
+            2,
+          ),
+        ],
+      },
     ],
   },
   {
@@ -1167,6 +1322,39 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         ],
       },
       {
+        id: 'nav',
+        title: 'In-page navigation',
+        description: 'Sticky jump links on the property detail page.',
+        fields: [
+          f('overview', 'Overview', 'Overview'),
+          f('description', 'Description', 'Description'),
+          f('details', 'Property details', 'Property details'),
+          f('amenities', 'Amenities', 'Amenities'),
+          f('floorplans', 'Floor plans', 'Floor plans'),
+          f('location', 'Location', 'Location'),
+          f('enquire', 'Enquire', 'Enquire'),
+        ],
+      },
+      {
+        id: 'floorplans',
+        title: 'Floor plans gallery',
+        description: 'Floor plan section chrome (when plans exist).',
+        fields: [
+          f('eyebrow', 'Small label', 'Layout'),
+          f(
+            'lede',
+            'Supporting text',
+            'Study the layout in detail — open any plan for a larger view.',
+            'textarea',
+            2,
+          ),
+          f('count_one', 'Count label (singular)', 'plan'),
+          f('count_many', 'Count label (plural)', 'plans'),
+          f('open_label', 'Open full size label', 'Open floor plan full size'),
+          f('enlarge', 'Enlarge label', 'Enlarge'),
+        ],
+      },
+      {
         id: 'actions',
         title: 'Actions',
         description: 'Brochure and WhatsApp action labels.',
@@ -1189,6 +1377,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
           f('label_parking', 'Parking label', 'Parking'),
           f('label_built', 'Year built prefix', 'Built in'),
           f('price_period', 'Rent period', '/ month'),
+          f('specs_eyebrow', 'Specifications eyebrow', 'Specifications'),
         ],
       },
       {
@@ -1496,6 +1685,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         title: 'Brand',
         description: 'Footer brand tagline.',
         fields: [
+          f('brand_name', 'Brand name', 'United Properties'),
           f(
             'tagline',
             'Tagline',
@@ -1503,6 +1693,17 @@ export const CONTENT_PAGES: ContentPageDef[] = [
             'textarea',
             3,
           ),
+        ],
+      },
+      {
+        id: 'social',
+        title: 'Social labels',
+        description: 'Accessibility labels for footer social icons.',
+        fields: [
+          f('instagram', 'Instagram', 'Instagram'),
+          f('linkedin', 'LinkedIn', 'LinkedIn'),
+          f('facebook', 'Facebook', 'Facebook'),
+          f('whatsapp', 'WhatsApp', 'WhatsApp'),
         ],
       },
       {
@@ -1554,7 +1755,10 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         id: 'legal',
         title: 'Legal',
         description: 'Copyright line.',
-        fields: [f('rights', 'Rights text', 'All rights reserved')],
+        fields: [
+          f('brand', 'Brand name in copyright', 'United Properties'),
+          f('rights', 'Rights text', 'All rights reserved'),
+        ],
       },
     ],
   },
@@ -1587,6 +1791,22 @@ export const CONTENT_PAGES: ContentPageDef[] = [
           f('services', 'United Services', 'United Services'),
           f('about', 'About', 'About'),
           f('contact', 'Contact', 'Contact'),
+          f('search_aria', 'Search button label', 'Search homes and agents'),
+          f('logo_aria', 'Logo link label', 'United Properties — Home'),
+          f('ticker_aria', 'Ticker region label', 'Premium services'),
+          f('main_aria', 'Main nav label', 'Main navigation'),
+          f('services_menu_aria', 'Services menu label', 'United Services links'),
+        ],
+      },
+      {
+        id: 'social',
+        title: 'Mobile menu socials',
+        description: 'Labels in the mobile staggered menu.',
+        fields: [
+          f('instagram', 'Instagram', 'Instagram'),
+          f('linkedin', 'LinkedIn', 'LinkedIn'),
+          f('whatsapp', 'WhatsApp', 'WhatsApp'),
+          f('telegram', 'Telegram', 'Telegram'),
         ],
       },
       {
@@ -1680,6 +1900,25 @@ export const CONTENT_PAGES: ContentPageDef[] = [
 
 export function getContentPage(pageId: string): ContentPageDef | undefined {
   return CONTENT_PAGES.find((p) => p.id === pageId)
+}
+
+/** Resolve a field definition (label, type, default) for the inline editor popup. */
+export function findFieldDef(
+  pageId: string,
+  sectionId: string,
+  fieldKey: string,
+): {
+  page: ContentPageDef
+  section: ContentSectionDef
+  field: ContentFieldDef
+} | null {
+  const page = getContentPage(pageId)
+  if (!page) return null
+  const section = page.sections.find((s) => s.id === sectionId)
+  if (!section) return null
+  const field = section.fields.find((f) => f.key === fieldKey)
+  if (!field) return null
+  return {page, section, field}
 }
 
 /** Pages that share a URL with a real route page — never win path→page sync. */

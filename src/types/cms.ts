@@ -230,6 +230,65 @@ export interface Inquiry {
 export type ClientStatus = 'active' | 'archived'
 export type ClientSource = 'website' | 'manual'
 
+export type ClientProcessStage =
+  | 'new_lead'
+  | 'contacted'
+  | 'properties_suggested'
+  | 'interested'
+  | 'viewing_scheduled'
+  | 'viewing_completed'
+  | 'negotiation'
+  | 'offer_made'
+  | 'deal_in_progress'
+  | 'completed'
+  | 'lost_inactive'
+
+export type ClientType = 'buyer' | 'seller' | 'tenant' | 'investor' | 'other'
+
+export type ClientPropertyInterestStatus =
+  | 'suggested'
+  | 'sent_to_client'
+  | 'interested'
+  | 'viewing_requested'
+  | 'viewing_scheduled'
+  | 'viewed'
+  | 'offer_made'
+  | 'negotiation'
+  | 'not_interested'
+  | 'completed'
+
+export type ClientFollowUpType =
+  | 'follow_up'
+  | 'phone_call'
+  | 'meeting'
+  | 'viewing'
+  | 'contract'
+  | 'payment'
+  | 'deposit'
+  | 'reminder'
+  | 'other'
+
+export type ClientFollowUpStatus = 'upcoming' | 'today' | 'completed' | 'cancelled' | 'overdue'
+
+export type ClientActivityAction =
+  | 'client_created'
+  | 'client_updated'
+  | 'client_archived'
+  | 'client_restored'
+  | 'stage_changed'
+  | 'property_linked'
+  | 'property_unlinked'
+  | 'property_status_changed'
+  | 'note_added'
+  | 'follow_up_created'
+  | 'follow_up_completed'
+  | 'follow_up_cancelled'
+  | 'viewing_scheduled'
+  | 'viewing_completed'
+  | 'client_contacted'
+  | 'offer_recorded'
+  | 'deal_completed'
+
 export interface Client {
   id: string
   first_name: string
@@ -239,11 +298,88 @@ export interface Client {
   notes: string | null
   source: ClientSource | string
   status: ClientStatus | string
+  process_stage?: ClientProcessStage | string
+  client_type?: ClientType | string | null
+  assigned_to?: string | null
   last_contact_at: string | null
   created_by: string | null
   created_at: string
   updated_at: string
   enquiry_count?: number
+  /** Hydrated list fields */
+  assigned_name?: string | null
+  properties_count?: number
+  next_follow_up_at?: string | null
+  last_activity_at?: string | null
+}
+
+export interface ClientNote {
+  id: string
+  client_id: string
+  body: string
+  created_by: string | null
+  created_at: string
+  updated_at: string
+  author_name?: string | null
+}
+
+export interface ClientPropertyLink {
+  id: string
+  client_id: string
+  property_id: string
+  interest_status: ClientPropertyInterestStatus | string
+  notes: string | null
+  linked_by: string | null
+  linked_at: string
+  updated_by: string | null
+  updated_at: string
+  linked_by_name?: string | null
+  property?: {
+    id: string
+    title: string
+    slug: string
+    location: string | null
+    city: string | null
+    price: number | null
+    status: string | null
+    reference_number: string | null
+    cover_url?: string | null
+  } | null
+}
+
+export interface ClientFollowUp {
+  id: string
+  client_id: string
+  property_id: string | null
+  assigned_to: string | null
+  starts_at: string
+  type: ClientFollowUpType | string
+  status: ClientFollowUpStatus | string
+  title: string
+  notes: string | null
+  created_by: string | null
+  updated_by: string | null
+  created_at: string
+  updated_at: string
+  assigned_name?: string | null
+  property_ref?: string | null
+  property_title?: string | null
+}
+
+export interface ClientActivity {
+  id: string
+  client_id: string
+  property_id: string | null
+  actor_id: string | null
+  action: ClientActivityAction | string
+  description: string
+  previous_value: string | null
+  new_value: string | null
+  metadata: Record<string, unknown>
+  created_at: string
+  actor_name?: string | null
+  client_name?: string | null
+  property_ref?: string | null
 }
 
 export interface BazarakiValidation {

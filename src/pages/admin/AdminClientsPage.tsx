@@ -4,12 +4,17 @@ import {Mail, Phone, Plus, Search, Trash2, Users} from 'lucide-react'
 import toast from 'react-hot-toast'
 import {deleteClient, fetchAdminClients} from '../../lib/clients/api'
 import {
+  CLIENT_PROCESS_STAGE_LABELS,
+  CLIENT_PROCESS_STAGES,
   CLIENT_SOURCE_LABELS,
   CLIENT_STATUS_LABELS,
   clientInitials,
   formatClientName,
+  formatCrmDate,
+  stageLabel,
 } from '../../lib/clients/types'
-import type {Client, ClientSource, ClientStatus} from '../../types/cms'
+import {fetchStaffProfiles, type StaffProfile} from '../../lib/clients/staff'
+import type {Client, ClientProcessStage, ClientSource, ClientStatus} from '../../types/cms'
 import '../../components/admin/AdminShell.css'
 import './AdminClientsPage.css'
 
@@ -23,29 +28,39 @@ const TAB_LABELS: Record<StatusTab, string> = {
   archived: 'Archived',
 }
 
-function formatWhen(iso: string | null) {
-  if (!iso) return 'No contact yet'
-  return new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(iso))
-}
-
 export default function AdminClientsPage() {
   const [tab, setTab] = useState<StatusTab>('active')
   const [search, setSearch] = useState('')
+  const [assigneeFilter, setAssigneeFilter] = useState('all')
+  const [stageFilter, setStageFilter] = useState('all')
+  const [followUpDue, setFollowUpDue] = useState(false)
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [staff, setStaff] = useState<StaffProfile[]>([])
   const [rows, setRows] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [pendingDelete, setPendingDelete] = useState<Client | null>(null)
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
+    void fetchStaffProfiles()
+      .then(setStaff)
+      .catch(() => setStaff([]))
+  }, [])
+
+  useEffect(() => {
     let cancelled = false
     async function load() {
       setLoading(true)
       try {
-        const data = await fetchAdminClients({search})
+        const data = await fetchAdminClients({
+          search,
+          assignedTo: assigneeFilter === 'all' ? 'all' : assigneeFilter,
+          processStage: stageFilter === 'all' ? 'all' : (stageFilter as ClientProcessStage),
+          followUpDue: followUpDue || undefined,
+          dateFrom: dateFrom || undefined,
+          dateTo: dateTo || undefined,
+        })
         if (!cancelled) setRows(data)
       } catch (err) {
         if (!cancelled) toast.error(err instanceof Error ? err.message : 'Failed to load clients')
@@ -57,7 +72,7 @@ export default function AdminClientsPage() {
     return () => {
       cancelled = true
     }
-  }, [search])
+  }, [search, assigneeFilter, stageFilter, followUpDue, dateFrom, dateTo])
 
   const counts = useMemo(() => {
     return {
@@ -97,8 +112,8 @@ export default function AdminClientsPage() {
           </p>
           <h1>Clients</h1>
           <p className="clients-admin__lede">
-            Contact profiles from website submissions and manual entries — name, email, phone, and
-            enquiry history.
+            Pipeline, property links, follow-ups, and team activity — open a client for the full
+            profile.
           </p>
         </div>
         <Link className="admin-btn admin-btn--gold" to="/admin/clients/new">
@@ -134,12 +149,53 @@ export default function AdminClientsPage() {
         </label>
       </div>
 
+      <div className="clients-admin__filters">
+        <label>
+          <span>Assigned</span>
+          <select value={assigneeFilter} onChange={(e) => setAssigneeFilter(e.target.value)}>
+            <option value="all">All employees</option>
+            {staff.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.full_name?.trim() || s.email}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Stage</span>
+          <select value={stageFilter} onChange={(e) => setStageFilter(e.target.value)}>
+            <option value="all">All stages</option>
+            {CLIENT_PROCESS_STAGES.map((stage) => (
+              <option key={stage} value={stage}>
+                {CLIENT_PROCESS_STAGE_LABELS[stage]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Date from</span>
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+        </label>
+        <label>
+          <span>Date to</span>
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+        </label>
+        <label className="clients-admin__check">
+          <input
+            type="checkbox"
+            checked={followUpDue}
+            onChange={(e) => setFollowUpDue(e.target.checked)}
+          />
+          Follow-up due
+        </label>
+      </div>
+
       {loading ? <p className="admin-empty">Loading clients…</p> : null}
 
       {!loading && visible.length === 0 ? (
         <div className="clients-admin__empty">
           <Users size={28} aria-hidden />
-          <p>No clients yet. Website enquiries create profiles automatically.</p>
+          <p>No clients match these filters. Website enquiries create profiles automatically.</p>
           <Link className="admin-btn admin-btn--gold" to="/admin/clients/new">
             Add client manually
           </Link>
@@ -152,7 +208,7 @@ export default function AdminClientsPage() {
             const name = formatClientName(row)
             return (
               <li key={row.id} className="clients-admin__item">
-                <Link to={`/admin/clients/${row.id}/edit`} className="clients-admin__card">
+                <Link to={`/admin/clients/${row.id}`} className="clients-admin__card">
                   <span className="clients-admin__avatar" aria-hidden>
                     {clientInitials(row)}
                   </span>
@@ -177,15 +233,20 @@ export default function AdminClientsPage() {
                         </span>
                       ) : null}
                     </span>
+                    <span className="clients-admin__crm-row">
+                      <span className="clients-admin__stage-pill">
+                        {stageLabel(row.process_stage)}
+                      </span>
+                      <span>{row.assigned_name || 'Unassigned'}</span>
+                      <span>{row.properties_count ?? 0} properties</span>
+                    </span>
                     <span className="clients-admin__foot">
                       <em>
                         {CLIENT_SOURCE_LABELS[(row.source as ClientSource) || 'website'] ?? row.source}
                       </em>
-                      <span>Last contact {formatWhen(row.last_contact_at)}</span>
-                      <span>
-                        {row.enquiry_count ?? 0} enquir
-                        {(row.enquiry_count ?? 0) === 1 ? 'y' : 'ies'}
-                      </span>
+                      <span>Next {formatCrmDate(row.next_follow_up_at, true)}</span>
+                      <span>Activity {formatCrmDate(row.last_activity_at)}</span>
+                      <span>Added {formatCrmDate(row.created_at)}</span>
                     </span>
                   </span>
                 </Link>

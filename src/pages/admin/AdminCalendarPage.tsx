@@ -10,16 +10,18 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import {
-  deleteAppointment,
+  deleteAppointmentRemote,
   listAppointmentsForMonth,
-  upsertAppointment,
-} from '../../lib/appointments/storage'
+  migrateLocalAppointmentsIfNeeded,
+  upsertAppointmentRemote,
+} from '../../lib/appointments/api'
 import {
   APPOINTMENT_TYPE_LABELS,
   emptyAppointment,
   type Appointment,
   type AppointmentType,
 } from '../../lib/appointments/types'
+import {useAdminAuth} from '../../lib/auth/AdminAuthProvider'
 import '../../components/admin/AdminShell.css'
 import './AdminCalendarPage.css'
 
@@ -65,6 +67,7 @@ function formatWhen(row: Appointment) {
 }
 
 export default function AdminCalendarPage() {
+  const {user} = useAdminAuth()
   const todayKey = toDateKey(new Date())
   const [cursor, setCursor] = useState(() => {
     const now = new Date()
@@ -75,14 +78,25 @@ export default function AdminCalendarPage() {
   const [editing, setEditing] = useState<Appointment | null>(null)
   const [draft, setDraft] = useState(() => emptyAppointment(todayKey))
   const [panelOpen, setPanelOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  function refresh() {
-    setRows(listAppointmentsForMonth(cursor.year, cursor.month))
+  async function refresh() {
+    setLoading(true)
+    try {
+      await migrateLocalAppointmentsIfNeeded(user?.id)
+      const next = await listAppointmentsForMonth(cursor.year, cursor.month)
+      setRows(next)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to load calendar')
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
-    refresh()
-  }, [cursor.year, cursor.month])
+    void refresh()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cursor.year, cursor.month, user?.id])
 
   const cells = useMemo(
     () => buildMonthCells(cursor.year, cursor.month),
@@ -128,7 +142,7 @@ export default function AdminCalendarPage() {
     setPanelOpen(true)
   }
 
-  function save() {
+  async function save() {
     if (!draft.title.trim()) {
       toast.error('Add a meeting title')
       return
@@ -142,21 +156,30 @@ export default function AdminCalendarPage() {
       return
     }
 
-    const saved = upsertAppointment({
-      ...draft,
-      id: editing?.id,
-    })
-    refresh()
-    setSelectedDate(saved.date)
-    setPanelOpen(false)
-    toast.success(editing ? 'Appointment updated' : 'Appointment saved')
+    try {
+      const saved = await upsertAppointmentRemote({
+        ...draft,
+        id: editing?.id,
+        createdBy: user?.id,
+      })
+      await refresh()
+      setSelectedDate(saved.date)
+      setPanelOpen(false)
+      toast.success(editing ? 'Appointment updated' : 'Appointment saved')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Save failed')
+    }
   }
 
-  function remove(id: string) {
-    deleteAppointment(id)
-    refresh()
-    if (editing?.id === id) setPanelOpen(false)
-    toast.success('Appointment removed')
+  async function remove(id: string) {
+    try {
+      await deleteAppointmentRemote(id)
+      await refresh()
+      if (editing?.id === id) setPanelOpen(false)
+      toast.success('Appointment removed')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Delete failed')
+    }
   }
 
   function shiftMonth(delta: number) {
@@ -176,7 +199,8 @@ export default function AdminCalendarPage() {
             Meetings & appointments
           </h1>
           <p className="cal-admin__lede">
-            Plan viewings, client meetings, and calls — saved on this device for quick access.
+            Plan viewings, client meetings, and calls — synced to your team calendar
+            {loading ? ' (loading…)' : ''}.
           </p>
         </div>
         <button type="button" className="admin-btn admin-btn--gold" onClick={() => openCreate()}>
@@ -313,7 +337,7 @@ export default function AdminCalendarPage() {
                       type="button"
                       className="cal-admin__icon-delete"
                       aria-label={`Delete ${row.title}`}
-                      onClick={() => remove(row.id)}
+                      onClick={() => void remove(row.id)}
                     >
                       <Trash2 size={14} />
                     </button>
@@ -410,7 +434,7 @@ export default function AdminCalendarPage() {
                 <button
                   type="button"
                   className="admin-btn admin-btn--danger"
-                  onClick={() => remove(editing.id)}
+                  onClick={() => void remove(editing.id)}
                 >
                   Delete
                 </button>
@@ -418,7 +442,7 @@ export default function AdminCalendarPage() {
               <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setPanelOpen(false)}>
                 Cancel
               </button>
-              <button type="button" className="admin-btn admin-btn--gold" onClick={save}>
+              <button type="button" className="admin-btn admin-btn--gold" onClick={() => void save()}>
                 Save
               </button>
             </div>
