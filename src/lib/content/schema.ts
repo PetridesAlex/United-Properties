@@ -58,14 +58,14 @@ export const CONTENT_PAGES: ContentPageDef[] = [
       {
         id: 'signature',
         title: 'Signature collection',
-        description: 'The cinematic scrolling stack of exclusive addresses.',
+        description: 'Homepage signature showcase of exclusive addresses.',
         fields: [
           f('eyebrow', 'Small label', 'Signature Collection'),
-          f('heading', 'Heading', 'Scroll Through Our Most Exclusive Addresses'),
+          f('heading', 'Heading', 'Explore Our Most Exclusive Addresses'),
           f(
             'description',
             'Supporting text',
-            'A cinematic stacked showcase powered by smooth motion interactions and premium storytelling.',
+            'A curated signature collection — browse each residence with smooth, lightweight motion.',
             'textarea',
             3,
           ),

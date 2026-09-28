@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '../../lib/utils'
+import OptimizedImage from '../OptimizedImage/OptimizedImage'
 import './ModalCards.css'
 
 const MotionDiv = motion.div
@@ -165,12 +166,12 @@ export default function ModalCards({ cards = [], className }) {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="modal-expanded-image-container">
-                <img
+                <OptimizedImage
                   className="modal-expanded-image"
                   src={selected.imageUrl}
                   alt={selected.title}
+                  preset="featuredExpanded"
                   loading="eager"
-                  decoding="async"
                   fetchPriority="high"
                   sizes="(max-width: 640px) 96vw, min(72rem, 96vw)"
                 />
@@ -248,7 +249,14 @@ export default function ModalCards({ cards = [], className }) {
               }
             }}
           >
-            <img className="modal-card-image" src={card.imageUrl} alt={card.title} loading="lazy" />
+            <OptimizedImage
+              className="modal-card-image"
+              src={card.imageUrl}
+              alt={card.title}
+              preset="featuredCard"
+              loading="lazy"
+              sizes="(max-width: 640px) 46vw, (max-width: 1100px) 30vw, 280px"
+            />
             <div className="modal-card-overlay">
               <div className="modal-card-content">
                 <div className="modal-card-copy">

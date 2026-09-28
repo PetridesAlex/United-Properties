@@ -1,5 +1,6 @@
 import {supabase} from '../supabase/client'
 import type {PropertyImage} from '../../types/cms'
+import {compressImageForUpload} from '../media/compressImageForUpload'
 
 export type PropertyImageKind = 'gallery' | 'floor_plan'
 
@@ -46,13 +47,14 @@ export async function uploadPropertyImage(
 ) {
   if (!supabase) throw new Error('Supabase is not configured')
 
-  const ext = fileExtension(file)
+  const optimizedFile = await compressImageForUpload(file)
+  const ext = fileExtension(optimizedFile)
   const path = `${propertyId}/${kind === 'floor_plan' ? 'floor-plans/' : ''}${crypto.randomUUID()}.${ext}`
-  const contentType = file.type || 'application/octet-stream'
+  const contentType = optimizedFile.type || 'application/octet-stream'
 
   const {error: uploadError} = await supabase.storage
     .from('properties')
-    .upload(path, file, {cacheControl: '3600', upsert: false, contentType})
+    .upload(path, optimizedFile, {cacheControl: '31536000', upsert: false, contentType})
 
   if (uploadError) throw new Error(uploadError.message)
 
@@ -94,7 +96,7 @@ export async function uploadPropertyImage(
     property_id: propertyId,
     image_url: data.publicUrl,
     storage_path: path,
-    alt_text: file.name,
+    alt_text: optimizedFile.name || file.name,
     position,
     is_featured: isFeatured,
   }

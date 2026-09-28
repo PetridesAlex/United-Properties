@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
+import {createPortal} from 'react-dom'
+import {ChevronLeft, ChevronRight, X} from 'lucide-react'
+import OptimizedImage from '../OptimizedImage/OptimizedImage'
+import {optimizeImageUrl} from '../../lib/media/optimizeImageUrl'
 import './Gallery.css'
 
 const SWIPE_MIN_PX = 42
@@ -229,11 +231,45 @@ function Gallery({
       const h = probe.naturalHeight
       if (w > 0 && h > 0) setFrameRatio(w / h)
     }
-    probe.src = activeSrc
+    // Probe the optimized lightbox size so ratio matches what we show.
+    probe.src = optimizeImageUrl(activeSrc, 'lightbox') || activeSrc
     return () => {
       cancelled = true
     }
   }, [activeSrc])
+
+  // Warm mosaic tiles + adjacent lightbox frames for snappy browsing.
+  useEffect(() => {
+    if (!count) return undefined
+    const warm = []
+    const hero = optimizeImageUrl(normalizedImages[0], 'mosaicHero')
+    if (hero) warm.push(hero)
+    normalizedImages.slice(1, 1 + MOSAIC_SIDE).forEach((src) => {
+      const tile = optimizeImageUrl(src, 'mosaicTile')
+      if (tile) warm.push(tile)
+    })
+    warm.forEach((href) => {
+      const img = new Image()
+      img.decoding = 'async'
+      img.src = href
+    })
+    return undefined
+  }, [count, normalizedImages])
+
+  useEffect(() => {
+    if (!lightboxOpen || !count) return undefined
+    const neighbors = [
+      normalizedImages[(activeIndex + 1) % count],
+      normalizedImages[(activeIndex - 1 + count) % count],
+    ]
+    neighbors.forEach((src) => {
+      if (!src) return
+      const img = new Image()
+      img.decoding = 'async'
+      img.src = optimizeImageUrl(src, 'lightbox') || src
+    })
+    return undefined
+  }, [activeIndex, count, lightboxOpen, normalizedImages])
 
   const mosaicSide = useMemo(() => {
     if (count <= 1) return []
@@ -265,21 +301,14 @@ function Gallery({
           onClick={() => openLightboxAt(0)}
           aria-label={`Open preview — photo 1 of ${count}`}
         >
-          <img
-            src={normalizedImages[0]}
-            alt=""
-            aria-hidden="true"
-            className="gallery__mosaic-fill"
-            loading="eager"
-            decoding="async"
-            draggable={false}
-          />
-          <img
+          <OptimizedImage
             src={normalizedImages[0]}
             alt={`${title} — photo 1 of ${count}`}
+            preset="mosaicHero"
             className="gallery__mosaic-img"
             loading="eager"
-            decoding="async"
+            fetchPriority="high"
+            sizes="(max-width: 820px) 96vw, min(920px, 68vw)"
             draggable={false}
           />
           {brandLabel ? (
@@ -299,28 +328,21 @@ function Gallery({
               key={`${src}-mosaic-${index}`}
               type="button"
               className="gallery__mosaic-cell"
-              onClick={() => openLightboxAt(showMore ? index : index)}
+              onClick={() => openLightboxAt(index)}
               aria-label={
                 showMore
                   ? `Open gallery — ${extraCount + 1} more photos`
                   : `Open preview — photo ${index + 1} of ${count}`
               }
             >
-              <img
+              <OptimizedImage
                 src={src}
                 alt=""
-                aria-hidden="true"
-                className="gallery__mosaic-fill"
-                loading="lazy"
-                decoding="async"
-                draggable={false}
-              />
-              <img
-                src={src}
-                alt=""
+                preset="mosaicTile"
                 className="gallery__mosaic-img"
-                loading="lazy"
-                decoding="async"
+                loading="eager"
+                fetchPriority="high"
+                sizes="(max-width: 820px) 46vw, min(280px, 18vw)"
                 draggable={false}
               />
               {showMore ? (
@@ -362,7 +384,7 @@ function Gallery({
                   className={`gallery-lightbox__stage${count > 1 && zoom <= 1 ? ' is-swipeable' : ''}${
                     dragX ? ' is-dragging' : ''
                   }`}
-                  style={{ '--gallery-ratio': String(frameRatio) }}
+                  style={{'--gallery-ratio': String(frameRatio)}}
                   onPointerDown={onPointerDown}
                   onPointerMove={onPointerMove}
                   onPointerUp={onPointerUp}
@@ -380,11 +402,15 @@ function Gallery({
                   ) : null}
 
                   <div className={`gallery-lightbox__frame ${zoom > 1 ? 'is-zoomed' : ''}`}>
-                    <img
+                    <OptimizedImage
                       src={activeSrc}
                       alt={`${title} — photo ${activeIndex + 1} of ${count}`}
+                      preset="lightbox"
                       className="gallery-lightbox__image"
-                      style={{ transform: imageTransform }}
+                      style={{transform: imageTransform}}
+                      loading="eager"
+                      fetchPriority="high"
+                      sizes="(max-width: 900px) 96vw, min(1280px, 92vw)"
                       draggable={false}
                       onClick={() => {
                         if (swipeRef.current.swiped) {
@@ -428,7 +454,13 @@ function Gallery({
                         className={`gallery-lightbox__thumb ${activeIndex === index ? 'is-active' : ''}`}
                         onClick={() => goTo(index)}
                       >
-                        <img src={image} alt="" loading="lazy" decoding="async" />
+                        <OptimizedImage
+                          src={image}
+                          alt=""
+                          preset="lightboxThumb"
+                          loading={Math.abs(index - activeIndex) <= 2 ? 'eager' : 'lazy'}
+                          sizes="96px"
+                        />
                       </button>
                     ))}
                   </div>

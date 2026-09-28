@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Check } from 'lucide-react'
+import OptimizedImage from '../OptimizedImage/OptimizedImage'
 
 function formatPrice(value) {
   return new Intl.NumberFormat('en-US').format(value)
@@ -41,12 +42,13 @@ function DiscoveryResults({
         >
           <div className="search-panel-card__media-wrap">
             {property.image ? (
-              <img
+              <OptimizedImage
                 className="search-panel-card__media"
                 src={property.image}
                 alt=""
+                preset="card"
                 loading="lazy"
-                decoding="async"
+                sizes="(max-width: 640px) 96vw, 320px"
               />
             ) : (
               <div className="search-panel-card__media search-panel-card__media--empty" aria-hidden="true" />

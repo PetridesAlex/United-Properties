@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import OptimizedImage from '../OptimizedImage/OptimizedImage'
 
 function SignatureListingsList({ listings }) {
   return (
@@ -9,7 +10,12 @@ function SignatureListingsList({ listings }) {
           {listings.map((property) => (
             <li key={property.id}>
               <Link to="/properties">
-                <img src={property.image} alt={property.title} />
+                <OptimizedImage
+                  src={property.image}
+                  alt={property.title}
+                  preset="thumb"
+                  sizes="96px"
+                />
                 <div>
                   <strong>EUR {new Intl.NumberFormat('en-US').format(property.price)}</strong>
                   <p>{property.title}</p>

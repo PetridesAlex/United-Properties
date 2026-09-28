@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { BedDouble, Bath, Ruler, MapPin } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
+import OptimizedImage from '../OptimizedImage/OptimizedImage'
 import './PropertyCard.css'
 
 function formatPrice(value, status) {
@@ -66,7 +67,12 @@ function PropertyCard({
           aria-label={coverLinkLabel}
         >
           <div className="property-card__media">
-            <img src={property.image} alt="" />
+            <OptimizedImage
+              src={property.image}
+              alt=""
+              preset="card"
+              sizes="(max-width: 640px) 96vw, (max-width: 1100px) 46vw, 380px"
+            />
             <span className={`property-card__status-pill property-card__status-pill--${badgeVariant}`}>
               {property.status === 'For Rent'
                 ? 'FOR RENT'
@@ -119,7 +125,12 @@ function PropertyCard({
       ) : (
         <>
           <div className="property-card__media">
-            <img src={property.image} alt={`${property.title} in ${property.location}`} />
+            <OptimizedImage
+              src={property.image}
+              alt={`${property.title} in ${property.location}`}
+              preset="card"
+              sizes="(max-width: 640px) 96vw, (max-width: 1100px) 46vw, 380px"
+            />
             <motion.span
               className={`property-card__badge property-card__badge--${badgeVariant}`}
               data-listing={badgeVariant}

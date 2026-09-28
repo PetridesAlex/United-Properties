@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
 import Hero from '../components/Hero/Hero'
 import SectionHeader from '../components/SectionHeader/SectionHeader'
 import ModalCards from '../components/ModalCards/ModalCards'
@@ -9,7 +8,7 @@ import ServiceCard from '../components/ServiceCard/ServiceCard'
 import AgentCard from '../components/AgentCard/AgentCard'
 import TestimonialCard from '../components/TestimonialCard/TestimonialCard'
 import CTASection from '../components/CTASection/CTASection'
-import ScrollStack, { ScrollStackItem } from '../components/ScrollStack/ScrollStack'
+import SignatureCollection from '../components/SignatureCollection/SignatureCollection'
 import CmsText from '../components/CmsPreview/CmsText'
 import { properties } from '../data/properties'
 import { services } from '../data/services'
@@ -20,7 +19,7 @@ import { useSiteContent } from '../hooks/useSiteContent'
 import './Home.css'
 
 const MotionDiv = motion.div
-const HOME_SCROLL_STACK_PREVIEW_COUNT = 6
+const HOME_SIGNATURE_PREVIEW_COUNT = 6
 /** Featured ModalCards: max cards; prefer featured flag, then fill from pool for layout preview */
 const FEATURED_MODAL_PREVIEW_COUNT = 12
 
@@ -85,28 +84,24 @@ function Home() {
     )
     const signatureOnly = source.filter(isSignatureProperty)
 
-    // Keep stack rich in preview mode: prefer signature, then featured, then fill from remaining.
-    if (signatureOnly.length >= HOME_SCROLL_STACK_PREVIEW_COUNT) {
-      return signatureOnly.slice(0, HOME_SCROLL_STACK_PREVIEW_COUNT)
+    // Prefer signature, then featured, then fill from remaining.
+    let selected
+    if (signatureOnly.length >= HOME_SIGNATURE_PREVIEW_COUNT) {
+      selected = signatureOnly.slice(0, HOME_SIGNATURE_PREVIEW_COUNT)
+    } else {
+      const featuredFallback = source.filter((property) => property.featured)
+      const prioritized = signatureOnly.length ? signatureOnly : featuredFallback
+      const remainder = source.filter(
+        (property) => !prioritized.some((candidate) => candidate.id === property.id),
+      )
+      selected = [...prioritized, ...remainder].slice(0, HOME_SIGNATURE_PREVIEW_COUNT)
     }
 
-    const featuredFallback = source.filter((property) => property.featured)
-    const prioritized = signatureOnly.length ? signatureOnly : featuredFallback
-    const remainder = source.filter(
-      (property) => !prioritized.some((candidate) => candidate.id === property.id),
-    )
-
-    return [...prioritized, ...remainder].slice(0, HOME_SCROLL_STACK_PREVIEW_COUNT)
+    return selected.map((property) => ({
+      ...property,
+      coverImage: propertyCoverImage(property),
+    }))
   }, [listingProperties])
-
-  const signatureScrollStackItems = useMemo(
-    () =>
-      signatureCollectionProperties.map((property) => ({
-        ...property,
-        scrollStackCoverImage: propertyCoverImage(property),
-      })),
-    [signatureCollectionProperties],
-  )
 
   const featuredAgents = agents.slice(0, 3)
   const homeServices = services.slice(0, 8).map((service, index) => ({
@@ -165,52 +160,32 @@ function Home() {
       </section>
 
       <section
-        className="section section--alt home-scroll-stack-section"
+        className="section section--alt home-signature-section"
         data-cms-page="home"
         data-cms-section="signature"
       >
-        <div className="container">
+        <div className="container home-signature-container">
           <SectionHeader
             eyebrow={get('home', 'signature', 'eyebrow')}
-            title={get('home', 'signature', 'heading')}
-            description={get('home', 'signature', 'description')}
+            title={get(
+              'home',
+              'signature',
+              'heading',
+              'Explore Our Most Exclusive Addresses',
+            )}
+            description={get(
+              'home',
+              'signature',
+              'description',
+              'A curated signature collection — browse each residence with smooth, lightweight motion.',
+            )}
             cmsPage="home"
             cmsSection="signature"
           />
-          <ScrollStack
-            className="home-scroll-stack"
-            useWindowScroll
-            itemDistance={240}
-            itemScale={0.03}
-            itemStackDistance={48}
-            stackPosition="12%"
-            scaleEndPosition="5%"
-            baseScale={0.86}
-            rotationAmount={0}
-            blurAmount={1}
-          >
-            {signatureScrollStackItems.map((property) => (
-              <ScrollStackItem key={`stack-${property.id}`} itemClassName="home-scroll-stack-card">
-                <img
-                  src={property.scrollStackCoverImage}
-                  alt={property.title}
-                  loading="eager"
-                  decoding="async"
-                  fetchPriority="low"
-                  sizes="(max-width: 820px) 96vw, min(1480px, 96vw)"
-                />
-                <div className="home-scroll-stack-card__overlay" />
-                <div className="home-scroll-stack-card__content">
-                  <p>{property.location}</p>
-                  <h3>{property.title}</h3>
-                  <span>EUR {property.price.toLocaleString()}</span>
-                  <Link to={`/properties/${property.slug}`} className="btn btn-outline-light">
-                    {signatureViewCta}
-                  </Link>
-                </div>
-              </ScrollStackItem>
-            ))}
-          </ScrollStack>
+          <SignatureCollection
+            properties={signatureCollectionProperties}
+            viewCta={signatureViewCta}
+          />
         </div>
       </section>
 

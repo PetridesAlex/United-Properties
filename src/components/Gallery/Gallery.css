@@ -52,7 +52,7 @@
   height: 100%;
   object-fit: cover;
   object-position: center center;
-  transition: transform 0.45s ease;
+  transition: transform 0.45s ease, opacity 280ms ease;
 }
 
 .gallery__mosaic-cell:hover .gallery__mosaic-img {

@@ -23,6 +23,7 @@ import {
   ZoomIn,
 } from 'lucide-react'
 import Gallery from '../components/Gallery/Gallery'
+import OptimizedImage from '../components/OptimizedImage/OptimizedImage'
 import InquiryForm from '../components/InquiryForm/InquiryForm'
 import SectionHeader from '../components/SectionHeader/SectionHeader'
 import PropertyCard from '../components/PropertyCard/PropertyCard'
@@ -705,11 +706,12 @@ function PropertyDetails() {
                         'Open floor plan full size',
                       )}
                     >
-                      <img
+                      <OptimizedImage
                         src={activeFloorPlan}
                         alt={`${property.title} — ${floorplanHeading} ${floorPlanIndex + 1}`}
-                        loading="lazy"
-                        decoding="async"
+                        preset="lightbox"
+                        loading="eager"
+                        sizes="(max-width: 900px) 96vw, min(960px, 70vw)"
                       />
                       <span className="property-details__floorplans-zoom">
                         <ZoomIn size={16} strokeWidth={2.2} aria-hidden />
@@ -762,11 +764,12 @@ function PropertyDetails() {
                           aria-pressed={index === floorPlanIndex}
                           onClick={() => setFloorPlanIndex(index)}
                         >
-                          <img
+                          <OptimizedImage
                             src={src}
                             alt=""
+                            preset="lightboxThumb"
                             loading="lazy"
-                            decoding="async"
+                            sizes="120px"
                           />
                           <span>Plan {index + 1}</span>
                         </button>
@@ -899,9 +902,13 @@ function PropertyDetails() {
                           <ChevronLeft size={22} strokeWidth={2.2} aria-hidden />
                         </button>
                       ) : null}
-                      <img
+                      <OptimizedImage
                         src={activeFloorPlan}
                         alt={`${property.title} — ${floorplanHeading} ${floorPlanIndex + 1}`}
+                        preset="lightbox"
+                        loading="eager"
+                        fetchPriority="high"
+                        sizes="96vw"
                       />
                       {floorPlanImages.length > 1 ? (
                         <button
