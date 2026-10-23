@@ -1,10 +1,11 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
+import {lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {GoogleMap} from '@react-google-maps/api'
 import {ExternalLink, MapPin} from 'lucide-react'
 import {triggerMapResize} from '../../lib/maps/googleMaps'
 import {useGoogleMapsLoader} from '../../providers/GoogleMapsProvider'
-import OsmLocationMap from '../maps/OsmLocationMap'
 import './PropertyLocationMap.css'
+
+const OsmLocationMap = lazy(() => import('../maps/OsmLocationMap'))
 
 type Props = {
   latitude: number
@@ -175,13 +176,21 @@ export default function PropertyLocationMap({
 
       <div className="property-location-map__canvas-wrap">
         {!apiKey || loadError ? (
-          <OsmLocationMap
-            className="property-location-map__canvas property-location-map__canvas--osm"
-            latitude={latitude}
-            longitude={longitude}
-            title={title}
-            zoom={zoom}
-          />
+          <Suspense
+            fallback={
+              <div className="property-location-map__fallback">
+                <p>Loading map…</p>
+              </div>
+            }
+          >
+            <OsmLocationMap
+              className="property-location-map__canvas property-location-map__canvas--osm"
+              latitude={latitude}
+              longitude={longitude}
+              title={title}
+              zoom={zoom}
+            />
+          </Suspense>
         ) : !isLoaded ? (
           <div className="property-location-map__fallback">
             <p>Loading map…</p>

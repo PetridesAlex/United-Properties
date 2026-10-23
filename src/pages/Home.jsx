@@ -9,6 +9,7 @@ import AgentCard from '../components/AgentCard/AgentCard'
 import TestimonialCard from '../components/TestimonialCard/TestimonialCard'
 import CTASection from '../components/CTASection/CTASection'
 import SignatureCollection from '../components/SignatureCollection/SignatureCollection'
+import OptimizedImage from '../components/OptimizedImage/OptimizedImage'
 import CmsText from '../components/CmsPreview/CmsText'
 import { properties } from '../data/properties'
 import { services } from '../data/services'
@@ -224,9 +225,12 @@ function Home() {
               {get('home', 'editorial', 'body')}
             </CmsText>
           </MotionDiv>
-          <img
+          <OptimizedImage
             src="https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1600&q=80"
             alt="Luxury Cyprus property lifestyle"
+            preset="mosaicHero"
+            loading="lazy"
+            sizes="(max-width: 900px) 92vw, 640px"
           />
         </div>
       </section>

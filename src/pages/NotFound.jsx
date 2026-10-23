@@ -1,3 +1,4 @@
+import {useEffect} from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import CmsText from '../components/CmsPreview/CmsText'
@@ -5,11 +6,16 @@ import { useSiteContent } from '../hooks/useSiteContent'
 
 function NotFound() {
   const { get } = useSiteContent()
+  const pageTitle = `${get('not-found', 'hero', 'heading', 'Page Not Found') || 'Page Not Found'} | United Properties`
+
+  useEffect(() => {
+    document.title = pageTitle
+  }, [pageTitle])
 
   return (
     <>
       <Helmet>
-        <title>{get('not-found', 'hero', 'heading', 'Page Not Found')} | United Properties</title>
+        <title>{pageTitle}</title>
       </Helmet>
       <section className="page-hero page-hero--404" data-cms-page="not-found" data-cms-section="hero">
         <div className="container" style={{ textAlign: 'center' }}>

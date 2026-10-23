@@ -199,7 +199,8 @@ function Search() {
       ? get('search', 'stat', 'match_singular', 'home')
       : get('search', 'stat', 'match_plural', 'homes')
 
-  const heading = get('search', 'head', 'heading', 'Search homes')
+  const heading = get('search', 'head', 'heading', 'Search homes') || 'Search homes'
+  const pageTitle = `${heading} | United Properties`
   const description = get(
     'search',
     'head',
@@ -207,10 +208,14 @@ function Search() {
     'Filter by location, bedrooms, and budget. Results update as you refine.',
   )
 
+  useEffect(() => {
+    document.title = pageTitle
+  }, [pageTitle])
+
   return (
     <>
       <Helmet>
-        <title>{heading} | United Properties</title>
+        <title>{pageTitle}</title>
         <meta name="description" content={description} />
       </Helmet>
 

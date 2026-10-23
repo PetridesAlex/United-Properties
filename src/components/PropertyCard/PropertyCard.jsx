@@ -31,6 +31,7 @@ function PropertyCard({
   variant = 'default',
   showDescription = false,
   showButton = true,
+  imageSizes = '(max-width: 640px) 96vw, (max-width: 1100px) 46vw, 380px',
 }) {
   const isSignature = variant === 'signature'
   const isCover = variant === 'cover'
@@ -71,7 +72,7 @@ function PropertyCard({
               src={property.image}
               alt=""
               preset="card"
-              sizes="(max-width: 640px) 96vw, (max-width: 1100px) 46vw, 380px"
+              sizes={imageSizes}
             />
             <span className={`property-card__status-pill property-card__status-pill--${badgeVariant}`}>
               {property.status === 'For Rent'

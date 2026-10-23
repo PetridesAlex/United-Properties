@@ -1,3 +1,4 @@
+import {useEffect} from 'react'
 import { Helmet } from 'react-helmet-async'
 import CTASection from '../components/CTASection/CTASection'
 import CmsText from '../components/CmsPreview/CmsText'
@@ -5,11 +6,16 @@ import { useSiteContent } from '../hooks/useSiteContent'
 
 function Concierge() {
   const { get } = useSiteContent()
+  const pageTitle = `${get('concierge', 'hero', 'heading') || 'Concierge'} | United Properties`
+
+  useEffect(() => {
+    document.title = pageTitle
+  }, [pageTitle])
 
   return (
     <>
       <Helmet>
-        <title>{get('concierge', 'hero', 'heading')} | United Properties</title>
+        <title>{pageTitle}</title>
       </Helmet>
 
       <section className="page-hero" data-cms-page="concierge" data-cms-section="hero">

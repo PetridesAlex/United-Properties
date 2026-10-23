@@ -35,6 +35,8 @@ import { useMergedProperties } from '../hooks/useMergedProperties'
 import { useSiteContent } from '../hooks/useSiteContent'
 import { useInViewOnce } from '../hooks/useCountUp'
 import { buildPublicPropertyAttributes } from '../lib/properties/publicAttributes'
+import { fetchPublishedPropertyBySlug } from '../lib/properties/api'
+import { mapPropertyToPublicCard } from '../lib/properties/mappers'
 import { resolvePropertyCoordinates } from '../lib/properties/mapCoords'
 import './Properties.css'
 import './PropertyDetails.css'
@@ -136,6 +138,12 @@ function PropertyDetails() {
   const { slug } = useParams()
   const { get } = useSiteContent()
   const { list: allProperties, loading } = useMergedProperties()
+  const fromList = useMemo(
+    () => allProperties.find((item) => item.slug === slug),
+    [allProperties, slug],
+  )
+  const [directProperty, setDirectProperty] = useState(null)
+  const [directSettled, setDirectSettled] = useState(false)
   const [descriptionExpanded, setDescriptionExpanded] = useState(false)
   const [overviewRef, overviewInView] = useInViewOnce()
   const [floorPlanIndex, setFloorPlanIndex] = useState(0)
@@ -143,10 +151,7 @@ function PropertyDetails() {
   const [activeSection, setActiveSection] = useState('property-description')
   const sectionNavRef = useRef(null)
 
-  const property = useMemo(
-    () => allProperties.find((item) => item.slug === slug),
-    [allProperties, slug],
-  )
+  const property = fromList || (directProperty?.slug === slug ? directProperty : null)
 
   const agent = property ? agents.find((item) => item.id === property.agentId) : null
 
@@ -162,6 +167,34 @@ function PropertyDetails() {
     }
     return property.floorPlanUrl ? [property.floorPlanUrl] : []
   }, [property])
+
+  useEffect(() => {
+    if (!slug || fromList) return undefined
+    let cancelled = false
+    setDirectSettled(false)
+    fetchPublishedPropertyBySlug(slug)
+      .then((row) => {
+        if (cancelled) return
+        setDirectProperty(row ? mapPropertyToPublicCard(row) : null)
+        setDirectSettled(true)
+      })
+      .catch(() => {
+        if (!cancelled) setDirectSettled(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [slug, fromList])
+
+  useEffect(() => {
+    if (property?.title) {
+      document.title = `${property.title} | United Properties`
+      return
+    }
+    if (!loading && directSettled) {
+      document.title = 'Property not found | United Properties'
+    }
+  }, [property?.title, loading, directSettled])
 
   useEffect(() => {
     setFloorPlanIndex(0)
@@ -243,7 +276,7 @@ function PropertyDetails() {
   }, [floorPlanLightboxOpen, floorPlanImages.length])
 
   if (!property) {
-    if (loading) {
+    if (loading || !directSettled) {
       return (
         <>
           <Helmet>

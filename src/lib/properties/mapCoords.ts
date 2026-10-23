@@ -1,8 +1,3 @@
-import {
-  getAllBazarakiDistricts,
-  getDistrictCoordinates,
-} from '../integrations/bazaraki/districts'
-
 export type MapCoordinateSource = 'pin' | 'district' | 'area' | 'city'
 
 export type ResolvedMapCoordinates = {
@@ -35,7 +30,7 @@ function norm(value: string | null | undefined) {
   return (value || '').trim().toLowerCase()
 }
 
-/** Resolve map pin: saved coords → Bazaraki district → area/city match → city center. */
+/** Resolve a public map pin: saved coordinates, otherwise the city center. */
 export function resolvePropertyCoordinates(property: {
   latitude?: number | null
   longitude?: number | null
@@ -54,32 +49,7 @@ export function resolvePropertyCoordinates(property: {
     }
   }
 
-  const fromDistrictId = getDistrictCoordinates(property.bazaraki_district_id)
-  if (fromDistrictId) {
-    return {...fromDistrictId, source: 'district'}
-  }
-
-  const area = norm(property.area)
   const city = norm(property.city)
-  if (area || city) {
-    const districts = getAllBazarakiDistricts()
-    const areaMatch = districts.find((d) => {
-      if (!isValidCoord(d.latitude, d.longitude)) return false
-      const areaOk = area
-        ? d.areaName.toLowerCase() === area || d.name.toLowerCase().includes(area)
-        : true
-      const cityOk = city ? d.cityName.toLowerCase() === city : true
-      return areaOk && cityOk
-    })
-    if (areaMatch?.latitude != null && areaMatch.longitude != null) {
-      return {
-        latitude: areaMatch.latitude,
-        longitude: areaMatch.longitude,
-        source: 'area',
-      }
-    }
-  }
-
   const cityKey =
     city ||
     norm(property.district) ||
@@ -98,8 +68,8 @@ export function resolvePropertyCoordinates(property: {
   return null
 }
 
-/** Fill missing lat/lng before writing to Supabase. */
-export function withResolvedCoordinates<T extends {
+/** Fill missing lat/lng before writing to Supabase. District data loads only here. */
+export async function withResolvedCoordinates<T extends {
   latitude?: number | null
   longitude?: number | null
   bazaraki_district_id?: number | null
@@ -107,8 +77,19 @@ export function withResolvedCoordinates<T extends {
   area?: string | null
   district?: string | null
   address?: string | null
-}>(payload: T): T {
+}>(payload: T): Promise<T> {
   if (isValidCoord(payload.latitude, payload.longitude)) return payload
+
+  const {resolveDistrictCoordinates} = await import('./mapCoordsDistricts')
+  const fromDistrict = resolveDistrictCoordinates(payload)
+  if (fromDistrict) {
+    return {
+      ...payload,
+      latitude: fromDistrict.latitude,
+      longitude: fromDistrict.longitude,
+    }
+  }
+
   const resolved = resolvePropertyCoordinates(payload)
   if (!resolved) return payload
   return {

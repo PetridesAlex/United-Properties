@@ -340,8 +340,8 @@ function Gallery({
                 alt=""
                 preset="mosaicTile"
                 className="gallery__mosaic-img"
-                loading="eager"
-                fetchPriority="high"
+                loading="lazy"
+                fetchPriority="low"
                 sizes="(max-width: 820px) 46vw, min(280px, 18vw)"
                 draggable={false}
               />

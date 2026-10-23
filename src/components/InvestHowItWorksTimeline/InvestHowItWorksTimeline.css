@@ -170,7 +170,7 @@
 }
 
 .invest-how-it-works__card-inner {
-  padding: 1.25rem 1.35rem 1rem;
+  padding: 1.25rem 1.35rem 1.35rem;
 }
 
 .invest-how-it-works__card-icon {
@@ -199,39 +199,6 @@
   font-weight: 520;
   line-height: 1.66;
   color: rgba(242, 247, 255, 0.88);
-}
-
-.invest-how-it-works__card-media {
-  padding: 0 0.55rem 0.55rem;
-}
-
-.invest-how-it-works__card-aspect {
-  aspect-ratio: 16 / 10;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: rgba(12, 22, 38, 0.65);
-  border: 1px solid rgba(217, 182, 128, 0.18);
-}
-
-.invest-how-it-works__card-placeholder {
-  width: 100%;
-  height: 100%;
-  min-height: 100%;
-  display: grid;
-  place-items: center;
-  padding: 1.25rem;
-  background: rgba(8, 14, 26, 0.35);
-  border-radius: calc(var(--radius-md) - 2px);
-  outline: 1px dashed rgba(217, 182, 128, 0.22);
-  outline-offset: -6px;
-}
-
-.invest-how-it-works__card-placeholder-label {
-  font-size: 0.78rem;
-  font-weight: 650;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(248, 246, 241, 0.38);
 }
 
 @media (max-width: 767px) {

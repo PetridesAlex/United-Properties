@@ -396,7 +396,12 @@ function Properties() {
               <>
                 <div className="grid-3">
                   {visibleProperties.map((property) => (
-                    <PropertyCard key={property.id} property={property} variant="cover" />
+                    <PropertyCard
+                      key={property.id}
+                      property={property}
+                      variant="cover"
+                      imageSizes="(max-width: 860px) 94vw, 48vw"
+                    />
                   ))}
                 </div>
                 {visibleCount < filtered.length && (

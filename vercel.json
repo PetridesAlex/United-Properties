@@ -53,6 +53,9 @@
   "functions": {
     "api/bazaraki-xml.js": {
       "maxDuration": 30
+    },
+    "api/image.js": {
+      "maxDuration": 30
     }
   }
 }

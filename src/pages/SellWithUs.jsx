@@ -6,6 +6,28 @@ import { useSiteContent } from '../hooks/useSiteContent'
 import { cmsFieldProps } from '../lib/content/schema'
 import './SellWithUs.css'
 
+const DRAFT_COPY =
+  /^(?:section \d+\b.*|\([^)]{0,80}\)|social proof|the problem)$/i
+
+function isInternalDraft(value) {
+  return (
+    DRAFT_COPY.test(value) ||
+    /to be added|placeholder for|core differentiator|real differentiators|speak directly to the client|simple visual contrast/i.test(
+      value,
+    )
+  )
+}
+
+/** Saved CMS still has briefing notes. Show client-facing copy until those fields are rewritten. */
+function cleanDraftCopy(value, fallback = '') {
+  const text = String(value ?? '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\bwIth\b/g, 'with')
+  if (!text || isInternalDraft(text)) return fallback
+  return text
+}
+
 const MotionLink = motion.create(Link)
 
 const heroItem = {
@@ -26,7 +48,9 @@ const staggerWrap = {
 
 function SellWithUs() {
   const reduceMotion = useReducedMotion()
-  const { get } = useSiteContent()
+  const {get: readContent} = useSiteContent()
+  const get = (page, section, key, fallback = '') =>
+    cleanDraftCopy(readContent(page, section, key, fallback), fallback)
 
   const heroPrimaryCta =
     get('sell', 'hero', 'cta_primary', 'Book a Valuation Call').trim() || 'Book a Valuation Call'
@@ -182,6 +206,9 @@ function SellWithUs() {
       }
 
   const heroBtnTap = reduceMotion ? undefined : { scale: 0.97 }
+  const proofNote = get('sell', 'proof', 'placeholder_note', '')
+  const testimonialOne = get('sell', 'proof', 'testimonial1', '')
+  const testimonialTwo = get('sell', 'proof', 'testimonial2', '')
 
   return (
     <>
@@ -226,7 +253,7 @@ function SellWithUs() {
             variants={heroItem}
             {...cmsFieldProps('sell', 'hero', 'heading')}
           >
-            {get('sell', 'hero', 'heading', 'Sell With Confidence. Sell With United.')}
+            {get('sell', 'hero', 'heading', 'Sell with confidence. Sell with United.')}
           </motion.h1>
           <motion.p
             className="sell-with-us__hero-sub"
@@ -276,9 +303,9 @@ function SellWithUs() {
             viewport={{ once: true, amount: 0.45 }}
             transition={{ duration: 0.5 }}
           >
-            {get('sell', 'problem', 'label', 'Section 1 — The problem')}{' '}
+            {get('sell', 'problem', 'label', 'The brief')}{' '}
             <span className="sell-with-us__section-label-note">
-              {get('sell', 'problem', 'label_note', '(StoryBrand hook)')}
+              {get('sell', 'problem', 'label_note', '')}
             </span>
           </motion.span>
           <motion.h2
@@ -289,8 +316,9 @@ function SellWithUs() {
             viewport={{ once: true, amount: 0.45 }}
             transition={{ duration: 0.55, delay: 0.05 }}
           >
-            {get('sell', 'problem', 'heading', 'The problem')}
+            {get('sell', 'problem', 'heading', 'A listing is not a strategy')}
           </motion.h2>
+          {get('sell', 'problem', 'lead', '') ? (
           <motion.p
             className="sell-with-us__problem-lead"
             initial={{ opacity: 0, y: 14 }}
@@ -298,8 +326,9 @@ function SellWithUs() {
             viewport={{ once: true, amount: 0.45 }}
             transition={{ duration: 0.5, delay: 0.08 }}
           >
-            {get('sell', 'problem', 'lead', "Speak directly to the client's frustration:")}
+            {get('sell', 'problem', 'lead', '')}
           </motion.p>
+          ) : null}
           <motion.div
             className="sell-with-us__problem-quote"
             initial={{ opacity: 0, y: 22 }}
@@ -334,9 +363,9 @@ function SellWithUs() {
             transition={{ duration: 0.55 }}
           >
             <p className="sell-with-us__section-label sell-with-us__section-label--ink">
-              {get('sell', 'process', 'label', 'Section 2 — Our bespoke selling process')}{' '}
+              {get('sell', 'process', 'label', 'How we sell')}{' '}
               <span className="sell-with-us__section-label-note">
-                {get('sell', 'process', 'label_note', '(step by step)')}
+                {get('sell', 'process', 'label_note', '')}
               </span>
             </p>
             <h2 id="sell-process-heading">
@@ -347,7 +376,7 @@ function SellWithUs() {
                 'sell',
                 'process',
                 'lead',
-                'This is your core differentiator. Show the journey, not just the outcome.',
+                'Six clear steps, from the first conversation through to completion.',
               )}
             </p>
           </motion.header>
@@ -389,11 +418,11 @@ function SellWithUs() {
             transition={{ duration: 0.52 }}
           >
             <p className="sell-with-us__section-label sell-with-us__section-label--dim">
-              {get('sell', 'why', 'label', 'Section 3 — Why United Properties')}
+              {get('sell', 'why', 'label', 'Why sellers stay')}
             </p>
             <h2 id="sell-why-heading">{get('sell', 'why', 'heading', 'Why United Properties')}</h2>
             <p className="sell-with-us__why-intro">
-              {get('sell', 'why', 'intro', 'Built around your real differentiators:')}
+              {get('sell', 'why', 'intro', 'A private sale, handled with care at every step.')}
             </p>
           </motion.header>
           <ul className="sell-with-us__why-grid">
@@ -439,9 +468,9 @@ function SellWithUs() {
             transition={{ duration: 0.52 }}
           >
             <p className="sell-with-us__section-label sell-with-us__section-label--ink">
-              {get('sell', 'proof', 'label', 'Section 4 — Social proof')}
+              {get('sell', 'proof', 'label', 'Client confidence')}
             </p>
-            <h2 id="sell-proof-heading">{get('sell', 'proof', 'heading', 'Social proof')}</h2>
+            <h2 id="sell-proof-heading">{get('sell', 'proof', 'heading', 'The standard we hold')}</h2>
             <p className="sell-with-us__proof-lead">
               {get(
                 'sell',
@@ -470,37 +499,45 @@ function SellWithUs() {
               </motion.li>
             ))}
           </motion.ul>
-          <motion.p
-            className="sell-with-us__testimonials-placeholder-note"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.45 }}
-          >
-            {get('sell', 'proof', 'placeholder_note', 'Placeholder for 2–3 testimonials once collected.')}
-          </motion.p>
-          <div className="sell-with-us__testimonials">
-            <motion.blockquote
-              className="sell-with-us__testimonial card-luxury"
-              initial={{ opacity: 0, y: 22 }}
-              whileInView={{ opacity: 1, y: 0 }}
+          {proofNote ? (
+            <motion.p
+              className="sell-with-us__testimonials-placeholder-note"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.48 }}
-              whileHover={{ y: -4 }}
+              transition={{ duration: 0.45 }}
             >
-              <p>{get('sell', 'proof', 'testimonial1', 'Client testimonial — to be added.')}</p>
-            </motion.blockquote>
-            <motion.blockquote
-              className="sell-with-us__testimonial card-luxury"
-              initial={{ opacity: 0, y: 22 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.48, delay: 0.06 }}
-              whileHover={{ y: -4 }}
-            >
-              <p>{get('sell', 'proof', 'testimonial2', 'Client testimonial — to be added.')}</p>
-            </motion.blockquote>
-          </div>
+              {proofNote}
+            </motion.p>
+          ) : null}
+          {testimonialOne || testimonialTwo ? (
+            <div className="sell-with-us__testimonials">
+              {testimonialOne ? (
+                <motion.blockquote
+                  className="sell-with-us__testimonial card-luxury"
+                  initial={{ opacity: 0, y: 22 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.48 }}
+                  whileHover={{ y: -4 }}
+                >
+                  <p>{testimonialOne}</p>
+                </motion.blockquote>
+              ) : null}
+              {testimonialTwo ? (
+                <motion.blockquote
+                  className="sell-with-us__testimonial card-luxury"
+                  initial={{ opacity: 0, y: 22 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.48, delay: 0.06 }}
+                  whileHover={{ y: -4 }}
+                >
+                  <p>{testimonialTwo}</p>
+                </motion.blockquote>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -519,16 +556,16 @@ function SellWithUs() {
             transition={{ duration: 0.52 }}
           >
             <p className="sell-with-us__section-label sell-with-us__section-label--dim">
-              {get('sell', 'compare', 'label', 'Section 5 — The United difference')}{' '}
+              {get('sell', 'compare', 'label', 'The United difference')}{' '}
               <span className="sell-with-us__section-label-note">
-                {get('sell', 'compare', 'label_note', '(United vs. traditional)')}
+                {get('sell', 'compare', 'label_note', '')}
               </span>
             </p>
             <h2 id="sell-compare-heading">
               {get('sell', 'compare', 'heading', 'United vs. traditional')}
             </h2>
             <p className="sell-with-us__compare-lead">
-              {get('sell', 'compare', 'lead', 'A simple visual contrast:')}
+              {get('sell', 'compare', 'lead', 'How a private sale with us compares with a typical listing.')}
             </p>
           </motion.header>
           <motion.div

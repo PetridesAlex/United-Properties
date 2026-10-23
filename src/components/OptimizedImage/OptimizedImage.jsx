@@ -1,11 +1,5 @@
 import {useEffect, useMemo, useRef, useState} from 'react'
-import {
-  disableImageTransforms,
-  enableImageTransforms,
-  isSupabasePublicImageUrl,
-  optimizeImageSrcSet,
-  optimizeImageUrl,
-} from '../../lib/media/optimizeImageUrl'
+import {optimizeImageSrcSet, optimizeImageUrl} from '../../lib/media/optimizeImageUrl'
 
 /**
  * Listing image with resized CDN URL, responsive srcSet, and original fallback.
@@ -54,21 +48,11 @@ function OptimizedImage({
       fetchPriority={fetchPriority}
       draggable={draggable}
       onLoad={(event) => {
-        if (
-          !failedOptimized &&
-          optimized &&
-          currentSrc === optimized &&
-          optimized !== src &&
-          isSupabasePublicImageUrl(src)
-        ) {
-          enableImageTransforms()
-        }
         onLoad?.(event)
       }}
       onError={(event) => {
         if (!failedOptimized && optimized && currentSrc === optimized && src && src !== optimized) {
           setFailedOptimized(true)
-          if (isSupabasePublicImageUrl(src)) disableImageTransforms()
           setCurrentSrc(src)
           return
         }

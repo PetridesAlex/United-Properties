@@ -725,7 +725,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         description: 'Top banner on Sell with us.',
         fields: [
           f('eyebrow', 'Small label', 'United Services'),
-          f('heading', 'Heading', 'Sell With Confidence. Sell With United.'),
+          f('heading', 'Heading', 'Sell with confidence. Sell with United.'),
           f(
             'description',
             'Supporting text',
@@ -742,10 +742,10 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         title: 'The problem',
         description: 'StoryBrand problem hook.',
         fields: [
-          f('label', 'Section label', 'Section 1 — The problem'),
-          f('label_note', 'Label note', '(StoryBrand hook)'),
-          f('heading', 'Heading', 'The problem'),
-          f('lead', 'Lead text', "Speak directly to the client's frustration:"),
+          f('label', 'Section label', 'The brief'),
+          f('label_note', 'Label note', ''),
+          f('heading', 'Heading', 'A listing is not a strategy'),
+          f('lead', 'Lead text', ''),
           f(
             'body',
             'Body text',
@@ -760,13 +760,13 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         title: 'Selling process',
         description: 'Six-step bespoke selling process.',
         fields: [
-          f('label', 'Section label', 'Section 2 — Our bespoke selling process'),
-          f('label_note', 'Label note', '(step by step)'),
+          f('label', 'Section label', 'How we sell'),
+          f('label_note', 'Label note', ''),
           f('heading', 'Heading', 'Our bespoke selling process'),
           f(
             'lead',
             'Supporting text',
-            'This is your core differentiator. Show the journey, not just the outcome.',
+            'Six clear steps, from the first conversation through to completion.',
             'textarea',
             2,
           ),

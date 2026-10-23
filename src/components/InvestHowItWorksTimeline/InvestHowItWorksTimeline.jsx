@@ -112,13 +112,6 @@ function TimelineCard({ step, side }) {
         <h3 className="invest-how-it-works__card-title">{step.title}</h3>
         <p className="invest-how-it-works__card-copy">{step.copy}</p>
       </div>
-      <div className="invest-how-it-works__card-media">
-        <div className="invest-how-it-works__card-aspect">
-          <div className="invest-how-it-works__card-placeholder">
-            <span className="invest-how-it-works__card-placeholder-label">Insert image</span>
-          </div>
-        </div>
-      </div>
     </motion.article>
   )
 }

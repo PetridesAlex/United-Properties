@@ -29,7 +29,20 @@ function withoutShowLocationMap<T extends Record<string, unknown>>(payload: T): 
   return next
 }
 
-export async function fetchPublishedProperties(): Promise<Property[]> {
+let publishedPropertiesInflight: Promise<Property[]> | null = null
+
+export function fetchPublishedProperties(): Promise<Property[]> {
+  if (!supabase) return Promise.resolve([])
+  if (!publishedPropertiesInflight) {
+    publishedPropertiesInflight = loadPublishedProperties().catch((error) => {
+      publishedPropertiesInflight = null
+      throw error
+    })
+  }
+  return publishedPropertiesInflight
+}
+
+async function loadPublishedProperties(): Promise<Property[]> {
   if (!supabase) return []
   const {data, error} = await supabase
     .from('properties')
@@ -217,7 +230,7 @@ export async function createProperty(
     slug = `${slugify(input.title)}-${n}`
   }
 
-  let payload: Record<string, unknown> = withResolvedCoordinates({
+  let payload: Record<string, unknown> = await withResolvedCoordinates({
     ...input,
     slug,
     features: input.features ?? [],
@@ -263,7 +276,7 @@ export async function updateProperty(
 ): Promise<Property> {
   if (!supabase) throw new Error('Supabase is not configured')
 
-  let patch: Record<string, unknown> = withResolvedCoordinates({
+  let patch: Record<string, unknown> = await withResolvedCoordinates({
     ...input,
     updated_by: userId ?? null,
   })
