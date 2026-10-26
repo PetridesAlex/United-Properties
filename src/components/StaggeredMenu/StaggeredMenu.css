@@ -636,17 +636,49 @@ button.smenu-panel-item {
     padding: max(0.5rem, env(safe-area-inset-top, 0px)) 1.35rem 1.5rem;
   }
 
+  .smenu-panel-logo img {
+    height: clamp(56px, 15vw, 72px);
+    max-width: min(280px, 72vw);
+  }
+
   .smenu-panel-nav {
-    justify-content: flex-start;
-    padding-block: 0.35rem 1rem;
+    justify-content: center;
+    align-items: center;
+    padding-block: 0.55rem 1rem;
   }
 
   .smenu-panel-list {
+    align-items: center;
     gap: clamp(1.15rem, 4vw, 1.5rem);
   }
 
+  .smenu-panel-itemWrap {
+    display: flex;
+    justify-content: center;
+  }
+
   .smenu-panel-item:not(.smenu-panel-item--sub) {
+    width: auto;
+    max-width: 100%;
+    text-align: center;
     font-size: clamp(1.02rem, 5.6vw, 1.24rem);
     letter-spacing: 0.09em;
+    padding-right: 0;
+  }
+
+  .smenu-panel-list[data-numbering] .smenu-panel-item:not(.smenu-panel-item--sub) {
+    padding-right: 0;
+  }
+
+  .smenu-panel-list[data-numbering] .smenu-panel-item:not(.smenu-panel-item--sub)::after {
+    display: none;
+  }
+
+  .smenu-panel-item:hover {
+    transform: none;
+  }
+
+  .smenu-panel-itemLabel {
+    text-align: center;
   }
 }

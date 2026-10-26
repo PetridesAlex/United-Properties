@@ -5,6 +5,7 @@ import PropertyManagementSection from '../components/PropertyManagementSection/P
 import ServicesHeroSwitcher from '../components/ServicesHeroSwitcher/ServicesHeroSwitcher'
 import CTASection from '../components/CTASection/CTASection'
 import CmsText from '../components/CmsPreview/CmsText'
+import CmsStaggeredHeading from '../components/StaggeredText/CmsStaggeredHeading'
 import { useSiteContent } from '../hooks/useSiteContent'
 import './Services.css'
 
@@ -42,15 +43,14 @@ function Services() {
             >
               {get('services', 'hero_switch', 'eyebrow', 'United Services')}
             </CmsText>
-            <CmsText
+            <CmsStaggeredHeading
               page="services"
               section="hero_switch"
               field="heading"
               as="h1"
               className="services-invest-hero__title"
-            >
-              {get('services', 'hero_switch', 'heading', 'United Services')}
-            </CmsText>
+              text={get('services', 'hero_switch', 'heading', 'United Services')}
+            />
             <CmsText
               page="services"
               section="hero_switch"

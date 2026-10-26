@@ -1,0 +1,25 @@
+.staggered-text {
+  margin: 0;
+}
+
+.staggered-text--block {
+  display: block;
+  white-space: pre-wrap;
+}
+
+/* Inline words (not flex) so text-wrap: balance and normal line breaks work. */
+.staggered-text--inline {
+  display: block;
+  white-space: normal;
+  text-wrap: balance;
+}
+
+.section-header--center .staggered-text,
+.text-center.staggered-text,
+.hero-section__heading.staggered-text {
+  text-align: center;
+}
+
+.staggered-text__segment {
+  backface-visibility: hidden;
+}

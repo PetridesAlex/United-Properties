@@ -191,6 +191,8 @@
   letter-spacing: -0.03em;
   line-height: 1.12;
   color: #fff8ef;
+  text-align: center;
+  text-wrap: balance;
   text-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
 }
 

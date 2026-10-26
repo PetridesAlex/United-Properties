@@ -78,16 +78,16 @@ export default function PropertyShareMenu({
     await copyLink()
   }
 
-  function onDownloadPdf() {
+  async function onDownloadPdf() {
     if (pdfBusy || !property) return
     setPdfBusy(true)
     try {
-      downloadPropertyPdf(property)
-      toast.success('Choose “Save as PDF” in the print dialog')
+      await downloadPropertyPdf(property)
+      toast.success('Property PDF downloaded')
     } catch (error) {
-      toast.error(error?.message || 'Could not open PDF sheet')
+      toast.error(error?.message || 'Could not download PDF')
     } finally {
-      window.setTimeout(() => setPdfBusy(false), 900)
+      setPdfBusy(false)
     }
   }
 
@@ -128,7 +128,7 @@ export default function PropertyShareMenu({
       <button
         type="button"
         className={`property-action property-action--pdf${pdfBusy ? ' is-busy' : ''}`}
-        onClick={onDownloadPdf}
+        onClick={() => void onDownloadPdf()}
         disabled={pdfBusy}
         aria-busy={pdfBusy}
         aria-label="Download this property as PDF"

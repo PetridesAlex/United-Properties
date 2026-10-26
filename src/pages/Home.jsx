@@ -11,6 +11,7 @@ import CTASection from '../components/CTASection/CTASection'
 import SignatureCollection from '../components/SignatureCollection/SignatureCollection'
 import OptimizedImage from '../components/OptimizedImage/OptimizedImage'
 import CmsText from '../components/CmsPreview/CmsText'
+import CmsStaggeredHeading from '../components/StaggeredText/CmsStaggeredHeading'
 import { properties } from '../data/properties'
 import { services } from '../data/services'
 import { agents } from '../data/agents'
@@ -218,9 +219,13 @@ function Home() {
             <CmsText page="home" section="editorial" field="eyebrow" as="p" className="home-editorial__eyebrow">
               {get('home', 'editorial', 'eyebrow')}
             </CmsText>
-            <CmsText page="home" section="editorial" field="heading" as="h2">
-              {get('home', 'editorial', 'heading')}
-            </CmsText>
+            <CmsStaggeredHeading
+              page="home"
+              section="editorial"
+              field="heading"
+              as="h2"
+              text={get('home', 'editorial', 'heading')}
+            />
             <CmsText page="home" section="editorial" field="body" as="p">
               {get('home', 'editorial', 'body')}
             </CmsText>

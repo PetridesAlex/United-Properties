@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { Phone, Scale } from 'lucide-react'
 import CmsText from '../CmsPreview/CmsText'
+import CmsStaggeredHeading from '../StaggeredText/CmsStaggeredHeading'
 import { useSiteContent } from '../../hooks/useSiteContent'
 import {
   EmailBrandIcon,
@@ -98,16 +99,15 @@ function SellWithUsSection() {
           >
             {get('services', 'sell_offer', 'eyebrow', 'United Services')}
           </CmsText>
-          <CmsText
+          <CmsStaggeredHeading
             page="services"
             section="sell_offer"
             field="heading"
             as="h2"
             id="sell-with-us-heading"
             className="sell-with-us-offer__heading"
-          >
-            {get('services', 'sell_offer', 'heading', 'Sell with us')}
-          </CmsText>
+            text={get('services', 'sell_offer', 'heading', 'Sell with us')}
+          />
           <div className="sell-with-us-offer__intro">
             <CmsText
               page="services"

@@ -4,11 +4,21 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { buildSearchPath } from '../../lib/search/searchPath'
 import { useSiteContent } from '../../hooks/useSiteContent'
 import CmsText from '../CmsPreview/CmsText'
+import CmsStaggeredHeading from '../StaggeredText/CmsStaggeredHeading'
 import './Hero.css'
 
 /** Served from `public/video/hero-video-optimize-united-properties.mp4` */
 const HERO_VIDEO_SRC = '/video/hero-video-optimize-united-properties.mp4'
 const HERO_VIDEO_POSTER = '/images/video/hero-luxury-real-estate-cyprus-poster.jpg'
+
+/** Keep the brand line as two balanced rows when CMS uses the tagline. */
+function balanceHeroHeading(raw) {
+  const text = String(raw || '').trim()
+  if (/^confidence\s+in\s+every\s+move\.?$/i.test(text)) {
+    return 'Confidence in|every move'
+  }
+  return text
+}
 
 function Hero() {
   const { get } = useSiteContent()
@@ -114,9 +124,15 @@ function Hero() {
           </CmsText>
         ) : null}
         {get('home', 'hero', 'heading') ? (
-          <CmsText page="home" section="hero" field="heading" as="h1" className="hero-section__heading">
-            {get('home', 'hero', 'heading')}
-          </CmsText>
+          <CmsStaggeredHeading
+            page="home"
+            section="hero"
+            field="heading"
+            as="h1"
+            className="hero-section__heading"
+            separator="|"
+            text={balanceHeroHeading(get('home', 'hero', 'heading', 'Confidence in every move'))}
+          />
         ) : null}
         {get('home', 'hero', 'description') ? (
           <CmsText page="home" section="hero" field="description" as="p" className="hero-section__lede">

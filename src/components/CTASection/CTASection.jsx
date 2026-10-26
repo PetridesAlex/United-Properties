@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useSiteContent } from '../../hooks/useSiteContent'
 import CmsText from '../CmsPreview/CmsText'
+import CmsStaggeredHeading from '../StaggeredText/CmsStaggeredHeading'
 import { WhatsAppBrandIcon } from '../Navbar/SocialBrandIcons'
 import { WHATSAPP_CHAT_URL } from '../../config/externalLinks'
 import './CTASection.css'
@@ -91,9 +92,14 @@ function CTASection({
 
           <motion.div className="cta-section__copy" variants={reduceMotion ? undefined : itemReveal}>
             <p className="cta-section__eyebrow">United Properties</p>
-            <CmsText page={cmsPage} section={cmsSection} field="heading" as="h2" className="cta-section__heading">
-              {resolvedTitle}
-            </CmsText>
+            <CmsStaggeredHeading
+              page={cmsPage}
+              section={cmsSection}
+              field="heading"
+              as="h2"
+              className="cta-section__heading"
+              text={resolvedTitle}
+            />
             <CmsText
               page={cmsPage}
               section={cmsSection}

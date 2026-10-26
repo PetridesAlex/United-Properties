@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async'
 import { useLocation } from 'react-router-dom'
 import PropertyCard from '../components/PropertyCard/PropertyCard'
 import CmsText from '../components/CmsPreview/CmsText'
+import CmsStaggeredHeading from '../components/StaggeredText/CmsStaggeredHeading'
 import { useMergedProperties } from '../hooks/useMergedProperties'
 import { useSiteContent } from '../hooks/useSiteContent'
 import { matchesListingLocation } from '../lib/matchesListingLocation'
@@ -335,9 +336,13 @@ function Properties() {
           >
             {heroContent.eyebrow}
           </CmsText>
-          <CmsText page="properties" section={heroSection} field="heading" as="h1">
-            {heroContent.title}
-          </CmsText>
+          <CmsStaggeredHeading
+            page="properties"
+            section={heroSection}
+            field="heading"
+            as="h1"
+            text={heroContent.title}
+          />
           <CmsText
             page="properties"
             section={heroSection}
@@ -372,9 +377,13 @@ function Properties() {
             >
               {discoveryIntro.eyebrow}
             </CmsText>
-            <CmsText page="properties" section={discoverySection} field="title" as="h2">
-              {discoveryIntro.title}
-            </CmsText>
+            <CmsStaggeredHeading
+              page="properties"
+              section={discoverySection}
+              field="title"
+              as="h2"
+              text={discoveryIntro.title}
+            />
             <CmsText
               page="properties"
               section={discoverySection}

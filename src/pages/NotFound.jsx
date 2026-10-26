@@ -2,6 +2,7 @@ import {useEffect} from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import CmsText from '../components/CmsPreview/CmsText'
+import CmsStaggeredHeading from '../components/StaggeredText/CmsStaggeredHeading'
 import { useSiteContent } from '../hooks/useSiteContent'
 
 function NotFound() {
@@ -22,9 +23,13 @@ function NotFound() {
           <CmsText page="not-found" section="hero" field="code" as="p">
             {get('not-found', 'hero', 'code', '404')}
           </CmsText>
-          <CmsText page="not-found" section="hero" field="heading" as="h1">
-            {get('not-found', 'hero', 'heading', 'Page Not Found')}
-          </CmsText>
+          <CmsStaggeredHeading
+            page="not-found"
+            section="hero"
+            field="heading"
+            as="h1"
+            text={get('not-found', 'hero', 'heading', 'Page Not Found')}
+          />
           <CmsText page="not-found" section="hero" field="description" as="p">
             {get(
               'not-found',

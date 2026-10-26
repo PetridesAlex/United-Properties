@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import StaggeredText from '../StaggeredText/StaggeredText'
 import './SectionHeader.css'
 
 /**
@@ -50,9 +51,20 @@ function SectionHeader({
         </p>
       ) : null}
       {title ? (
-        <h2 id={headingId} {...fieldProps(titleKey)}>
-          {title}
-        </h2>
+        <StaggeredText
+          text={String(title)}
+          as="h2"
+          id={headingId}
+          className="section-header__title"
+          segmentBy="words"
+          direction="top"
+          delay={80}
+          duration={0.6}
+          blur
+          staggerDirection="forward"
+          exitOnScrollOut
+          {...fieldProps(titleKey)}
+        />
       ) : null}
       {description ? (
         <p className="section-header__description" {...fieldProps(descriptionKey)}>

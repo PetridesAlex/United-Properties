@@ -11,6 +11,7 @@ const contactMethodVariants = ['whatsapp', 'email', 'call']
 import InquiryForm from '../components/InquiryForm/InquiryForm'
 import { TelegramBrandIcon } from '../components/Navbar/SocialBrandIcons'
 import CmsText from '../components/CmsPreview/CmsText'
+import CmsStaggeredHeading from '../components/StaggeredText/CmsStaggeredHeading'
 import { TELEGRAM_CHAT_URL, WHATSAPP_CHAT_URL } from '../config/externalLinks'
 import { useSiteContent } from '../hooks/useSiteContent'
 import { cmsFieldProps } from '../lib/content/schema'
@@ -70,9 +71,13 @@ function Contact() {
           <CmsText page="contact" section="hero" field="eyebrow" as="p">
             {get('contact', 'hero', 'eyebrow')}
           </CmsText>
-          <CmsText page="contact" section="hero" field="heading" as="h1">
-            {get('contact', 'hero', 'heading')}
-          </CmsText>
+          <CmsStaggeredHeading
+            page="contact"
+            section="hero"
+            field="heading"
+            as="h1"
+            text={get('contact', 'hero', 'heading')}
+          />
           <CmsText page="contact" section="hero" field="description" as="p">
             {get('contact', 'hero', 'description')}
           </CmsText>

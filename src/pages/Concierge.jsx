@@ -2,6 +2,7 @@ import {useEffect} from 'react'
 import { Helmet } from 'react-helmet-async'
 import CTASection from '../components/CTASection/CTASection'
 import CmsText from '../components/CmsPreview/CmsText'
+import CmsStaggeredHeading from '../components/StaggeredText/CmsStaggeredHeading'
 import { useSiteContent } from '../hooks/useSiteContent'
 
 function Concierge() {
@@ -23,9 +24,13 @@ function Concierge() {
           <CmsText page="concierge" section="hero" field="eyebrow" as="p">
             {get('concierge', 'hero', 'eyebrow')}
           </CmsText>
-          <CmsText page="concierge" section="hero" field="heading" as="h1">
-            {get('concierge', 'hero', 'heading')}
-          </CmsText>
+          <CmsStaggeredHeading
+            page="concierge"
+            section="hero"
+            field="heading"
+            as="h1"
+            text={get('concierge', 'hero', 'heading')}
+          />
           <CmsText page="concierge" section="hero" field="description" as="p">
             {get('concierge', 'hero', 'description')}
           </CmsText>
@@ -37,9 +42,13 @@ function Concierge() {
           <CmsText page="concierge" section="story" field="eyebrow" as="p" className="section-eyebrow">
             {get('concierge', 'story', 'eyebrow')}
           </CmsText>
-          <CmsText page="concierge" section="story" field="heading" as="h2">
-            {get('concierge', 'story', 'heading')}
-          </CmsText>
+          <CmsStaggeredHeading
+            page="concierge"
+            section="story"
+            field="heading"
+            as="h2"
+            text={get('concierge', 'story', 'heading')}
+          />
           <CmsText page="concierge" section="story" field="body" as="p" className="section-lede">
             {get('concierge', 'story', 'body')}
           </CmsText>

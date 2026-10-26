@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import SectionHeader from '../components/SectionHeader/SectionHeader'
 import AgentCard from '../components/AgentCard/AgentCard'
 import CmsText from '../components/CmsPreview/CmsText'
+import CmsStaggeredHeading from '../components/StaggeredText/CmsStaggeredHeading'
 import { agents as agentsSeed } from '../data/agents'
 import { useSiteContent } from '../hooks/useSiteContent'
 import './Agents.css'
@@ -55,9 +56,13 @@ function Agents() {
           <CmsText page="agents" section="hero" field="eyebrow" as="p">
             {get('agents', 'hero', 'eyebrow', 'Advisory Team')}
           </CmsText>
-          <CmsText page="agents" section="hero" field="heading" as="h1">
-            {get('agents', 'hero', 'heading', 'Meet Our Real Estate Professionals')}
-          </CmsText>
+          <CmsStaggeredHeading
+            page="agents"
+            section="hero"
+            field="heading"
+            as="h1"
+            text={get('agents', 'hero', 'heading', 'Meet Our Real Estate Professionals')}
+          />
           <CmsText page="agents" section="hero" field="description" as="p">
             {get(
               'agents',

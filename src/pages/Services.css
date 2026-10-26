@@ -33,18 +33,15 @@
   font-weight: 680;
   letter-spacing: -0.038em;
   line-height: 1.05;
-  background: linear-gradient(
-    118deg,
-    #ffffff 8%,
-    rgba(252, 250, 246, 0.99) 38%,
-    rgba(238, 211, 170, 0.93) 54%,
-    rgba(255, 255, 255, 0.97) 88%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: none;
-  filter: drop-shadow(0 3px 28px rgba(0, 0, 0, 0.42));
+  color: #fff8ef;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.45),
+    0 8px 28px rgba(0, 0, 0, 0.5);
+}
+
+.page-hero--services-invest .services-invest-hero__title .staggered-text__segment {
+  color: #fff8ef;
+  -webkit-text-fill-color: #fff8ef;
 }
 
 .page-hero--services-invest .services-invest-hero__lead {
