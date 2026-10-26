@@ -2,10 +2,10 @@ import { Link } from 'react-router-dom'
 import {
   Instagram,
   Linkedin,
-  Facebook,
   MessageCircle,
 } from 'lucide-react'
 import { useSiteContent } from '../../hooks/useSiteContent'
+import { INSTAGRAM_URL, LINKEDIN_URL, WHATSAPP_CHAT_URL } from '../../config/externalLinks'
 import CmsText from '../CmsPreview/CmsText'
 import './Footer.css'
 
@@ -24,7 +24,7 @@ function Footer() {
               'footer',
               'brand',
               'tagline',
-              'Bespoke real estate advisory for premium Cyprus homes, investments, and international relocation.',
+              'Every property decision begins with inspiration. It deserves someone who protects it.',
             )}
           </p>
         </div>
@@ -37,20 +37,13 @@ function Footer() {
           </h4>
           <ul className="footer__list footer__list--links">
             <li>
-              <Link to="/">{get('footer', 'quick_links', 'link_home', 'Home')}</Link>
+              <Link to="/buy">{get('footer', 'quick_links', 'link_buy', 'Buy')}</Link>
             </li>
             <li>
-              <Link to="/properties">
-                {get('footer', 'quick_links', 'link_properties', 'Properties')}
-              </Link>
+              <Link to="/rent">{get('footer', 'quick_links', 'link_rent', 'Rent')}</Link>
             </li>
             <li>
               <Link to="/about">{get('footer', 'quick_links', 'link_about', 'About')}</Link>
-            </li>
-            <li>
-              <Link to="/videos/luxury-real-estate-cyprus">
-                {get('footer', 'quick_links', 'link_video', 'Brand video')}
-              </Link>
             </li>
           </ul>
         </div>
@@ -58,14 +51,25 @@ function Footer() {
         <div className="footer__col footer__col--services">
           <h4 className="footer__section-title">
             <CmsText page="footer" section="services" field="heading" as="span">
-              {get('footer', 'services', 'heading', 'Services')}
+              {get('footer', 'services', 'heading', 'United Services')}
             </CmsText>
           </h4>
           <ul className="footer__list footer__list--services">
-            <li>{get('footer', 'services', 'item1', 'Property Sales')}</li>
-            <li>{get('footer', 'services', 'item2', 'Luxury Rentals')}</li>
-            <li>{get('footer', 'services', 'item3', 'Property Management')}</li>
-            <li>{get('footer', 'services', 'item4', 'Relocation Support')}</li>
+            <li>
+              <Link to="/services#invest-with-us">
+                {get('footer', 'services', 'link_invest', 'Invest with us')}
+              </Link>
+            </li>
+            <li>
+              <Link to="/services#sell-with-us">
+                {get('footer', 'services', 'link_sell', 'Sell with us')}
+              </Link>
+            </li>
+            <li>
+              <Link to="/services#property-management">
+                {get('footer', 'services', 'link_manage', 'Property management')}
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -86,24 +90,31 @@ function Footer() {
             </li>
             <li>
               <a
-                href={`tel:${get('footer', 'contact', 'phone', '+357 25 123 456').replace(/\s+/g, '')}`}
+                href={`tel:${get('footer', 'contact', 'phone', '+357 96178188').replace(/\s+/g, '')}`}
               >
-                {get('footer', 'contact', 'phone', '+357 25 123 456')}
+                {get('footer', 'contact', 'phone', '+357 96178188')}
               </a>
             </li>
           </ul>
           <div className="footer__socials">
-            <a href="#" aria-label={get('footer', 'social', 'instagram', 'Instagram')}>
+            <a
+              href={INSTAGRAM_URL}
+              aria-label={get('footer', 'social', 'instagram', 'Instagram')}
+              target="_blank"
+              rel="noreferrer"
+            >
               <Instagram size={16} />
             </a>
-            <a href="#" aria-label={get('footer', 'social', 'linkedin', 'LinkedIn')}>
+            <a
+              href={LINKEDIN_URL}
+              aria-label={get('footer', 'social', 'linkedin', 'LinkedIn')}
+              target="_blank"
+              rel="noreferrer"
+            >
               <Linkedin size={16} />
             </a>
-            <a href="#" aria-label={get('footer', 'social', 'facebook', 'Facebook')}>
-              <Facebook size={16} />
-            </a>
             <a
-              href="https://wa.me/35700000000"
+              href={WHATSAPP_CHAT_URL}
               aria-label={get('footer', 'social', 'whatsapp', 'WhatsApp')}
               target="_blank"
               rel="noreferrer"
@@ -112,27 +123,6 @@ function Footer() {
             </a>
           </div>
         </div>
-      </div>
-
-      <div className="container footer__newsletter">
-        <h4>
-          <CmsText page="footer" section="newsletter" field="heading" as="span">
-            {get('footer', 'newsletter', 'heading', 'Private Market Updates')}
-          </CmsText>
-        </h4>
-        <form onSubmit={(event) => event.preventDefault()}>
-          <label htmlFor="newsletter-email" className="sr-only">
-            Email address
-          </label>
-          <input
-            id="newsletter-email"
-            type="email"
-            placeholder={get('footer', 'newsletter', 'placeholder', 'Enter your email')}
-          />
-          <button className="btn btn-gold" type="submit">
-            {get('footer', 'newsletter', 'submit', 'Subscribe')}
-          </button>
-        </form>
       </div>
 
       <div className="footer__bottom">

@@ -6,7 +6,8 @@
 
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
+  /* clip avoids creating a scroll container (unlike hidden), so position:sticky works */
+  overflow-x: clip;
 }
 
 body {
@@ -18,7 +19,7 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 button,

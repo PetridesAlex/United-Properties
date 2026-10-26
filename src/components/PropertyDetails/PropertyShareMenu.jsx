@@ -105,7 +105,7 @@ export default function PropertyShareMenu({
           onClick={() => setOpen((value) => !value)}
         >
           <span className="property-action__icon" aria-hidden>
-            <Share2 size={15} strokeWidth={2.15} />
+            <Share2 size={15} strokeWidth={1.6} />
           </span>
           <span className="property-action__label">Share</span>
           <span className="property-action__shine" aria-hidden />
@@ -134,7 +134,7 @@ export default function PropertyShareMenu({
         aria-label="Download this property as PDF"
       >
         <span className="property-action__icon" aria-hidden>
-          {pdfBusy ? <Loader2 size={15} strokeWidth={2.2} className="property-action__spin" /> : <FileDown size={15} strokeWidth={2.15} />}
+          {pdfBusy ? <Loader2 size={15} strokeWidth={2.2} className="property-action__spin" /> : <FileDown size={15} strokeWidth={1.6} />}
         </span>
         <span className="property-action__label">
           {pdfBusy ? 'Preparing…' : pdfLabel}
@@ -164,7 +164,7 @@ export default function PropertyShareMenu({
 }
 
 function buildWhatsAppHref(property) {
-  const base = String(WHATSAPP_CHAT_URL || 'https://wa.me/35700000000').replace(/\?.*$/, '')
+  const base = String(WHATSAPP_CHAT_URL || 'https://wa.me/35796178188').replace(/\?.*$/, '')
   const title = property?.title ? String(property.title).trim() : 'this listing'
   const url = typeof window !== 'undefined' ? window.location.href : ''
   const text = [`Hi, I'm interested in ${title}.`, url].filter(Boolean).join('\n')

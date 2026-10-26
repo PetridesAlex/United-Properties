@@ -21,7 +21,7 @@ function Contact() {
   const { get } = useSiteContent()
 
   const officeAddress = get('contact', 'office', 'address', '18 Marina Avenue, Limassol, Cyprus')
-  const officePhone = get('contact', 'office', 'phone', '+357 25 123 456')
+  const officePhone = get('contact', 'office', 'phone', '+357 96178188')
   const officeEmail = get('contact', 'office', 'email', 'info@unitedproperties.eu')
   const officeHours = get('contact', 'office', 'hours', 'Mon - Fri: 9:00 - 18:00')
   const phoneHref = `tel:${officePhone.replace(/\s+/g, '')}`
@@ -45,7 +45,7 @@ function Contact() {
     {
       icon: Phone,
       title: get('contact', 'methods', 'call_title', 'Call us'),
-      subtitle: get('contact', 'methods', 'call_subtitle', '+357 25 123 456'),
+      subtitle: get('contact', 'methods', 'call_subtitle', '+357 96178188'),
       href: phoneHref,
       external: false,
     },

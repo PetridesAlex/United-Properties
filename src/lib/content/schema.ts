@@ -370,7 +370,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
           f('email_title', 'Email title', 'Email us'),
           f('email_subtitle', 'Email subtitle', 'info@unitedproperties.eu'),
           f('call_title', 'Call title', 'Call us'),
-          f('call_subtitle', 'Call subtitle', '+357 25 123 456'),
+          f('call_subtitle', 'Call subtitle', '+357 96178188'),
         ],
       },
       {
@@ -380,7 +380,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         fields: [
           f('heading', 'Heading', 'Office'),
           f('address', 'Address', '18 Marina Avenue, Limassol, Cyprus'),
-          f('phone', 'Phone', '+357 25 123 456'),
+          f('phone', 'Phone', '+357 96178188'),
           f('email', 'Email', 'info@unitedproperties.eu'),
           f('hours', 'Opening hours', 'Mon - Fri: 9:00 - 18:00'),
         ],
@@ -439,12 +439,12 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         description: 'United Services hero and rotating guide for Invest, Sell, and Management.',
         fields: [
           f('eyebrow', 'Small label', 'United Services'),
-          f('heading', 'Heading', 'United Services'),
+          f('heading', 'Heading', 'Three clear paths. Move forward with clarity.'),
           f('lead', 'Lead line', 'Three clear paths. One boutique standard of care.'),
           f(
             'support',
             'Supporting line',
-            'Invest, sell, or entrust us with management — each offering is built around honesty, local knowledge, and results that hold up.',
+            'Invest, sell, or let us manage your property. Every path starts with honest advice and real local knowledge.',
             'textarea',
             3,
           ),
@@ -658,16 +658,16 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         title: 'Bottom call to action',
         description: 'Closing banner on the Services page.',
         fields: [
-          f('heading', 'Heading', 'Discuss Your Property Goals With Our Advisory Team'),
+          f('heading', 'Heading', 'Tell us your goal.'),
           f(
             'description',
             'Supporting text',
-            'Connect with our advisors for a tailored strategy across premium Cyprus locations.',
+            "Invest, sell or rent, and we'll give you an honest view of what's possible.",
             'textarea',
             3,
           ),
-          f('btn_listings', 'Listings button', 'View Listings'),
-          f('btn_contact', 'Contact button', 'Contact Our Team'),
+          f('btn_listings', 'Listings button', 'View listings'),
+          f('btn_contact', 'Contact button', 'Contact us'),
           f('btn_whatsapp', 'WhatsApp button', 'WhatsApp'),
         ],
       },
@@ -680,7 +680,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
           f(
             'description',
             'Meta description',
-            'Invest and sell with United Properties — curated opportunities, fair pricing, and local knowledge.',
+            'Invest, sell, and manage with United Properties — curated opportunities, fair sales, and hands-on property care.',
             'textarea',
             2,
           ),
@@ -1664,7 +1664,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
           f(
             'tagline',
             'Tagline',
-            'Bespoke real estate advisory for premium Cyprus homes, investments, and international relocation.',
+            'Every property decision begins with inspiration. It deserves someone who protects it.',
             'textarea',
             3,
           ),
@@ -1687,10 +1687,9 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         description: 'Quick links column.',
         fields: [
           f('heading', 'Heading', 'Quick Links'),
-          f('link_home', 'Home link', 'Home'),
-          f('link_properties', 'Properties link', 'Properties'),
+          f('link_buy', 'Buy link', 'Buy'),
+          f('link_rent', 'Rent link', 'Rent'),
           f('link_about', 'About link', 'About'),
-          f('link_video', 'Brand video link', 'Brand video'),
         ],
       },
       {
@@ -1698,11 +1697,10 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         title: 'Services list',
         description: 'Services column items.',
         fields: [
-          f('heading', 'Heading', 'Services'),
-          f('item1', 'Item 1', 'Property Sales'),
-          f('item2', 'Item 2', 'Luxury Rentals'),
-          f('item3', 'Item 3', 'Property Management'),
-          f('item4', 'Item 4', 'Relocation Support'),
+          f('heading', 'Heading', 'United Services'),
+          f('link_invest', 'Invest link', 'Invest with us'),
+          f('link_sell', 'Sell link', 'Sell with us'),
+          f('link_manage', 'Property management link', 'Property management'),
         ],
       },
       {
@@ -1713,7 +1711,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
           f('heading', 'Heading', 'Contact'),
           f('address', 'Address', '18 Marina Avenue, Limassol, Cyprus'),
           f('email', 'Email', 'info@unitedproperties.eu'),
-          f('phone', 'Phone', '+357 25 123 456'),
+          f('phone', 'Phone', '+357 96178188'),
         ],
       },
       {

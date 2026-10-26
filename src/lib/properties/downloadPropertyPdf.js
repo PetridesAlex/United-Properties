@@ -208,7 +208,7 @@ export async function downloadPropertyPdf(property) {
   doc.text('United Properties', margin, footerY)
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(90, 104, 122)
-  doc.text('info@unitedproperties.eu  ·  +357 25 123 456', margin, footerY + 4)
+  doc.text('info@unitedproperties.eu  ·  +357 96178188', margin, footerY + 4)
   doc.setFontSize(6.5)
   const urlLines = doc.splitTextToSize(pageUrl, contentW * 0.48)
   doc.text(urlLines, pageW - margin, footerY, {align: 'right'})

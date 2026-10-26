@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import StaggeredMenu from '../StaggeredMenu/StaggeredMenu'
-import { TELEGRAM_CHAT_URL, WHATSAPP_CHAT_URL } from '../../config/externalLinks'
+import { INSTAGRAM_URL, LINKEDIN_URL, TELEGRAM_CHAT_URL, WHATSAPP_CHAT_URL } from '../../config/externalLinks'
 import { buildSearchPath } from '../../lib/search/searchPath'
 import { useSiteContent } from '../../hooks/useSiteContent'
 import './Navbar.css'
@@ -146,8 +146,8 @@ function Navbar() {
               position="right"
               items={staggeredMenuItems}
               socialItems={[
-                { label: get('navbar', 'social', 'instagram', 'Instagram'), link: '#' },
-                { label: get('navbar', 'social', 'linkedin', 'LinkedIn'), link: '#' },
+                { label: get('navbar', 'social', 'instagram', 'Instagram'), link: INSTAGRAM_URL },
+                { label: get('navbar', 'social', 'linkedin', 'LinkedIn'), link: LINKEDIN_URL },
                 { label: get('navbar', 'social', 'whatsapp', 'WhatsApp'), link: WHATSAPP_CHAT_URL },
                 { label: get('navbar', 'social', 'telegram', 'Telegram'), link: TELEGRAM_CHAT_URL },
               ]}
