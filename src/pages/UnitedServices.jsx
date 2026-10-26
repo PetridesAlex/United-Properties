@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import CmsText from '../components/CmsPreview/CmsText'
 import { useSiteContent } from '../hooks/useSiteContent'
-import { WHATSAPP_CHAT_URL } from '../config/externalLinks'
 import './UnitedServices.css'
 
 const PHRASES = [
@@ -95,13 +93,13 @@ function UnitedServices() {
     'services',
     'hero_switch',
     'support',
-    'Invest, sell, or let us manage your property. Every path starts with honest advice and real local knowledge.',
+    'Invest, sell, or let us manage your property.',
   )
   const introSupport =
-    /entrust us with management|boutique standard of care|results that hold up/i.test(
+    /entrust us with management|boutique standard of care|results that hold up|every path starts with honest advice/i.test(
       String(supportRaw || ''),
     )
-      ? 'Invest, sell, or let us manage your property. Every path starts with honest advice and real local knowledge.'
+      ? 'Invest, sell, or let us manage your property.'
       : supportRaw
 
   const ctaHeadingRaw = get('services', 'cta', 'heading', 'Tell us your goal.')
@@ -161,16 +159,31 @@ function UnitedServices() {
     },
   ]
 
+  const sellPriceBodyRaw = get(
+    'services',
+    'sell_offer',
+    'price_body',
+    "A price that honors your property's true value and gives the buyer the confidence to say yes. Built on comparable sales and real local knowledge.",
+  )
+  const sellPriceBody = /does two things/i.test(String(sellPriceBodyRaw || ''))
+    ? "A price that honors your property's true value and gives the buyer the confidence to say yes. Built on comparable sales and real local knowledge."
+    : sellPriceBodyRaw
+
+  const sellBuyersBodyRaw = get(
+    'services',
+    'sell_offer',
+    'buyers_body',
+    "From first-time buyers to high net worth individuals and investors, our network reaches people who know what they're looking for. Every enquiry is screened, so your time goes to buyers who are genuinely ready.",
+  )
+  const sellBuyersBody = /know exactly what|goes only to buyers/i.test(String(sellBuyersBodyRaw || ''))
+    ? "From first-time buyers to high net worth individuals and investors, our network reaches people who know what they're looking for. Every enquiry is screened, so your time goes to buyers who are genuinely ready."
+    : sellBuyersBodyRaw
+
   const sellRows = [
     {
       key: 'price',
       title: get('services', 'sell_offer', 'price_title', 'A fair price'),
-      body: get(
-        'services',
-        'sell_offer',
-        'price_body',
-        "A fair price does two things. It honors the true value of your property, and it gives the buyer the confidence to say yes. That's the price we believe in, built on comparable sales and real local knowledge.",
-      ),
+      body: sellPriceBody,
     },
     {
       key: 'presented',
@@ -185,12 +198,7 @@ function UnitedServices() {
     {
       key: 'buyers',
       title: get('services', 'sell_offer', 'buyers_title', 'The right buyers'),
-      body: get(
-        'services',
-        'sell_offer',
-        'buyers_body',
-        "From first-time buyers to high net worth individuals and investors, our network reaches people who know exactly what they're looking for. Every enquiry is screened, so your time goes only to buyers who are genuinely ready.",
-      ),
+      body: sellBuyersBody,
     },
   ]
 
@@ -202,18 +210,16 @@ function UnitedServices() {
             {get('services', 'hero_switch', 'eyebrow', 'United Services')}
           </CmsText>
           {useAnimatedHeading && !reduceMotion ? (
-            <h1 className="intro-title">
+            <h1 className="intro-title" aria-label={displayHeading}>
               {introWords.slice(0, 3).map((word, i) => (
                 <span key={word} className="bw" style={{ animationDelay: `${0.05 + i * 0.1}s` }}>
                   {word}
-                  {i < 2 ? ' ' : ''}
                 </span>
               ))}
               <br />
               {introWords.slice(3).map((word, i) => (
                 <span key={word} className="bw" style={{ animationDelay: `${0.45 + i * 0.1}s` }}>
                   {word}
-                  {i < 3 ? ' ' : ''}
                 </span>
               ))}
             </h1>
@@ -314,16 +320,16 @@ function UnitedServices() {
                 {PHRASES.map((text, i) => (
                   <p
                     key={text}
-                    className={`up-rot__item${(reduceMotion ? i === 0 : i === idx) ? ' is-active' : ''}`}
+                    className={`up-rotp${(reduceMotion ? i === 0 : i === idx) ? ' is-active' : ''}`}
                   >
                     {text}
                   </p>
                 ))}
               </div>
-              <p className="rowp rowp--ink" style={{ marginTop: '10px', fontSize: '15px', fontStyle: 'normal' }}>
+              <p className="rowp closing" style={{ marginTop: '10px' }}>
                 Whatever you choose, you get real local knowledge.
               </p>
-              <p className="rowp" style={{ fontStyle: 'normal' }}>
+              <p className="rowp closing">
                 If we believe in an opportunity, you&apos;ll hear it from us. If we don&apos;t, you&apos;ll hear
                 that too.
               </p>
@@ -473,29 +479,30 @@ function UnitedServices() {
               <span className="vline" aria-hidden />
               <div className="tbl-grid tbl-grid--head">
                 <span />
-                <CmsText page="services" section="property_mgmt" field="placement_title" as="span" className="pn2">
-                  {get('services', 'property_mgmt', 'placement_title', 'Rental placement')}
-                </CmsText>
-                <CmsText page="services" section="property_mgmt" field="full_title" as="span" className="pn2">
-                  {get('services', 'property_mgmt', 'full_title', 'Full property management')}
-                </CmsText>
+                <div className="tbl-plan">
+                  <CmsText page="services" section="property_mgmt" field="placement_title" as="span" className="pn2">
+                    {get('services', 'property_mgmt', 'placement_title', 'Rental placement')}
+                  </CmsText>
+                  <CmsText
+                    page="services"
+                    section="property_mgmt"
+                    field="placement_tagline"
+                    as="span"
+                    className="tbl-note"
+                  >
+                    {get('services', 'property_mgmt', 'placement_tagline', 'Your terms. Our network.')}
+                  </CmsText>
+                </div>
+                <div className="tbl-plan">
+                  <CmsText page="services" section="property_mgmt" field="full_title" as="span" className="pn2">
+                    {get('services', 'property_mgmt', 'full_title', 'Full property management')}
+                  </CmsText>
+                  <CmsText page="services" section="property_mgmt" field="full_tagline" as="span" className="tbl-note">
+                    {get('services', 'property_mgmt', 'full_tagline', 'You own it. We run it.')}
+                  </CmsText>
+                </div>
               </div>
-              <div className="tbl-grid">
-                <span />
-                <CmsText
-                  page="services"
-                  section="property_mgmt"
-                  field="placement_tagline"
-                  as="span"
-                  className="tbl-note"
-                >
-                  {get('services', 'property_mgmt', 'placement_tagline', 'Your terms. Our network.')}
-                </CmsText>
-                <CmsText page="services" section="property_mgmt" field="full_tagline" as="span" className="tbl-note">
-                  {get('services', 'property_mgmt', 'full_tagline', 'You own it. We run it.')}
-                </CmsText>
-              </div>
-              <div className="tbl-grid">
+              <div className="tbl-grid tbl-grid--best">
                 <span className="tbl-best">{get('services', 'property_mgmt', 'best_label', 'Best for')}</span>
                 <CmsText
                   page="services"
@@ -559,19 +566,6 @@ function UnitedServices() {
             <CmsText page="services" section="cta" field="description" as="p" className="lead">
               {ctaDescription}
             </CmsText>
-          </div>
-          <div className="up-contact__actions">
-            <Link className="btn" to="/properties">
-              {get('services', 'cta', 'btn_listings', 'View listings')}
-            </Link>
-            <Link className="btn" to="/contact">
-              {/contact our team/i.test(String(get('services', 'cta', 'btn_contact', 'Contact us') || ''))
-                ? 'Contact us'
-                : get('services', 'cta', 'btn_contact', 'Contact us')}
-            </Link>
-            <a className="btn" href={WHATSAPP_CHAT_URL} target="_blank" rel="noreferrer">
-              {get('services', 'cta', 'btn_whatsapp', 'WhatsApp')}
-            </a>
           </div>
         </div>
       </section>

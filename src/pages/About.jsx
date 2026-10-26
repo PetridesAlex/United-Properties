@@ -1,12 +1,13 @@
+import { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { Link } from 'react-router-dom'
-import { motion, useReducedMotion } from 'framer-motion'
 import CmsText from '../components/CmsPreview/CmsText'
-import CmsStaggeredHeading from '../components/StaggeredText/CmsStaggeredHeading'
 import { useSiteContent } from '../hooks/useSiteContent'
 import './About.css'
 
+const HEADING_WORDS = ['Behind', 'every', 'move', 'is', 'a', 'story.']
+
 const COPY = {
+  eyebrow: 'About',
   heading: 'Behind every move is a story.',
   opening:
     'A smart investment. A first home. A fresh start in a new city. A family finally with room to grow.',
@@ -17,32 +18,66 @@ const COPY = {
   founding: 'I started United Properties for that moment.',
   selection:
     'Every property we present is chosen because we believe in its potential, never to add one more listing to the window.',
-  promiseLead: 'Honest advice. Real local knowledge.',
-  promiseClose: 'So you decide with excitement and confidence, never doubt.',
-  closing: 'The day you decide should feel like the first day of something new.',
-  signature: 'Confidence in every move.',
-  cta: 'Start a conversation',
+  process:
+    "That's why every move we make is built the same way: research first, a fair price, and professional presentation, with clear numbers behind every decision.",
+  closing:
+    'The day you decide should feel like the first day of something new, the day inspiration becomes your future.',
+  company: 'PKM United Properties Ltd',
+  licence: 'Licensed real estate agent  ·  Reg. No. 1393  ·  Lic. No. 703/E',
 }
 
-const reveal = {
-  hidden: { opacity: 0, y: 18 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
-  },
-}
+function useNavbarOffset() {
+  const [top, setTop] = useState(0)
 
-const stagger = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.07, delayChildren: 0.05 },
-  },
+  useEffect(() => {
+    function measure() {
+      const nav = document.querySelector('header.navbar')
+      const next = nav ? Math.round(nav.getBoundingClientRect().height) : 0
+      setTop((prev) => (prev === next ? prev : next))
+    }
+
+    measure()
+    window.addEventListener('resize', measure)
+    window.addEventListener('scroll', measure, { passive: true })
+    return () => {
+      window.removeEventListener('resize', measure)
+      window.removeEventListener('scroll', measure)
+    }
+  }, [])
+
+  return top
 }
 
 function About() {
   const { get } = useSiteContent()
-  const reduceMotion = useReducedMotion()
+  const topOffset = useNavbarOffset()
+  const [reduceMotion, setReduceMotion] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const sync = () => setReduceMotion(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  const headingRaw = get('about', 'manifesto', 'heading', COPY.heading)
+  const headingTrimmed = String(headingRaw || '').trim()
+  const displayHeading = headingTrimmed || COPY.heading
+  const useAnimatedHeading =
+    /^behind\s+every\s+move\s+is\s+a\s+story\.?$/i.test(displayHeading)
+
+  const processRaw = get('about', 'manifesto', 'process', COPY.process)
+  const processText = /honest advice|real local knowledge/i.test(String(processRaw || ''))
+    ? COPY.process
+    : processRaw
+
+  const closingRaw = get('about', 'manifesto', 'closing', COPY.closing)
+  const closingText =
+    String(closingRaw || '').trim() === 'The day you decide should feel like the first day of something new.'
+      ? COPY.closing
+      : closingRaw
 
   return (
     <>
@@ -59,119 +94,87 @@ function About() {
         />
       </Helmet>
 
-      <section
-        className="about-manifesto"
-        data-cms-page="about"
-        data-cms-section="manifesto"
-        aria-labelledby="about-manifesto-heading"
-      >
-        <div className="about-manifesto__ambient" aria-hidden />
-        <div className="about-manifesto__veil" aria-hidden />
-        <span className="about-manifesto__orb about-manifesto__orb--a" aria-hidden />
-        <span className="about-manifesto__orb about-manifesto__orb--b" aria-hidden />
+      <div className="up-about" style={{ '--up-top': `${topOffset}px` }}>
+        <section
+          className="up-about__intro"
+          data-cms-page="about"
+          data-cms-section="manifesto"
+          aria-labelledby="about-manifesto-heading"
+        >
+          <div className="up-about__shell up-about__intro-inner">
+            <CmsText page="about" section="manifesto" field="eyebrow" as="span" className="lbl">
+              {get('about', 'manifesto', 'eyebrow', COPY.eyebrow)}
+            </CmsText>
 
-        <div className="about-manifesto__shell">
-          <motion.article
-            className="about-manifesto__card"
-            variants={reduceMotion ? undefined : stagger}
-            initial={reduceMotion ? false : 'hidden'}
-            animate="show"
-          >
-            <span className="about-manifesto__accent" aria-hidden />
-
-            <motion.div variants={reduceMotion ? undefined : reveal}>
-              <CmsStaggeredHeading
+            {useAnimatedHeading && !reduceMotion ? (
+              <h1
+                className="intro-title"
+                id="about-manifesto-heading"
+                aria-label={displayHeading}
+              >
+                {HEADING_WORDS.map((word, i) => (
+                  <span key={word} className="bw" style={{ animationDelay: `${0.05 + i * 0.1}s` }}>
+                    {word}
+                  </span>
+                ))}
+              </h1>
+            ) : (
+              <CmsText
                 page="about"
                 section="manifesto"
                 field="heading"
                 as="h1"
                 id="about-manifesto-heading"
-                className="about-manifesto__heading"
-                text={get('about', 'manifesto', 'heading', COPY.heading)}
-              />
-            </motion.div>
+                className="intro-title"
+              >
+                {displayHeading}
+              </CmsText>
+            )}
 
-            <motion.div className="about-manifesto__body" variants={reduceMotion ? undefined : stagger}>
-              <motion.p className="about-manifesto__p about-manifesto__p--lead" variants={reduceMotion ? undefined : reveal}>
-                <CmsText page="about" section="manifesto" field="opening" as="span">
-                  {get('about', 'manifesto', 'opening', COPY.opening)}
-                </CmsText>
-              </motion.p>
+            <CmsText page="about" section="manifesto" field="opening" as="p" className="lead">
+              {get('about', 'manifesto', 'opening', COPY.opening)}
+            </CmsText>
+          </div>
+        </section>
 
-              <motion.p className="about-manifesto__p" variants={reduceMotion ? undefined : reveal}>
-                <CmsText page="about" section="manifesto" field="bridge" as="span">
-                  {get('about', 'manifesto', 'bridge', COPY.bridge)}
-                </CmsText>
-              </motion.p>
+        <section className="up-about__letter" data-cms-page="about" data-cms-section="manifesto">
+          <div className="sheet">
+            <div className="fold fold--a" aria-hidden />
+            <div className="fold fold--b" aria-hidden />
+            <div className="ltr">
+              <CmsText page="about" section="manifesto" field="bridge" as="p">
+                {get('about', 'manifesto', 'bridge', COPY.bridge)}
+              </CmsText>
+              <CmsText page="about" section="manifesto" field="intro" as="p">
+                {get('about', 'manifesto', 'intro', COPY.intro)}
+              </CmsText>
+              <CmsText page="about" section="manifesto" field="founding" as="p" className="strong">
+                {get('about', 'manifesto', 'founding', COPY.founding)}
+              </CmsText>
+              <CmsText page="about" section="manifesto" field="selection" as="p">
+                {get('about', 'manifesto', 'selection', COPY.selection)}
+              </CmsText>
+              <CmsText page="about" section="manifesto" field="process" as="p">
+                {processText}
+              </CmsText>
+              <CmsText page="about" section="manifesto" field="closing" as="p">
+                {closingText}
+              </CmsText>
 
-              <motion.p className="about-manifesto__p" variants={reduceMotion ? undefined : reveal}>
-                <CmsText page="about" section="manifesto" field="intro" as="span">
-                  {get('about', 'manifesto', 'intro', COPY.intro)}
-                </CmsText>
-              </motion.p>
+              <hr className="ltr-rule" />
 
-              <motion.p className="about-manifesto__p about-manifesto__p--emphasis" variants={reduceMotion ? undefined : reveal}>
-                <CmsText page="about" section="manifesto" field="founding" as="span">
-                  {get('about', 'manifesto', 'founding', COPY.founding)}
+              <div className="cred">
+                <CmsText page="about" section="manifesto" field="company" as="span" className="cn">
+                  {get('about', 'manifesto', 'company', COPY.company)}
                 </CmsText>
-              </motion.p>
-
-              <motion.p className="about-manifesto__p" variants={reduceMotion ? undefined : reveal}>
-                <CmsText page="about" section="manifesto" field="selection" as="span">
-                  {get('about', 'manifesto', 'selection', COPY.selection)}
+                <CmsText page="about" section="manifesto" field="licence" as="span" className="cl">
+                  {get('about', 'manifesto', 'licence', COPY.licence)}
                 </CmsText>
-              </motion.p>
-
-              <motion.p className="about-manifesto__p about-manifesto__p--promise" variants={reduceMotion ? undefined : reveal}>
-                <CmsText page="about" section="manifesto" field="promise_lead" as="span">
-                  {get('about', 'manifesto', 'promise_lead', COPY.promiseLead)}
-                </CmsText>
-                <br />
-                <CmsText page="about" section="manifesto" field="promise_close" as="span">
-                  {get('about', 'manifesto', 'promise_close', COPY.promiseClose)}
-                </CmsText>
-              </motion.p>
-
-              <motion.p className="about-manifesto__p" variants={reduceMotion ? undefined : reveal}>
-                <CmsText page="about" section="manifesto" field="closing" as="span">
-                  {get('about', 'manifesto', 'closing', COPY.closing)}
-                </CmsText>
-              </motion.p>
-
-              <motion.p className="about-manifesto__signature" variants={reduceMotion ? undefined : reveal}>
-                <CmsText page="about" section="manifesto" field="signature" as="span">
-                  {get('about', 'manifesto', 'signature', COPY.signature)}
-                </CmsText>
-              </motion.p>
-            </motion.div>
-
-            <motion.div
-              className="about-manifesto__cta-wrap"
-              variants={reduceMotion ? undefined : reveal}
-              whileHover={reduceMotion ? undefined : { y: -3, scale: 1.02 }}
-              whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 22 }}
-            >
-              <Link to="/contact" className="about-manifesto__cta">
-                <span className="about-manifesto__cta-glow" aria-hidden />
-                <span className="about-manifesto__cta-sheen" aria-hidden />
-                <CmsText
-                  page="about"
-                  section="manifesto"
-                  field="cta_label"
-                  as="span"
-                  className="about-manifesto__cta-label"
-                >
-                  {get('about', 'manifesto', 'cta_label', COPY.cta)}
-                </CmsText>
-                <span className="about-manifesto__cta-arrow" aria-hidden>
-                  →
-                </span>
-              </Link>
-            </motion.div>
-          </motion.article>
-        </div>
-      </section>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     </>
   )
 }

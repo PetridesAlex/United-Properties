@@ -246,8 +246,9 @@ export const CONTENT_PAGES: ContentPageDef[] = [
       {
         id: 'manifesto',
         title: 'About story',
-        description: 'Editorial About page — copy matches the United Properties manifesto.',
+        description: 'About page — letter intro and folded sheet story.',
         fields: [
+          f('eyebrow', 'Small label', 'About'),
           f('heading', 'Heading', 'Behind every move is a story.'),
           f(
             'opening',
@@ -285,24 +286,25 @@ export const CONTENT_PAGES: ContentPageDef[] = [
             3,
           ),
           f(
-            'promise_lead',
-            'Promise — line 1',
-            'Honest advice. Real local knowledge.',
-          ),
-          f(
-            'promise_close',
-            'Promise — line 2',
-            'So you decide with excitement and confidence, never doubt.',
+            'process',
+            'Process line',
+            "That's why every move we make is built the same way: research first, a fair price, and professional presentation, with clear numbers behind every decision.",
+            'textarea',
+            3,
           ),
           f(
             'closing',
             'Closing line',
-            'The day you decide should feel like the first day of something new.',
+            'The day you decide should feel like the first day of something new, the day inspiration becomes your future.',
             'textarea',
             2,
           ),
-          f('signature', 'Signature line', 'Confidence in every move.'),
-          f('cta_label', 'Button label', 'Start a conversation'),
+          f('company', 'Company name', 'PKM United Properties Ltd'),
+          f(
+            'licence',
+            'Licence line',
+            'Licensed real estate agent  ·  Reg. No. 1393  ·  Lic. No. 703/E',
+          ),
         ],
       },
       {
@@ -444,7 +446,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
           f(
             'support',
             'Supporting line',
-            'Invest, sell, or let us manage your property. Every path starts with honest advice and real local knowledge.',
+            'Invest, sell, or let us manage your property.',
             'textarea',
             3,
           ),
@@ -552,7 +554,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
           f(
             'price_body',
             'Card 1 text',
-            "A fair price does two things. It honors the true value of your property, and it gives the buyer the confidence to say yes. That's the price we believe in, built on comparable sales and real local knowledge.",
+            "A price that honors your property's true value and gives the buyer the confidence to say yes. Built on comparable sales and real local knowledge.",
             'textarea',
             4,
           ),
@@ -568,7 +570,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
           f(
             'buyers_body',
             'Card 3 text',
-            "From first-time buyers to high net worth individuals and investors, our network reaches people who know exactly what they're looking for. Every enquiry is screened, so your time goes only to buyers who are genuinely ready.",
+            "From first-time buyers to high net worth individuals and investors, our network reaches people who know what they're looking for. Every enquiry is screened, so your time goes to buyers who are genuinely ready.",
             'textarea',
             4,
           ),
@@ -940,16 +942,15 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         title: 'Buy hero',
         description: 'Top banner when browsing for sale.',
         fields: [
-          f('eyebrow', 'Small label', 'Buy in Limassol'),
-          f('title', 'Heading', 'Your New Home Awaits'),
+          f('eyebrow', 'Small label', 'Buy'),
+          f('title', 'Heading', 'Find the place that becomes your future.'),
           f(
             'description',
             'Supporting text',
-            'Explore curated residences in Limassol — from seafront apartments to family villas and investment opportunities.',
+            'From apartments to family villas and investment opportunities, every property is chosen with care.',
             'textarea',
             3,
           ),
-          f('jump_cta', 'Jump button', 'Jump to Listings'),
         ],
       },
       {
@@ -957,16 +958,15 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         title: 'Rent hero',
         description: 'Top banner when browsing rentals.',
         fields: [
-          f('eyebrow', 'Small label', 'Rent in Limassol'),
-          f('title', 'Heading', 'Exclusive Rental Homes'),
+          f('eyebrow', 'Small label', 'Rent'),
+          f('title', 'Heading', 'Find a place to call home.'),
           f(
             'description',
             'Supporting text',
-            'Browse premium apartments, villas, and furnished residences in Limassol — short and long-term.',
+            'From apartments and family villas to furnished residences and offices, available for long-term rent.',
             'textarea',
             3,
           ),
-          f('jump_cta', 'Jump button', 'Jump to Listings'),
         ],
       },
       {
@@ -1042,12 +1042,19 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         title: 'Buy discovery',
         description: 'Listing section intro for buy mode.',
         fields: [
-          f('eyebrow', 'Small label', 'United Properties · Limassol'),
+          f('eyebrow', 'Small label', 'United Properties'),
           f('title', 'Heading', 'Browse listings'),
           f(
             'description',
             'Supporting text',
-            'Apartments, villas, and investment homes in Limassol and surrounding neighbourhoods we serve.',
+            'Apartments, villas and investment homes.',
+            'textarea',
+            2,
+          ),
+          f(
+            'off_market',
+            'Off-market note',
+            'Not every property is listed publicly. Speak with one of our consultants about off-market opportunities.',
             'textarea',
             3,
           ),
@@ -1058,12 +1065,19 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         title: 'Rent discovery',
         description: 'Listing section intro for rent mode.',
         fields: [
-          f('eyebrow', 'Small label', 'Limassol rentals'),
-          f('title', 'Heading', 'Homes & apartments to lease'),
+          f('eyebrow', 'Small label', 'United Properties'),
+          f('title', 'Heading', 'Browse rentals'),
           f(
             'description',
             'Supporting text',
-            'Long-term and seasonal lets across prime Limassol districts — curated by our team.',
+            'Apartments, villas, furnished homes and offices to rent.',
+            'textarea',
+            2,
+          ),
+          f(
+            'off_market',
+            'Off-market note',
+            'Not every property is listed publicly. Speak with one of our consultants about off-market options.',
             'textarea',
             3,
           ),

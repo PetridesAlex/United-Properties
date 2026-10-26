@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLocation } from 'react-router-dom'
 import PropertyCard from '../components/PropertyCard/PropertyCard'
 import CmsText from '../components/CmsPreview/CmsText'
-import CmsStaggeredHeading from '../components/StaggeredText/CmsStaggeredHeading'
 import { useMergedProperties } from '../hooks/useMergedProperties'
 import { useSiteContent } from '../hooks/useSiteContent'
 import { matchesListingLocation } from '../lib/matchesListingLocation'
 import './Properties.css'
+
+const BUY_HEADING_WORDS = ['Find', 'the', 'place', 'that', 'becomes', 'your', 'future.']
+const RENT_HEADING_WORDS = ['Find', 'a', 'place', 'to', 'call', 'home.']
 
 const initialFilters = {
   type: '',
@@ -75,14 +77,34 @@ function getModeFromRoute(location) {
 
 function getDiscoveryIntro(mode, get) {
   if (mode === 'rent') {
+    const eyebrowRaw = get('properties', 'discovery_rent', 'eyebrow', 'United Properties')
+    const titleRaw = get('properties', 'discovery_rent', 'title', 'Browse rentals')
+    const descriptionRaw = get(
+      'properties',
+      'discovery_rent',
+      'description',
+      'Apartments, villas, furnished homes and offices to rent.',
+    )
+
     return {
-      eyebrow: get('properties', 'discovery_rent', 'eyebrow', 'Limassol rentals'),
-      title: get('properties', 'discovery_rent', 'title', 'Homes & apartments to lease'),
-      description: get(
+      eyebrow: /limassol rentals/i.test(String(eyebrowRaw || ''))
+        ? 'United Properties'
+        : eyebrowRaw,
+      title: /homes\s*&\s*apartments to lease|homes and apartments to lease/i.test(
+        String(titleRaw || ''),
+      )
+        ? 'Browse rentals'
+        : titleRaw,
+      description: /long-term and seasonal|prime limassol districts/i.test(
+        String(descriptionRaw || ''),
+      )
+        ? 'Apartments, villas, furnished homes and offices to rent.'
+        : descriptionRaw,
+      note: get(
         'properties',
         'discovery_rent',
-        'description',
-        'Long-term and seasonal lets across prime Limassol districts — curated by our team.',
+        'off_market',
+        'Not every property is listed publicly. Speak with one of our consultants about off-market options.',
       ),
     }
   }
@@ -96,6 +118,7 @@ function getDiscoveryIntro(mode, get) {
         'description',
         'A selection of homes successfully placed by United Properties.',
       ),
+      note: '',
     }
   }
   if (mode === 'rented') {
@@ -108,6 +131,7 @@ function getDiscoveryIntro(mode, get) {
         'description',
         'Homes and apartments successfully leased through our team.',
       ),
+      note: '',
     }
   }
   if (mode === 'featured') {
@@ -120,6 +144,7 @@ function getDiscoveryIntro(mode, get) {
         'description',
         'Hand-picked listings our advisors are highlighting this season.',
       ),
+      note: '',
     }
   }
   if (mode === 'signature') {
@@ -132,42 +157,77 @@ function getDiscoveryIntro(mode, get) {
         'description',
         'Trophy homes and standout residences from our signature collection.',
       ),
+      note: '',
     }
   }
+
+  const descriptionRaw = get(
+    'properties',
+    'discovery_buy',
+    'description',
+    'Apartments, villas and investment homes.',
+  )
+  const description = /surrounding neighbourhoods|neighborhoods we serve/i.test(
+    String(descriptionRaw || ''),
+  )
+    ? 'Apartments, villas and investment homes.'
+    : descriptionRaw
+
   return {
-    eyebrow: get('properties', 'discovery_buy', 'eyebrow', 'United Properties · Limassol'),
+    eyebrow: /limassol/i.test(
+      String(get('properties', 'discovery_buy', 'eyebrow', 'United Properties') || ''),
+    )
+      ? 'United Properties'
+      : get('properties', 'discovery_buy', 'eyebrow', 'United Properties'),
     title: get('properties', 'discovery_buy', 'title', 'Browse listings'),
-    description: get(
+    description,
+    note: get(
       'properties',
       'discovery_buy',
-      'description',
-      'Apartments, villas, and investment homes in Limassol and surrounding neighbourhoods we serve.',
+      'off_market',
+      'Not every property is listed publicly. Speak with one of our consultants about off-market opportunities.',
     ),
   }
 }
 
 function getHeroContent(mode, status, get) {
   if (mode === 'rent' || status === 'For Rent') {
+    const titleRaw = get('properties', 'hero_rent', 'title', 'Find a place to call home.')
+    const title = /exclusive rental homes/i.test(String(titleRaw || ''))
+      ? 'Find a place to call home.'
+      : titleRaw
+
+    const descriptionRaw = get(
+      'properties',
+      'hero_rent',
+      'description',
+      'From apartments and family villas to furnished residences and offices, available for long-term rent.',
+    )
+    const description = /browse premium apartments|short and long-term/i.test(
+      String(descriptionRaw || ''),
+    )
+      ? 'From apartments and family villas to furnished residences and offices, available for long-term rent.'
+      : descriptionRaw
+
+    const eyebrowRaw = get('properties', 'hero_rent', 'eyebrow', 'Rent')
+    const eyebrow = /rent in limassol/i.test(String(eyebrowRaw || '')) ? 'Rent' : eyebrowRaw
+    const animated = /^find\s+a\s+place\s+to\s+call\s+home\.?$/i.test(String(title || ''))
+
     return {
-      modeClass: 'properties-hero--rent',
-      eyebrow: get('properties', 'hero_rent', 'eyebrow', 'Rent in Limassol'),
-      title: get('properties', 'hero_rent', 'title', 'Exclusive Rental Homes'),
-      description: get(
-        'properties',
-        'hero_rent',
-        'description',
-        'Browse premium apartments, villas, and furnished residences in Limassol — short and long-term.',
-      ),
-      jumpCta: get('properties', 'hero_rent', 'jump_cta', 'Jump to Listings'),
+      eyebrow,
+      title,
+      description,
       pageTitle: 'Rent Properties | United Properties',
       cmsSection: 'hero_rent',
+      animated,
+      headingWords: animated ? RENT_HEADING_WORDS : null,
+      breakAfter: null,
     }
   }
 
   if (mode === 'sold' || status === 'Sold') {
     return {
-      modeClass: 'properties-hero--buy',
-      eyebrow: get('properties', 'hero_sold', 'eyebrow', 'Sold by United Properties'),
+      eyebrow: get('properties', 'hero_sold', 'eyebrow', 'Sold'),
       title: get('properties', 'hero_sold', 'title', 'Sold Properties'),
       description: get(
         'properties',
@@ -175,16 +235,15 @@ function getHeroContent(mode, status, get) {
         'description',
         'Homes successfully sold through United Properties.',
       ),
-      jumpCta: get('properties', 'hero_sold', 'jump_cta', 'Jump to Listings'),
       pageTitle: 'Sold Properties | United Properties',
       cmsSection: 'hero_sold',
+      animated: false,
     }
   }
 
   if (mode === 'rented' || status === 'Rented') {
     return {
-      modeClass: 'properties-hero--rent',
-      eyebrow: get('properties', 'hero_rented', 'eyebrow', 'Let by United Properties'),
+      eyebrow: get('properties', 'hero_rented', 'eyebrow', 'Rented'),
       title: get('properties', 'hero_rented', 'title', 'Rented Properties'),
       description: get(
         'properties',
@@ -192,16 +251,15 @@ function getHeroContent(mode, status, get) {
         'description',
         'Homes and apartments successfully leased through our team.',
       ),
-      jumpCta: get('properties', 'hero_rented', 'jump_cta', 'Jump to Listings'),
       pageTitle: 'Rented Properties | United Properties',
       cmsSection: 'hero_rented',
+      animated: false,
     }
   }
 
   if (mode === 'featured') {
     return {
-      modeClass: 'properties-hero--buy',
-      eyebrow: get('properties', 'hero_featured', 'eyebrow', 'Featured collection'),
+      eyebrow: get('properties', 'hero_featured', 'eyebrow', 'Featured'),
       title: get('properties', 'hero_featured', 'title', 'Featured properties'),
       description: get(
         'properties',
@@ -209,16 +267,15 @@ function getHeroContent(mode, status, get) {
         'description',
         'Hand-picked listings our advisors are highlighting this season.',
       ),
-      jumpCta: get('properties', 'hero_featured', 'jump_cta', 'Jump to Listings'),
       pageTitle: 'Featured Properties | United Properties',
       cmsSection: 'hero_featured',
+      animated: false,
     }
   }
 
   if (mode === 'signature') {
     return {
-      modeClass: 'properties-hero--buy',
-      eyebrow: get('properties', 'hero_signature', 'eyebrow', 'Signature Collection'),
+      eyebrow: get('properties', 'hero_signature', 'eyebrow', 'Signature'),
       title: get('properties', 'hero_signature', 'title', 'Signature listings'),
       description: get(
         'properties',
@@ -226,25 +283,50 @@ function getHeroContent(mode, status, get) {
         'description',
         'Trophy homes and standout residences from our signature collection.',
       ),
-      jumpCta: get('properties', 'hero_signature', 'jump_cta', 'Jump to Listings'),
       pageTitle: 'Signature Listings | United Properties',
       cmsSection: 'hero_signature',
+      animated: false,
     }
   }
 
+  const titleRaw = get(
+    'properties',
+    'hero_buy',
+    'title',
+    'Find the place that becomes your future.',
+  )
+  const title = /your new home awaits/i.test(String(titleRaw || ''))
+    ? 'Find the place that becomes your future.'
+    : titleRaw
+
+  const descriptionRaw = get(
+    'properties',
+    'hero_buy',
+    'description',
+    'From apartments to family villas and investment opportunities, every property is chosen with care.',
+  )
+  const description = /explore curated residences|seafront apartments/i.test(
+    String(descriptionRaw || ''),
+  )
+    ? 'From apartments to family villas and investment opportunities, every property is chosen with care.'
+    : descriptionRaw
+
+  const eyebrowRaw = get('properties', 'hero_buy', 'eyebrow', 'Buy')
+  const eyebrow = /buy in limassol/i.test(String(eyebrowRaw || '')) ? 'Buy' : eyebrowRaw
+
+  const animated = /^find\s+the\s+place\s+that\s+becomes\s+your\s+future\.?$/i.test(
+    String(title || ''),
+  )
+
   return {
-    modeClass: 'properties-hero--buy',
-    eyebrow: get('properties', 'hero_buy', 'eyebrow', 'Buy in Limassol'),
-    title: get('properties', 'hero_buy', 'title', 'Your New Home Awaits'),
-    description: get(
-      'properties',
-      'hero_buy',
-      'description',
-      'Explore curated residences in Limassol — from seafront apartments to family villas and investment opportunities.',
-    ),
-    jumpCta: get('properties', 'hero_buy', 'jump_cta', 'Jump to Listings'),
-    pageTitle: 'Properties | United Properties',
+    eyebrow,
+    title,
+    description,
+    pageTitle: 'Buy Properties | United Properties',
     cmsSection: 'hero_buy',
+    animated,
+    headingWords: animated ? BUY_HEADING_WORDS : null,
+    breakAfter: animated ? 4 : null,
   }
 }
 
@@ -257,12 +339,38 @@ function getDiscoveryCmsSection(mode) {
   return 'discovery_buy'
 }
 
+function useNavbarOffset() {
+  const [top, setTop] = useState(0)
+
+  useEffect(() => {
+    function measure() {
+      const nav = document.querySelector('header.navbar')
+      const next = nav ? Math.round(nav.getBoundingClientRect().height) : 0
+      setTop((prev) => (prev === next ? prev : next))
+    }
+
+    measure()
+    window.addEventListener('resize', measure)
+    window.addEventListener('scroll', measure, { passive: true })
+    return () => {
+      window.removeEventListener('resize', measure)
+      window.removeEventListener('scroll', measure)
+    }
+  }, [])
+
+  return top
+}
+
 function Properties() {
   const routeLocation = useLocation()
   const { get } = useSiteContent()
   const { list: allProperties } = useMergedProperties()
-  const [filters, setFilters] = useState(() => getFiltersFromLocation(routeLocation))
-  const [visibleCount, setVisibleCount] = useState(6)
+  const [reduceMotion, setReduceMotion] = useState(false)
+  const topOffset = useNavbarOffset()
+  const filters = useMemo(() => getFiltersFromLocation(routeLocation), [routeLocation])
+  const locationKey = `${normalizePathname(routeLocation.pathname)}${routeLocation.search}`
+  const [loadState, setLoadState] = useState({ key: locationKey, count: 6 })
+  const visibleCount = loadState.key === locationKey ? loadState.count : 6
   const mode = useMemo(() => getModeFromRoute(routeLocation), [routeLocation])
   const heroContent = useMemo(
     () => getHeroContent(mode, filters.status, get),
@@ -271,9 +379,13 @@ function Properties() {
   const discoveryIntro = useMemo(() => getDiscoveryIntro(mode, get), [mode, get])
 
   useEffect(() => {
-    setFilters(getFiltersFromLocation(routeLocation))
-    setVisibleCount(6)
-  }, [routeLocation])
+    if (typeof window === 'undefined') return undefined
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const sync = () => setReduceMotion(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
 
   const filtered = useMemo(() => {
     const keyword = filters.keyword.toLowerCase()
@@ -314,6 +426,13 @@ function Properties() {
   const visibleProperties = filtered.slice(0, visibleCount)
   const heroSection = heroContent.cmsSection || 'hero_buy'
   const discoverySection = getDiscoveryCmsSection(mode)
+  const countLabel =
+    filtered.length === 1
+      ? get('properties', 'results', 'count_one', 'matching property')
+      : get('properties', 'results', 'count_suffix', 'matching properties').replace(
+          /^matching\s+properties$/i,
+          'matching properties',
+        )
 
   return (
     <>
@@ -321,89 +440,117 @@ function Properties() {
         <title>{heroContent.pageTitle}</title>
       </Helmet>
 
-      <section
-        className={`page-hero properties-hero ${heroContent.modeClass}`.trim()}
-        data-cms-page="properties"
-        data-cms-section={heroSection}
-      >
-        <div className="container">
-          <CmsText
-            page="properties"
-            section={heroSection}
-            field="eyebrow"
-            as="p"
-            className="properties-hero__eyebrow"
-          >
-            {heroContent.eyebrow}
-          </CmsText>
-          <CmsStaggeredHeading
-            page="properties"
-            section={heroSection}
-            field="heading"
-            as="h1"
-            text={heroContent.title}
-          />
-          <CmsText
-            page="properties"
-            section={heroSection}
-            field="description"
-            as="p"
-            className="properties-hero__description"
-          >
-            {heroContent.description}
-          </CmsText>
-          <a href="#properties-discovery" className="btn btn-gold properties-hero__jump">
-            <CmsText page="properties" section={heroSection} field="jump_cta" as="span">
-              {heroContent.jumpCta}
+      <div className="up-buy" style={{ '--up-top': `${topOffset}px` }}>
+        <section
+          className="up-buy__hero"
+          data-cms-page="properties"
+          data-cms-section={heroSection}
+        >
+          <div className="up-buy__shell up-buy__hero-inner">
+            <CmsText
+              page="properties"
+              section={heroSection}
+              field="eyebrow"
+              as="span"
+              className="lbl"
+            >
+              {heroContent.eyebrow}
             </CmsText>
-          </a>
-        </div>
-      </section>
 
-      <section
-        className="section section--light"
-        id="properties-discovery"
-        data-cms-page="properties"
-        data-cms-section={discoverySection}
-      >
-        <div className="container">
-          <header className="properties-discovery__header properties-discovery__header--limassol">
+            {heroContent.animated && !reduceMotion && heroContent.headingWords ? (
+              <h1 className="intro-title" aria-label={heroContent.title}>
+                {heroContent.headingWords.map((word, i) => {
+                  const isLast = i === heroContent.headingWords.length - 1
+                  const breakAfter =
+                    typeof heroContent.breakAfter === 'number' && i === heroContent.breakAfter
+                  return (
+                    <Fragment key={`${word}-${i}`}>
+                      <span className="bw" style={{ animationDelay: `${0.05 + i * 0.1}s` }}>
+                        {word}
+                        {isLast ? '' : ' '}
+                      </span>
+                      {breakAfter ? <br /> : null}
+                    </Fragment>
+                  )
+                })}
+              </h1>
+            ) : (
+              <CmsText
+                page="properties"
+                section={heroSection}
+                field="title"
+                as="h1"
+                className="intro-title"
+              >
+                {heroContent.title}
+              </CmsText>
+            )}
+
+            <CmsText
+              page="properties"
+              section={heroSection}
+              field="description"
+              as="p"
+              className={`lead${reduceMotion || !heroContent.animated ? '' : ' fc'}`}
+            >
+              {heroContent.description}
+            </CmsText>
+          </div>
+        </section>
+
+        <section
+          className="lv"
+          id="properties-discovery"
+          data-cms-page="properties"
+          data-cms-section={discoverySection}
+        >
+          <div className="lv__inner">
             <CmsText
               page="properties"
               section={discoverySection}
               field="eyebrow"
-              as="p"
-              className="properties-discovery__eyebrow"
+              as="span"
+              className="lvl"
             >
               {discoveryIntro.eyebrow}
             </CmsText>
-            <CmsStaggeredHeading
+            <CmsText
               page="properties"
               section={discoverySection}
               field="title"
               as="h2"
-              text={discoveryIntro.title}
-            />
+              className="lvh"
+            >
+              {discoveryIntro.title}
+            </CmsText>
             <CmsText
               page="properties"
               section={discoverySection}
               field="description"
               as="p"
-              className="properties-discovery__description"
+              className="lvp"
             >
               {discoveryIntro.description}
             </CmsText>
-          </header>
-
-          <div className="properties-results-zone">
-            <p className="properties__result-count">
-              {filtered.length}{' '}
-              {get('properties', 'results', 'count_suffix', 'matching properties')}
+            {discoveryIntro.note ? (
+              <CmsText
+                page="properties"
+                section={discoverySection}
+                field="off_market"
+                as="p"
+                className="lvp lvp--note"
+              >
+                {discoveryIntro.note}
+              </CmsText>
+            ) : null}
+            <div className="lv-rule" aria-hidden />
+            <p className="lvc">
+              {filtered.length} {countLabel}
             </p>
 
             {visibleProperties.length ? (
               <>
-                <div className="grid-3">
+                <div className="grid">
                   {visibleProperties.map((property) => (
                     <PropertyCard
                       key={property.id}
@@ -415,15 +562,23 @@ function Properties() {
                 </div>
                 {visibleCount < filtered.length && (
                   <div className="properties__loadmore">
-                    <button className="btn btn-outline-dark" onClick={() => setVisibleCount((count) => count + 3)}>
+                    <button
+                      type="button"
+                      className="btn btn-outline-dark"
+                      onClick={() =>
+                        setLoadState({ key: locationKey, count: visibleCount + 3 })
+                      }
+                    >
                       {get('properties', 'results', 'load_more', 'Load More')}
                     </button>
                   </div>
                 )}
               </>
             ) : (
-              <div className="properties__empty card-luxury">
-                <h3>{get('properties', 'results', 'empty_heading', 'No properties match your filters')}</h3>
+              <div className="properties__empty">
+                <h3>
+                  {get('properties', 'results', 'empty_heading', 'No properties match your filters')}
+                </h3>
                 <p>
                   {get(
                     'properties',
@@ -435,8 +590,8 @@ function Properties() {
               </div>
             )}
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </>
   )
 }

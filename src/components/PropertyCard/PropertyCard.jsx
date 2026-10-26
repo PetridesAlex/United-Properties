@@ -4,6 +4,9 @@ import { motion, useReducedMotion } from 'framer-motion'
 import OptimizedImage from '../OptimizedImage/OptimizedImage'
 import './PropertyCard.css'
 
+const MotionArticle = motion.article
+const MotionSpan = motion.span
+
 function formatPrice(value, status) {
   const formatter = new Intl.NumberFormat('en-US')
   return status === 'For Rent'
@@ -52,7 +55,7 @@ function PropertyCard({
   const coverLinkLabel = `View listing: ${property.title}`
 
   return (
-    <motion.article
+    <MotionArticle
       className={`property-card ${isSignature ? 'property-card--signature' : 'card-luxury'} ${
         isCover ? 'property-card--cover' : ''
       }`.trim()}
@@ -76,10 +79,10 @@ function PropertyCard({
             />
             <span className={`property-card__status-pill property-card__status-pill--${badgeVariant}`}>
               {property.status === 'For Rent'
-                ? 'FOR RENT'
+                ? 'For Rent'
                 : property.status === 'For Sale'
-                  ? 'FOR SALE'
-                  : property.status.toUpperCase()}
+                  ? 'For Sale'
+                  : property.status}
             </span>
             {showSignaturePill ? (
               <span className="property-card__signature-pill">United Properties · Signature</span>
@@ -98,20 +101,14 @@ function PropertyCard({
             ) : null}
             <ul
               className="property-card__specs"
-              aria-label={`${property.bedrooms} ${bedsLabel.toLowerCase()}, ${property.bathrooms} ${bathsLabel.toLowerCase()}${
+              aria-label={`${property.bedrooms} ${bedsLabel.toLowerCase()}${
                 sqmLabel != null ? `, ${sqmLabel} square metres` : ''
-              }`}
+              }, ${property.bathrooms} ${bathsLabel.toLowerCase()}`}
             >
               <li>
                 <BedDouble size={14} strokeWidth={1.85} aria-hidden />
                 <span>
                   {property.bedrooms} {bedsLabel}
-                </span>
-              </li>
-              <li>
-                <Bath size={14} strokeWidth={1.85} aria-hidden />
-                <span>
-                  {property.bathrooms} {bathsLabel}
                 </span>
               </li>
               {areaLabel ? (
@@ -120,6 +117,12 @@ function PropertyCard({
                   <span>{areaLabel}</span>
                 </li>
               ) : null}
+              <li>
+                <Bath size={14} strokeWidth={1.85} aria-hidden />
+                <span>
+                  {property.bathrooms} {bathsLabel}
+                </span>
+              </li>
             </ul>
           </div>
         </Link>
@@ -132,7 +135,7 @@ function PropertyCard({
               preset="card"
               sizes="(max-width: 640px) 96vw, (max-width: 1100px) 46vw, 380px"
             />
-            <motion.span
+            <MotionSpan
               className={`property-card__badge property-card__badge--${badgeVariant}`}
               data-listing={badgeVariant}
               initial={reduceMotion ? false : { opacity: 0, y: -8 }}
@@ -147,7 +150,7 @@ function PropertyCard({
                   <span className="property-card__badge-type">{property.type}</span>
                 </>
               ) : null}
-            </motion.span>
+            </MotionSpan>
             {isSignature && <span className="property-card__signature">United Properties. Signature</span>}
           </div>
           <div className="property-card__content">
@@ -176,7 +179,7 @@ function PropertyCard({
           </div>
         </>
       )}
-    </motion.article>
+    </MotionArticle>
   )
 }
 
