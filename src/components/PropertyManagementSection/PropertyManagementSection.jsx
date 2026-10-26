@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import CmsText from '../CmsPreview/CmsText'
 import CmsStaggeredHeading from '../StaggeredText/CmsStaggeredHeading'
@@ -32,6 +33,24 @@ const FEATURE_DEFAULTS = [
   {
     key: 'rent',
     label: 'Rent collection',
+    placement: false,
+    full: true,
+  },
+  {
+    key: 'maintenance',
+    label: 'Maintenance and repairs',
+    placement: false,
+    full: true,
+  },
+  {
+    key: 'checks',
+    label: 'Property checks and performance reports',
+    placement: false,
+    full: true,
+  },
+  {
+    key: 'utilities',
+    label: 'Utilities and bills',
     placement: false,
     full: true,
   },
@@ -390,6 +409,66 @@ function PropertyManagementSection() {
               </ul>
             </article>
           ))}
+        </motion.div>
+
+        <motion.div
+          className="property-mgmt__cta"
+          initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <span className="property-mgmt__cta-rule" aria-hidden />
+          <motion.div
+            className="property-mgmt__cta-action"
+            whileHover={reduceMotion ? undefined : { y: -3, scale: 1.02 }}
+            whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 22 }}
+          >
+            <Link to="/contact" className="property-mgmt__cta-btn">
+              <span className="property-mgmt__cta-btn-glow" aria-hidden />
+              <span className="property-mgmt__cta-btn-sheen" aria-hidden />
+              <CmsText
+                page="services"
+                section="property_mgmt"
+                field="cta_label"
+                as="span"
+                className="property-mgmt__cta-btn-label"
+              >
+                {get('services', 'property_mgmt', 'cta_label', 'Talk to us')}
+              </CmsText>
+            </Link>
+          </motion.div>
+          <div className="property-mgmt__cta-copy">
+            <CmsText
+              page="services"
+              section="property_mgmt"
+              field="cta_heading"
+              as="p"
+              className="property-mgmt__cta-heading"
+            >
+              {get(
+                'services',
+                'property_mgmt',
+                'cta_heading',
+                'Not sure which plan fits?',
+              )}
+            </CmsText>
+            <CmsText
+              page="services"
+              section="property_mgmt"
+              field="cta_body"
+              as="p"
+              className="property-mgmt__cta-body"
+            >
+              {get(
+                'services',
+                'property_mgmt',
+                'cta_body',
+                "Tell us about your property, and we'll recommend the right one.",
+              )}
+            </CmsText>
+          </div>
         </motion.div>
       </div>
     </section>

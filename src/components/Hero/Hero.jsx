@@ -11,12 +11,21 @@ import './Hero.css'
 const HERO_VIDEO_SRC = '/video/hero-video-optimize-united-properties.mp4'
 const HERO_VIDEO_POSTER = '/images/video/hero-luxury-real-estate-cyprus-poster.jpg'
 
+const DEFAULT_HERO_LEDE = 'Cyprus leads. Limassol grows. Be part of it.'
+
 /** Keep the brand line as two balanced rows when CMS uses the tagline. */
 function balanceHeroHeading(raw) {
   const text = String(raw || '').trim()
   if (/^confidence\s+in\s+every\s+move\.?$/i.test(text)) {
     return 'Confidence in|every move'
   }
+  return text
+}
+
+/** Prefer the new premium lede when CMS still holds the retired boutique line. */
+function resolveHeroLede(raw) {
+  const text = String(raw || '').trim()
+  if (!text || /^boutique by design/i.test(text)) return DEFAULT_HERO_LEDE
   return text
 }
 
@@ -134,9 +143,9 @@ function Hero() {
             text={balanceHeroHeading(get('home', 'hero', 'heading', 'Confidence in every move'))}
           />
         ) : null}
-        {get('home', 'hero', 'description') ? (
+        {resolveHeroLede(get('home', 'hero', 'description', DEFAULT_HERO_LEDE)) ? (
           <CmsText page="home" section="hero" field="description" as="p" className="hero-section__lede">
-            {get('home', 'hero', 'description')}
+            {resolveHeroLede(get('home', 'hero', 'description', DEFAULT_HERO_LEDE))}
           </CmsText>
         ) : null}
       </div>

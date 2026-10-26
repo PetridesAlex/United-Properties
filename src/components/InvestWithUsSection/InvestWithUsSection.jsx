@@ -1,5 +1,6 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import CmsText from '../CmsPreview/CmsText'
+import CmsStaggeredHeading from '../StaggeredText/CmsStaggeredHeading'
 import { useSiteContent } from '../../hooks/useSiteContent'
 import './InvestWithUsSection.css'
 
@@ -26,7 +27,7 @@ const OFFERING_DEFAULTS = [
     key: 'homes',
     title: 'Homes that hold their value',
     body:
-      'Houses selected for long-term value, in places people will want to live for years to come.',
+      'Houses selected for long-term value, in places people will want to live for years to come. A home to enjoy today. An asset for tomorrow.',
   },
 ]
 
@@ -67,10 +68,59 @@ function InvestWithUsSection() {
     >
       <div className="invest-with-us__ambient" aria-hidden />
       <div className="container">
+        <motion.header
+          className="invest-with-us__header"
+          initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <CmsText
+            page="services"
+            section="invest_offer"
+            field="eyebrow"
+            as="p"
+            className="invest-with-us__eyebrow"
+          >
+            {get('services', 'invest_offer', 'eyebrow', 'United Services')}
+          </CmsText>
+          <CmsStaggeredHeading
+            page="services"
+            section="invest_offer"
+            field="heading"
+            as="h2"
+            id="invest-with-us-heading"
+            className="invest-with-us__heading"
+            text={get('services', 'invest_offer', 'heading', 'Invest with us')}
+          />
+          <div className="invest-with-us__intro">
+            <CmsText
+              page="services"
+              section="invest_offer"
+              field="lead"
+              as="p"
+              className="invest-with-us__lead"
+            >
+              {get('services', 'invest_offer', 'lead', 'We choose potential over volume.')}
+            </CmsText>
+            <CmsText
+              page="services"
+              section="invest_offer"
+              field="support"
+              as="p"
+              className="invest-with-us__support"
+            >
+              {get(
+                'services',
+                'invest_offer',
+                'support',
+                "Every investor has a different goal. Here's how we help you reach yours.",
+              )}
+            </CmsText>
+          </div>
+        </motion.header>
+
         <div className="invest-with-us__offerings">
-          <h2 id="invest-with-us-heading" className="visually-hidden">
-            {get('services', 'invest_offer', 'heading', 'Invest with us')}
-          </h2>
           <motion.ul
             className="invest-with-us__grid"
             variants={reduceMotion ? undefined : gridReveal}
@@ -122,29 +172,6 @@ function InvestWithUsSection() {
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         >
           <span className="invest-with-us__close-rule" aria-hidden />
-          <CmsText
-            page="services"
-            section="invest_offer"
-            field="close_eyebrow"
-            as="p"
-            className="invest-with-us__close-eyebrow"
-          >
-            {get('services', 'invest_offer', 'close_eyebrow', 'Our view')}
-          </CmsText>
-          <CmsText
-            page="services"
-            section="invest_offer"
-            field="close_heading"
-            as="p"
-            className="invest-with-us__close-heading"
-          >
-            {get(
-              'services',
-              'invest_offer',
-              'close_heading',
-              'A home to enjoy today. An asset for tomorrow.',
-            )}
-          </CmsText>
           <CmsText
             page="services"
             section="invest_offer"
