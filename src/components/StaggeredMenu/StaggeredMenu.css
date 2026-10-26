@@ -159,20 +159,29 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     -32px 0 72px rgba(0, 4, 18, 0.5),
     -12px 0 40px rgba(0, 0, 0, 0.32);
-  padding:
-    max(0.75rem, env(safe-area-inset-top, 0px))
-    clamp(1.85rem, 4.5vw, 2.85rem)
-    max(clamp(2.25rem, 5vw, 3rem), env(safe-area-inset-bottom, 0px));
+  padding: 0;
   z-index: 159;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  overflow: hidden;
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
   will-change: transform;
   transition: opacity 180ms ease;
+}
+
+/* Scroll lives here (not on the GSAP-transformed panel) so mobile scroll stays smooth */
+.smenu-panel-scroll {
+  box-sizing: border-box;
+  height: 100%;
+  max-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding:
+    max(0.75rem, env(safe-area-inset-top, 0px))
+    clamp(1.85rem, 4.5vw, 2.85rem)
+    max(clamp(1.75rem, 4vw, 2.5rem), env(safe-area-inset-bottom, 0px));
 }
 
 /* Soft edge light instead of a hard left border */
@@ -228,6 +237,7 @@
 }
 
 .smenu-panel-inner {
+  box-sizing: border-box;
   min-height: 100%;
   display: flex;
   flex-direction: column;
@@ -285,7 +295,7 @@
   padding: 0;
 }
 
-/* Nav links: vertically centered in the space between exit + footer socials */
+/* Nav links fill remaining space; socials stay pinned/scrollable at the end */
 .smenu-panel-nav {
   flex: 1 1 auto;
   display: flex;
@@ -516,10 +526,13 @@ button.smenu-panel-item {
 }
 
 .smenu-socials {
+  flex: 0 0 auto;
   margin-top: auto;
-  padding-top: clamp(1.75rem, 4vw, 2.75rem);
+  padding-top: clamp(1.25rem, 3.5vw, 2.25rem);
+  padding-bottom: max(0.35rem, env(safe-area-inset-bottom, 0px));
   border: 0;
   position: relative;
+  z-index: 3;
 }
 
 .smenu-socials::before {
@@ -638,7 +651,8 @@ button.smenu-panel-item {
   }
 }
 
-@media (max-width: 768px) {
+/* Phones + compact tablets: full-bleed drawer, scrollable body, socials always reachable */
+@media (max-width: 900px) {
   .smenu-prelayers,
   .staggered-menu-panel {
     width: min(100vw, 100%);
@@ -648,12 +662,15 @@ button.smenu-panel-item {
   .staggered-menu-panel {
     left: 0;
     right: 0;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .smenu-panel-scroll {
     padding:
       max(0.65rem, env(safe-area-inset-top, 0px))
       max(1.15rem, env(safe-area-inset-right, 0px))
-      max(1.35rem, env(safe-area-inset-bottom, 0px))
+      max(1.15rem, env(safe-area-inset-bottom, 0px))
       max(1.15rem, env(safe-area-inset-left, 0px));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
 
   [data-position='left'] .staggered-menu-panel,
@@ -674,15 +691,22 @@ button.smenu-panel-item {
     right: 0;
   }
 
+  .smenu-panel-inner {
+    min-height: 100%;
+    padding-bottom: 0;
+  }
+
   .smenu-panel-header {
+    flex: 0 0 auto;
     margin-bottom: 0.55rem;
+    padding-top: 0.15rem;
     padding-bottom: 0.85rem;
     gap: 0.65rem;
   }
 
   .smenu-panel-logo img {
-    height: clamp(48px, 12vw, 64px);
-    max-width: min(240px, 62vw);
+    height: clamp(44px, 11vw, 58px);
+    max-width: min(220px, 58vw);
   }
 
   .smenu-exit-btn {
@@ -693,14 +717,15 @@ button.smenu-panel-item {
   }
 
   .smenu-panel-nav {
-    justify-content: center;
+    flex: 1 0 auto;
+    justify-content: flex-start;
     align-items: stretch;
-    padding-block: 0.45rem 0.85rem;
+    padding-block: 0.35rem 1.15rem;
   }
 
   .smenu-panel-list {
     align-items: stretch;
-    gap: clamp(0.85rem, 3.2vw, 1.25rem);
+    gap: clamp(0.7rem, 2.8vw, 1.1rem);
     width: 100%;
   }
 
@@ -718,9 +743,9 @@ button.smenu-panel-item {
   .smenu-panel-item:not(.smenu-panel-item--sub) {
     max-width: 100%;
     text-align: center;
-    font-size: clamp(1.05rem, 5.2vw, 1.28rem);
+    font-size: clamp(1.02rem, 4.8vw, 1.22rem);
     letter-spacing: 0.08em;
-    padding: 0.55rem 0.25rem;
+    padding: 0.5rem 0.25rem;
     min-height: 44px;
     display: inline-flex;
     align-items: center;
@@ -757,23 +782,24 @@ button.smenu-panel-item {
   }
 
   .smenu-socials {
-    padding-top: 1.35rem;
     width: 100%;
+    margin-top: auto;
+    padding: 1.1rem 0 max(1rem, env(safe-area-inset-bottom, 0px));
   }
 
   .smenu-socials-title {
     text-align: center;
-    margin-bottom: 0.85rem;
+    margin-bottom: 0.75rem;
   }
 
   .smenu-socials-list {
     justify-content: center;
-    gap: 0.55rem;
+    gap: 0.5rem;
   }
 
   .smenu-socials-link {
-    min-height: 42px;
-    padding: 0.55rem 0.8rem;
+    min-height: 44px;
+    padding: 0.55rem 0.85rem;
     font-size: 0.84rem;
   }
 }
@@ -800,11 +826,11 @@ button.smenu-panel-item {
     height: 22px;
   }
 
-  .staggered-menu-panel {
+  .smenu-panel-scroll {
     padding:
       max(0.5rem, env(safe-area-inset-top, 0px))
       max(1rem, env(safe-area-inset-right, 0px))
-      max(1.15rem, env(safe-area-inset-bottom, 0px))
+      max(1rem, env(safe-area-inset-bottom, 0px))
       max(1rem, env(safe-area-inset-left, 0px));
   }
 

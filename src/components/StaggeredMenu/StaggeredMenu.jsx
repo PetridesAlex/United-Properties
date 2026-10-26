@@ -235,6 +235,8 @@ function StaggeredMenu({
     openRef.current = target
     setOpen(target)
     if (target) {
+      const scrollEl = panelRef.current?.querySelector('.smenu-panel-scroll')
+      if (scrollEl) scrollEl.scrollTop = 0
       onMenuOpen?.()
       playOpen()
     } else {
@@ -314,140 +316,142 @@ function StaggeredMenu({
         aria-hidden={!open}
         aria-label="Site navigation"
       >
-        <div className="smenu-panel-inner">
-          <div className="smenu-panel-header">
-            <Link to="/" className="smenu-panel-logo" onClick={closeMenu} aria-label="United Properties — Home">
-              <img src="/images/logo/United_Properties_v2.1.svg" alt="" role="presentation" />
-            </Link>
-            <div className="smenu-panel-exit">
-              <button type="button" className="smenu-exit-btn" onClick={closeMenu} aria-label="Close navigation">
-                <X size={18} strokeWidth={2.25} aria-hidden="true" />
-              </button>
+        <div className="smenu-panel-scroll">
+          <div className="smenu-panel-inner">
+            <div className="smenu-panel-header">
+              <Link to="/" className="smenu-panel-logo" onClick={closeMenu} aria-label="United Properties — Home">
+                <img src="/images/logo/United_Properties_v2.1.svg" alt="" role="presentation" />
+              </Link>
+              <div className="smenu-panel-exit">
+                <button type="button" className="smenu-exit-btn" onClick={closeMenu} aria-label="Close navigation">
+                  <X size={18} strokeWidth={2.25} aria-hidden="true" />
+                </button>
+              </div>
             </div>
-          </div>
-          <span className="sr-only">Press Escape to close this menu.</span>
-          <nav className="smenu-panel-nav" aria-label="Pages">
-            <ul className="smenu-panel-list" role="list" data-numbering={displayItemNumbering || undefined}>
-              {items.map((item, idx) => {
-                const subItems = Array.isArray(item.subItems) ? item.subItems : null
-                const keyBase = `${item.label}-${idx}`
+            <span className="sr-only">Press Escape to close this menu.</span>
+            <nav className="smenu-panel-nav" aria-label="Pages">
+              <ul className="smenu-panel-list" role="list" data-numbering={displayItemNumbering || undefined}>
+                {items.map((item, idx) => {
+                  const subItems = Array.isArray(item.subItems) ? item.subItems : null
+                  const keyBase = `${item.label}-${idx}`
 
-                if (subItems?.length) {
-                  const expanded = accordionOpenIndices.has(idx)
-                  return (
-                    <li className="smenu-panel-itemWrap smenu-panel-itemWrap--group" key={keyBase}>
-                      <div className="smenu-panel-group">
-                        <button
-                          type="button"
-                          className="smenu-panel-item smenu-panel-item--group-parent smenu-panel-item--accordion-trigger"
-                          aria-expanded={expanded}
-                          aria-controls={`smenu-acc-panel-${idx}`}
-                          id={`smenu-acc-trigger-${idx}`}
-                          data-index={idx + 1}
-                          onClick={() => {
-                            setAccordionOpenIndices((prev) => {
-                              const next = new Set(prev)
-                              if (next.has(idx)) next.delete(idx)
-                              else next.add(idx)
-                              return next
-                            })
-                          }}
-                        >
-                          <span className="smenu-panel-itemLabel">{item.label}</span>
-                          <ChevronDown className="smenu-panel-accordion-icon" size={22} strokeWidth={2} aria-hidden />
-                        </button>
-                        <div
-                          id={`smenu-acc-panel-${idx}`}
-                          role="region"
-                          aria-labelledby={`smenu-acc-trigger-${idx}`}
-                          className={`smenu-panel-accordion-panel${expanded ? ' smenu-panel-accordion-panel--open' : ''}`}
-                          inert={!expanded}
-                        >
-                          <div className="smenu-panel-accordion-inner">
-                            <ul className="smenu-panel-sublist" role="list">
-                              {subItems.map((sub, j) => (
-                                <li className="smenu-panel-sublist-item" key={`${sub.link}-${j}`}>
-                                  {isExternal(sub.link) ? (
-                                    <a
-                                      className="smenu-panel-item smenu-panel-item--sub"
-                                      href={sub.link}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                    >
-                                      <span className="smenu-panel-itemLabel">{sub.label}</span>
-                                    </a>
-                                  ) : (
-                                    <Link className="smenu-panel-item smenu-panel-item--sub" to={sub.link} onClick={closeMenu}>
-                                      <span className="smenu-panel-itemLabel">{sub.label}</span>
-                                    </Link>
-                                  )}
-                                </li>
-                              ))}
-                            </ul>
-                            {item.link ? (
-                              isExternal(item.link) ? (
-                                <a
-                                  className="smenu-panel-item smenu-panel-item--sub smenu-panel-item--overview"
-                                  href={item.link}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                >
-                                  <span className="smenu-panel-itemLabel">All services</span>
-                                </a>
-                              ) : (
-                                <Link
-                                  className="smenu-panel-item smenu-panel-item--sub smenu-panel-item--overview"
-                                  to={item.link}
-                                  onClick={closeMenu}
-                                >
-                                  <span className="smenu-panel-itemLabel">All services</span>
-                                </Link>
-                              )
-                            ) : null}
+                  if (subItems?.length) {
+                    const expanded = accordionOpenIndices.has(idx)
+                    return (
+                      <li className="smenu-panel-itemWrap smenu-panel-itemWrap--group" key={keyBase}>
+                        <div className="smenu-panel-group">
+                          <button
+                            type="button"
+                            className="smenu-panel-item smenu-panel-item--group-parent smenu-panel-item--accordion-trigger"
+                            aria-expanded={expanded}
+                            aria-controls={`smenu-acc-panel-${idx}`}
+                            id={`smenu-acc-trigger-${idx}`}
+                            data-index={idx + 1}
+                            onClick={() => {
+                              setAccordionOpenIndices((prev) => {
+                                const next = new Set(prev)
+                                if (next.has(idx)) next.delete(idx)
+                                else next.add(idx)
+                                return next
+                              })
+                            }}
+                          >
+                            <span className="smenu-panel-itemLabel">{item.label}</span>
+                            <ChevronDown className="smenu-panel-accordion-icon" size={22} strokeWidth={2} aria-hidden />
+                          </button>
+                          <div
+                            id={`smenu-acc-panel-${idx}`}
+                            role="region"
+                            aria-labelledby={`smenu-acc-trigger-${idx}`}
+                            className={`smenu-panel-accordion-panel${expanded ? ' smenu-panel-accordion-panel--open' : ''}`}
+                            inert={!expanded}
+                          >
+                            <div className="smenu-panel-accordion-inner">
+                              <ul className="smenu-panel-sublist" role="list">
+                                {subItems.map((sub, j) => (
+                                  <li className="smenu-panel-sublist-item" key={`${sub.link}-${j}`}>
+                                    {isExternal(sub.link) ? (
+                                      <a
+                                        className="smenu-panel-item smenu-panel-item--sub"
+                                        href={sub.link}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                      >
+                                        <span className="smenu-panel-itemLabel">{sub.label}</span>
+                                      </a>
+                                    ) : (
+                                      <Link className="smenu-panel-item smenu-panel-item--sub" to={sub.link} onClick={closeMenu}>
+                                        <span className="smenu-panel-itemLabel">{sub.label}</span>
+                                      </Link>
+                                    )}
+                                  </li>
+                                ))}
+                              </ul>
+                              {item.link ? (
+                                isExternal(item.link) ? (
+                                  <a
+                                    className="smenu-panel-item smenu-panel-item--sub smenu-panel-item--overview"
+                                    href={item.link}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    <span className="smenu-panel-itemLabel">All services</span>
+                                  </a>
+                                ) : (
+                                  <Link
+                                    className="smenu-panel-item smenu-panel-item--sub smenu-panel-item--overview"
+                                    to={item.link}
+                                    onClick={closeMenu}
+                                  >
+                                    <span className="smenu-panel-itemLabel">All services</span>
+                                  </Link>
+                                )
+                              ) : null}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </li>
-                  )
-                }
+                      </li>
+                    )
+                  }
 
-                return (
-                  <li className="smenu-panel-itemWrap" key={keyBase}>
-                    {isExternal(item.link) ? (
-                      <a className="smenu-panel-item" href={item.link} target="_blank" rel="noreferrer" data-index={idx + 1}>
-                        <span className="smenu-panel-itemLabel">{item.label}</span>
-                      </a>
-                    ) : (
-                      <Link className="smenu-panel-item" to={item.link} data-index={idx + 1} onClick={closeMenu}>
-                        <span className="smenu-panel-itemLabel">{item.label}</span>
-                      </Link>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
-          </nav>
-
-          {displaySocials && socialItems?.length > 0 && (
-            <div className="smenu-socials" aria-label="Social links">
-              <h3 className="smenu-socials-title">Socials</h3>
-              <ul className="smenu-socials-list" role="list">
-                {socialItems.map((s, i) => {
-                  const Icon = getSocialIcon(s.label)
                   return (
-                    <li key={`${s.label}-${i}`} className="smenu-socials-item">
-                      <a href={s.link} target="_blank" rel="noreferrer" className="smenu-socials-link">
-                        <span className="smenu-socials-icon" aria-hidden="true">
-                          <Icon size={16} />
-                        </span>
-                        <span>{s.label}</span>
-                      </a>
+                    <li className="smenu-panel-itemWrap" key={keyBase}>
+                      {isExternal(item.link) ? (
+                        <a className="smenu-panel-item" href={item.link} target="_blank" rel="noreferrer" data-index={idx + 1}>
+                          <span className="smenu-panel-itemLabel">{item.label}</span>
+                        </a>
+                      ) : (
+                        <Link className="smenu-panel-item" to={item.link} data-index={idx + 1} onClick={closeMenu}>
+                          <span className="smenu-panel-itemLabel">{item.label}</span>
+                        </Link>
+                      )}
                     </li>
                   )
                 })}
               </ul>
-            </div>
-          )}
+            </nav>
+
+            {displaySocials && socialItems?.length > 0 && (
+              <div className="smenu-socials" aria-label="Social links">
+                <h3 className="smenu-socials-title">Socials</h3>
+                <ul className="smenu-socials-list" role="list">
+                  {socialItems.map((s, i) => {
+                    const Icon = getSocialIcon(s.label)
+                    return (
+                      <li key={`${s.label}-${i}`} className="smenu-socials-item">
+                        <a href={s.link} target="_blank" rel="noreferrer" className="smenu-socials-link">
+                          <span className="smenu-socials-icon" aria-hidden="true">
+                            <Icon size={16} />
+                          </span>
+                          <span>{s.label}</span>
+                        </a>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       </aside>
 
