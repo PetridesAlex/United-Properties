@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion } from 'motion/react'
+import { Check, X } from 'lucide-react'
 import CmsText from '../CmsPreview/CmsText'
 import CmsStaggeredHeading from '../StaggeredText/CmsStaggeredHeading'
 import { useSiteContent } from '../../hooks/useSiteContent'
@@ -11,12 +12,14 @@ const FEATURE_DEFAULTS = [
     label: 'Tenant screening and placement',
     placement: true,
     full: true,
+    bold: true,
   },
   {
     key: 'marketing',
     label: 'Marketing through our channels and network',
     placement: true,
     full: true,
+    bold: true,
   },
   {
     key: 'agreement',
@@ -35,6 +38,7 @@ const FEATURE_DEFAULTS = [
     label: 'Rent collection',
     placement: false,
     full: true,
+    bold: true,
   },
   {
     key: 'maintenance',
@@ -47,6 +51,7 @@ const FEATURE_DEFAULTS = [
     label: 'Property checks and performance reports',
     placement: false,
     full: true,
+    bold: true,
   },
   {
     key: 'utilities',
@@ -56,77 +61,19 @@ const FEATURE_DEFAULTS = [
   },
 ]
 
-const tableReveal = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.08, delayChildren: 0.12 },
-  },
-}
-
-const rowReveal = {
-  hidden: { opacity: 0, y: 14 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
-  },
-}
-
-function CellMark({ included, label, delay = 0, reduceMotion }) {
+function PlanMark({ included, label }) {
   if (included) {
     return (
-      <motion.span
-        className="property-mgmt__mark property-mgmt__mark--yes"
-        aria-label={`${label}: included`}
-        initial={reduceMotion ? false : { opacity: 0, scale: 0.55 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true, amount: 0.6 }}
-        transition={{
-          type: 'spring',
-          stiffness: 420,
-          damping: 18,
-          delay: reduceMotion ? 0 : delay,
-        }}
-      >
-        <span className="property-mgmt__mark-ring" aria-hidden />
-        <svg
-          className="property-mgmt__check"
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          aria-hidden
-        >
-          <motion.path
-            d="M20 6 9 17l-5-5"
-            stroke="currentColor"
-            strokeWidth="2.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            initial={reduceMotion ? false : { pathLength: 0, opacity: 0 }}
-            whileInView={{ pathLength: 1, opacity: 1 }}
-            viewport={{ once: true, amount: 0.6 }}
-            transition={{
-              pathLength: { duration: 0.42, delay: reduceMotion ? 0 : delay + 0.08, ease: 'easeOut' },
-              opacity: { duration: 0.2, delay: reduceMotion ? 0 : delay + 0.08 },
-            }}
-          />
-        </svg>
-      </motion.span>
+      <span className="property-mgmt__mark property-mgmt__mark--yes" aria-label={`${label}: included`}>
+        <Check className="property-mgmt__icon" strokeWidth={3} aria-hidden />
+      </span>
     )
   }
 
   return (
-    <motion.span
-      className="property-mgmt__mark property-mgmt__mark--no"
-      aria-label={`${label}: not included`}
-      initial={reduceMotion ? false : { opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true, amount: 0.6 }}
-      transition={{ duration: 0.35, delay: reduceMotion ? 0 : delay }}
-    >
-      —
-    </motion.span>
+    <span className="property-mgmt__mark property-mgmt__mark--no" aria-label={`${label}: not included`}>
+      <X className="property-mgmt__icon" strokeWidth={3} aria-hidden />
+    </span>
   )
 }
 
@@ -140,32 +87,17 @@ function PropertyManagementSection() {
   }))
 
   const bestLabel = get('services', 'property_mgmt', 'best_label', 'Best for')
-  const plans = [
-    {
-      key: 'placement',
-      badge: '01',
-      featured: false,
-      title: get('services', 'property_mgmt', 'placement_title', 'Rental placement'),
-      titleField: 'placement_title',
-      tagline: get('services', 'property_mgmt', 'placement_tagline', 'Your terms. Our network.'),
-      taglineField: 'placement_tagline',
-      best: get('services', 'property_mgmt', 'placement_best', 'Active ownership'),
-      bestField: 'placement_best',
-      includedKey: 'placement',
-    },
-    {
-      key: 'full',
-      badge: '02',
-      featured: true,
-      title: get('services', 'property_mgmt', 'full_title', 'Full property management'),
-      titleField: 'full_title',
-      tagline: get('services', 'property_mgmt', 'full_tagline', 'You own it. We run it.'),
-      taglineField: 'full_tagline',
-      best: get('services', 'property_mgmt', 'full_best', 'Hands-free ownership'),
-      bestField: 'full_best',
-      includedKey: 'full',
-    },
-  ]
+  const placementTitle = get('services', 'property_mgmt', 'placement_title', 'Rental placement')
+  const placementTagline = get(
+    'services',
+    'property_mgmt',
+    'placement_tagline',
+    'Your terms. Our network.',
+  )
+  const placementBest = get('services', 'property_mgmt', 'placement_best', 'Active ownership')
+  const fullTitle = get('services', 'property_mgmt', 'full_title', 'Full property management')
+  const fullTagline = get('services', 'property_mgmt', 'full_tagline', 'You own it. We run it.')
+  const fullBest = get('services', 'property_mgmt', 'full_best', 'Hands-free ownership')
 
   return (
     <section
@@ -175,13 +107,14 @@ function PropertyManagementSection() {
       data-cms-page="services"
       data-cms-section="property_mgmt"
     >
-      <div className="container">
+      <div className="property-mgmt__ambient" aria-hidden />
+      <div className="container property-mgmt__shell">
         <motion.header
           className="property-mgmt__header"
           initial={reduceMotion ? false : { opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.55 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
         >
           <CmsText
             page="services"
@@ -224,190 +157,105 @@ function PropertyManagementSection() {
         </motion.header>
 
         <motion.div
-          className="property-mgmt__table-wrap property-mgmt__table-wrap--desktop"
-          initial={reduceMotion ? false : { opacity: 0, y: 22 }}
+          className="property-mgmt__compare"
+          initial={reduceMotion ? false : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.12 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: reduceMotion ? 0 : 0.12 }}
         >
-          <div className="property-mgmt__table-glow" aria-hidden />
-          <div className="property-mgmt__table-sheen" aria-hidden />
+          <div className="property-mgmt__compare-head" role="row">
+            <span className="property-mgmt__compare-spacer" aria-hidden />
+            <div className="property-mgmt__plan-col">
+              <CmsText
+                page="services"
+                section="property_mgmt"
+                field="placement_title"
+                as="span"
+                className="property-mgmt__plan-name"
+              >
+                {placementTitle}
+              </CmsText>
+              <CmsText
+                page="services"
+                section="property_mgmt"
+                field="placement_tagline"
+                as="span"
+                className="property-mgmt__plan-note"
+              >
+                {placementTagline}
+              </CmsText>
+            </div>
+            <div className="property-mgmt__plan-col property-mgmt__plan-col--featured">
+              <CmsText
+                page="services"
+                section="property_mgmt"
+                field="full_title"
+                as="span"
+                className="property-mgmt__plan-name"
+              >
+                {fullTitle}
+              </CmsText>
+              <CmsText
+                page="services"
+                section="property_mgmt"
+                field="full_tagline"
+                as="span"
+                className="property-mgmt__plan-note"
+              >
+                {fullTagline}
+              </CmsText>
+            </div>
+          </div>
 
-          <motion.table
-            className="property-mgmt__table"
-            variants={reduceMotion ? undefined : tableReveal}
-            initial={reduceMotion ? false : 'hidden'}
-            whileInView="show"
-            viewport={{ once: true, amount: 0.15 }}
+          <motion.div
+            className="property-mgmt__compare-row property-mgmt__compare-row--best"
+            role="row"
+            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.35 }}
           >
-            <caption className="visually-hidden">
-              Comparison of Rental placement and Full property management plans
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col" className="property-mgmt__corner">
-                  <span className="visually-hidden">Feature</span>
-                </th>
-                {plans.map((plan) => (
-                  <th
-                    key={plan.key}
-                    scope="col"
-                    className={`property-mgmt__plan-head${plan.featured ? ' property-mgmt__plan-head--featured' : ''}`}
-                  >
-                    <span
-                      className={`property-mgmt__plan-badge${plan.featured ? ' property-mgmt__plan-badge--gold' : ''}`}
-                    >
-                      {plan.badge}
-                    </span>
-                    <CmsText
-                      page="services"
-                      section="property_mgmt"
-                      field={plan.titleField}
-                      as="span"
-                      className="property-mgmt__plan-title"
-                    >
-                      {plan.title}
-                    </CmsText>
-                    <CmsText
-                      page="services"
-                      section="property_mgmt"
-                      field={plan.taglineField}
-                      as="span"
-                      className="property-mgmt__plan-tagline"
-                    >
-                      {plan.tagline}
-                    </CmsText>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <motion.tr className="property-mgmt__best-row" variants={reduceMotion ? undefined : rowReveal}>
-                <th scope="row">{bestLabel}</th>
-                {plans.map((plan) => (
-                  <td key={plan.key}>
-                    <span
-                      className={`property-mgmt__best-pill${plan.featured ? ' property-mgmt__best-pill--gold' : ''}`}
-                    >
-                      <CmsText page="services" section="property_mgmt" field={plan.bestField} as="span">
-                        {plan.best}
-                      </CmsText>
-                    </span>
-                  </td>
-                ))}
-              </motion.tr>
-              {features.map((feature, index) => (
-                <motion.tr
-                  key={feature.key}
-                  className="property-mgmt__feature-row"
-                  variants={reduceMotion ? undefined : rowReveal}
-                >
-                  <th scope="row">
-                    <CmsText
-                      page="services"
-                      section="property_mgmt"
-                      field={`${feature.key}_label`}
-                      as="span"
-                    >
-                      {feature.label}
-                    </CmsText>
-                  </th>
-                  {plans.map((plan) => (
-                    <td
-                      key={plan.key}
-                      className={plan.featured ? 'property-mgmt__cell--featured' : undefined}
-                    >
-                      <CellMark
-                        included={feature[plan.includedKey]}
-                        label={feature.label}
-                        delay={(plan.featured ? 0.18 : 0.12) + index * 0.07}
-                        reduceMotion={reduceMotion}
-                      />
-                    </td>
-                  ))}
-                </motion.tr>
-              ))}
-            </tbody>
-          </motion.table>
-        </motion.div>
+            <span className="property-mgmt__feature-label property-mgmt__feature-label--muted">
+              {bestLabel}
+            </span>
+            <span className="property-mgmt__best">
+              <CmsText page="services" section="property_mgmt" field="placement_best" as="span">
+                {placementBest}
+              </CmsText>
+            </span>
+            <span className="property-mgmt__best property-mgmt__best--featured">
+              <CmsText page="services" section="property_mgmt" field="full_best" as="span">
+                {fullBest}
+              </CmsText>
+            </span>
+          </motion.div>
 
-        <motion.div
-          className="property-mgmt__mobile"
-          aria-label="Plan comparison"
-          initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.08 }}
-          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {plans.map((plan, planIndex) => (
-            <article
-              key={plan.key}
-              className={`property-mgmt__card${plan.featured ? ' property-mgmt__card--featured' : ''}`}
+          {features.map((feature, index) => (
+            <motion.div
+              key={feature.key}
+              className="property-mgmt__compare-row"
+              role="row"
+              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.35, delay: reduceMotion ? 0 : 0.04 * index }}
             >
-              <header className="property-mgmt__card-head">
-                <span
-                  className={`property-mgmt__plan-badge${plan.featured ? ' property-mgmt__plan-badge--gold' : ''}`}
-                >
-                  {plan.badge}
-                </span>
-                <CmsText
-                  page="services"
-                  section="property_mgmt"
-                  field={plan.titleField}
-                  as="h3"
-                  className="property-mgmt__plan-title"
-                >
-                  {plan.title}
-                </CmsText>
-                <CmsText
-                  page="services"
-                  section="property_mgmt"
-                  field={plan.taglineField}
-                  as="p"
-                  className="property-mgmt__plan-tagline"
-                >
-                  {plan.tagline}
-                </CmsText>
-                <div className="property-mgmt__card-best">
-                  <span className="property-mgmt__card-best-label">{bestLabel}</span>
-                  <span
-                    className={`property-mgmt__best-pill${plan.featured ? ' property-mgmt__best-pill--gold' : ''}`}
-                  >
-                    <CmsText page="services" section="property_mgmt" field={plan.bestField} as="span">
-                      {plan.best}
-                    </CmsText>
-                  </span>
-                </div>
-              </header>
-
-              <ul className="property-mgmt__card-list">
-                {features.map((feature, index) => {
-                  const included = feature[plan.includedKey]
-                  return (
-                    <li
-                      key={feature.key}
-                      className={`property-mgmt__card-item${included ? ' is-included' : ' is-excluded'}`}
-                    >
-                      <CellMark
-                        included={included}
-                        label={feature.label}
-                        delay={0.08 + planIndex * 0.06 + index * 0.04}
-                        reduceMotion={reduceMotion}
-                      />
-                      <CmsText
-                        page="services"
-                        section="property_mgmt"
-                        field={`${feature.key}_label`}
-                        as="span"
-                        className="property-mgmt__card-item-label"
-                      >
-                        {feature.label}
-                      </CmsText>
-                    </li>
-                  )
-                })}
-              </ul>
-            </article>
+              <CmsText
+                page="services"
+                section="property_mgmt"
+                field={`${feature.key}_label`}
+                as="span"
+                className={`property-mgmt__feature-label${feature.bold ? ' property-mgmt__feature-label--bold' : ''}`}
+              >
+                {feature.label}
+              </CmsText>
+              <span className="property-mgmt__mark-cell">
+                <PlanMark included={feature.placement} label={feature.label} />
+              </span>
+              <span className="property-mgmt__mark-cell property-mgmt__mark-cell--featured">
+                <PlanMark included={feature.full} label={feature.label} />
+              </span>
+            </motion.div>
           ))}
         </motion.div>
 
@@ -447,12 +295,7 @@ function PropertyManagementSection() {
               as="p"
               className="property-mgmt__cta-heading"
             >
-              {get(
-                'services',
-                'property_mgmt',
-                'cta_heading',
-                'Not sure which plan fits?',
-              )}
+              {get('services', 'property_mgmt', 'cta_heading', 'Not sure which plan fits?')}
             </CmsText>
             <CmsText
               page="services"

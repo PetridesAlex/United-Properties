@@ -1434,6 +1434,25 @@
 }
 
 @media (max-width: 480px) {
+  .navbar__inner {
+    padding-inline: 0.45rem;
+  }
+
+  .navbar--solid.navbar--scrolled .navbar__inner {
+    width: min(100%, calc(100% - 0.35rem));
+    padding: 0.32rem 0.42rem;
+    min-height: 58px;
+  }
+
+  .navbar__actions {
+    gap: 0.2rem;
+  }
+
+  .navbar__ctas {
+    min-width: 44px;
+    padding: 0.1rem 0.18rem 0.1rem 0.08rem;
+  }
+
   .navbar__search-pill {
     width: 44px;
     height: 44px;
@@ -1444,5 +1463,11 @@
   .navbar__search-pill > svg {
     width: 20px;
     height: 20px;
+  }
+
+  .navbar .navbar__staggered {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
