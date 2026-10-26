@@ -1,11 +1,61 @@
-import { motion } from 'framer-motion'
-import InvestHowItWorksTimeline from '../InvestHowItWorksTimeline/InvestHowItWorksTimeline'
+import { motion, useReducedMotion } from 'framer-motion'
 import CmsText from '../CmsPreview/CmsText'
 import { useSiteContent } from '../../hooks/useSiteContent'
 import './InvestWithUsSection.css'
 
+const OFFERING_DEFAULTS = [
+  {
+    key: 'packages',
+    title: 'Investment packages',
+    body:
+      'Complete opportunities built around your budget and goals, with the property, the numbers, and the next steps laid out clearly.',
+  },
+  {
+    key: 'land',
+    title: 'Land, with the research behind it',
+    body:
+      'Know what a plot can become before you buy it. We research what can be built on the land, so you invest in real potential.',
+  },
+  {
+    key: 'apartments',
+    title: 'Apartments with clear returns',
+    body:
+      'Apartments chosen for rental demand, presented with a transparent ROI estimate, so you know the numbers before you decide.',
+  },
+  {
+    key: 'homes',
+    title: 'Homes that hold their value',
+    body:
+      'Houses selected for long-term value, in places people will want to live for years to come.',
+  },
+]
+
+const gridReveal = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.1, delayChildren: 0.06 },
+  },
+}
+
+const cardReveal = {
+  hidden: { opacity: 0, y: 22, scale: 0.98 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+  },
+}
+
 function InvestWithUsSection() {
   const { get } = useSiteContent()
+  const reduceMotion = useReducedMotion()
+
+  const offerings = OFFERING_DEFAULTS.map((item) => ({
+    key: item.key,
+    title: get('services', 'invest_offer', `${item.key}_title`, item.title),
+    body: get('services', 'invest_offer', `${item.key}_body`, item.body),
+  }))
 
   return (
     <section
@@ -13,95 +63,103 @@ function InvestWithUsSection() {
       className="section section--alt invest-with-us"
       aria-labelledby="invest-with-us-heading"
       data-cms-page="services"
-      data-cms-section="invest_body"
+      data-cms-section="invest_offer"
     >
+      <div className="invest-with-us__ambient" aria-hidden />
       <div className="container">
-        <motion.article
-          className="invest-with-us__article"
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.15 }}
-          transition={{ duration: 0.55 }}
-        >
-          <header className="invest-with-us__header">
-            <CmsText page="services" section="invest_body" field="eyebrow" as="p" className="invest-with-us__eyebrow">
-              {get('services', 'invest_body', 'eyebrow', 'United Services')}
-            </CmsText>
-            <CmsText page="services" section="invest_body" field="heading" as="h2" id="invest-with-us-heading">
-              {get('services', 'invest_body', 'heading', 'Invest With Us')}
-            </CmsText>
-          </header>
-
-          <div className="invest-with-us__prose">
-            <p>
-              {get(
-                'services',
-                'invest_body',
-                'p1',
-                'Investing with United Properties means entering carefully curated opportunities, not mass‑market products. Each investment package is built around a specific plot of land and a clear story: what can be created there, who it will serve, and how it can perform in today’s market.',
-              )}
-            </p>
-            <p>
-              {get(
-                'services',
-                'invest_body',
-                'p2',
-                'For every project, we study the planning zone and building density to understand exactly what is possible on the land. Then, together with our trusted architects, engineers and construction partners, we shape a concept that fits both the plot and the neighbourhood. Your numbers are grounded in real design and real build costs, not rough estimates.',
-              )}
-            </p>
-            <p>
-              {get(
-                'services',
-                'invest_body',
-                'p3',
-                'Market data and local insight allow us to forecast achievable selling prices or rental rates, and to translate them into a clear picture of total investment, expected returns and timeline. Behind each forecast stands a tightly connected team of professionals: legal advisors, designers and contractors who work in sync with United Properties. Everything you see in our investment packages is the result of this united network working as one.',
-              )}
-            </p>
-            <p>
-              {get(
-                'services',
-                'invest_body',
-                'p4',
-                'You are never just "buying a project on paper". You are partnering with a boutique agency that brings all key partners under one roof – lawyers, architects, engineers and constructors – so your investment benefits from a coordinated, end‑to‑end approach.',
-              )}
-            </p>
-          </div>
-        </motion.article>
-
-        <InvestHowItWorksTimeline />
-
-        <motion.div
-          className="invest-with-us__network invest-with-us__network--ticket card-luxury"
-          initial={{ opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.25 }}
-          transition={{ duration: 0.5 }}
-        >
-          <span className="invest-with-us__network-glare" aria-hidden />
-          <div className="invest-with-us__network-ticket-head">
-            <span className="invest-with-us__network-badge">
-              {get('services', 'invest_network', 'badge', 'Private network access')}
-            </span>
-          </div>
-          <div className="invest-with-us__network-ticket-body">
-            <span className="invest-with-us__network-perf" aria-hidden />
-            <div className="invest-with-us__network-ticket-copy">
-              <h3 className="invest-with-us__network-title">
-                <CmsText page="services" section="invest_network" field="heading" as="span">
-                  {get('services', 'invest_network', 'heading', 'A curated, united network of experts')}
+        <div className="invest-with-us__offerings">
+          <h2 id="invest-with-us-heading" className="visually-hidden">
+            {get('services', 'invest_offer', 'heading', 'Invest with us')}
+          </h2>
+          <motion.ul
+            className="invest-with-us__grid"
+            variants={reduceMotion ? undefined : gridReveal}
+            initial={reduceMotion ? false : 'hidden'}
+            whileInView="show"
+            viewport={{ once: true, amount: 0.12 }}
+          >
+            {offerings.map((item, index) => (
+              <motion.li
+                key={item.key}
+                className="invest-with-us__card"
+                variants={reduceMotion ? undefined : cardReveal}
+                whileHover={reduceMotion ? undefined : { y: -6 }}
+                transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+              >
+                <span className="invest-with-us__card-sheen" aria-hidden />
+                <span className="invest-with-us__card-glow" aria-hidden />
+                <span className="invest-with-us__card-index" aria-hidden="true">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <CmsText
+                  page="services"
+                  section="invest_offer"
+                  field={`${item.key}_title`}
+                  as="h3"
+                  className="invest-with-us__card-title"
+                >
+                  {item.title}
                 </CmsText>
-              </h3>
-              <p className="invest-with-us__network-body">
-                {get(
-                  'services',
-                  'invest_network',
-                  'body',
-                  'Behind every package stands a small, carefully chosen team: lawyers who understand Cyprus real estate, architects and engineers who design with both efficiency and lifestyle in mind, and constructors who deliver the quality we promise. United Properties brings these key partners together, aligning their expertise around your project so you can invest with confidence.',
-                )}
-              </p>
-            </div>
-          </div>
-        </motion.div>
+                <CmsText
+                  page="services"
+                  section="invest_offer"
+                  field={`${item.key}_body`}
+                  as="p"
+                  className="invest-with-us__card-body"
+                >
+                  {item.body}
+                </CmsText>
+              </motion.li>
+            ))}
+          </motion.ul>
+        </div>
+
+        <motion.blockquote
+          className="invest-with-us__close"
+          initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <span className="invest-with-us__close-rule" aria-hidden />
+          <CmsText
+            page="services"
+            section="invest_offer"
+            field="close_eyebrow"
+            as="p"
+            className="invest-with-us__close-eyebrow"
+          >
+            {get('services', 'invest_offer', 'close_eyebrow', 'Our view')}
+          </CmsText>
+          <CmsText
+            page="services"
+            section="invest_offer"
+            field="close_heading"
+            as="p"
+            className="invest-with-us__close-heading"
+          >
+            {get(
+              'services',
+              'invest_offer',
+              'close_heading',
+              'A home to enjoy today. An asset for tomorrow.',
+            )}
+          </CmsText>
+          <CmsText
+            page="services"
+            section="invest_offer"
+            field="close_body"
+            as="p"
+            className="invest-with-us__close-body"
+          >
+            {get(
+              'services',
+              'invest_offer',
+              'close_body',
+              "Potential comes in many forms. A plot with a view. An apartment in the right location. An older house waiting for its next chapter. Whatever you choose, you get real local knowledge. If we believe in an opportunity, you'll hear it from us. If we don't, you'll hear that too.",
+            )}
+          </CmsText>
+        </motion.blockquote>
       </div>
     </section>
   )

@@ -1,29 +1,175 @@
 .cta-section {
-  background: var(--color-bg-dark);
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 0%, rgba(191, 152, 117, 0.1), transparent 58%),
+    linear-gradient(168deg, var(--color-bg-dark) 0%, #0c182c 100%);
   color: var(--color-white);
 }
 
 .cta-section__panel {
-  border: 1px solid rgba(196, 156, 92, 0.36);
-  padding: clamp(1.4rem, 2.5vw, 2.8rem);
-  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(217, 182, 128, 0.36);
+  padding: clamp(1.7rem, 3.2vw, 3rem);
+  border-radius: calc(var(--radius-lg, 18px) + 2px);
   background:
-    linear-gradient(120deg, rgba(255, 255, 255, 0.03), rgba(196, 156, 92, 0.07)),
-    var(--color-bg-dark-soft);
+    radial-gradient(ellipse 80% 70% at 0% 0%, rgba(191, 152, 117, 0.16), transparent 55%),
+    radial-gradient(ellipse 55% 50% at 100% 100%, rgba(191, 152, 117, 0.08), transparent 60%),
+    linear-gradient(155deg, rgba(18, 30, 48, 0.96) 0%, rgba(8, 14, 26, 0.98) 100%);
+  box-shadow:
+    0 0 0 1px rgba(191, 152, 117, 0.06),
+    0 28px 56px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
-.cta-section__panel h2 {
-  margin-top: 0;
+.cta-section__glow {
+  position: absolute;
+  inset: -25% auto auto 48%;
+  width: 52%;
+  height: 70%;
+  background: radial-gradient(circle, rgba(191, 152, 117, 0.16), transparent 70%);
+  pointer-events: none;
 }
 
-.cta-section__panel p {
+.cta-section__sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 36%,
+    rgba(255, 255, 255, 0.045) 49%,
+    transparent 62%
+  );
+  transform: translateX(-120%);
+  animation: cta-section-sheen 8s ease-in-out 1s infinite;
+  pointer-events: none;
+}
+
+@keyframes cta-section-sheen {
+  0%,
+  20% {
+    transform: translateX(-120%);
+  }
+  50%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.cta-section__accent {
+  position: absolute;
+  top: 0;
+  left: 1.5rem;
+  right: 1.5rem;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(238, 211, 170, 0.75) 20%,
+    rgba(191, 152, 117, 0.9) 50%,
+    rgba(238, 211, 170, 0.75) 80%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+.cta-section__copy {
+  position: relative;
+  z-index: 1;
+  max-width: 44rem;
+}
+
+.cta-section__eyebrow {
+  margin: 0 0 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(238, 211, 170, 0.9);
+}
+
+.cta-section__heading {
+  margin: 0 0 0.85rem;
+  font-size: clamp(1.55rem, 2.6vw, 2.25rem);
+  font-weight: 660;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: rgba(248, 246, 241, 0.98);
+  text-wrap: balance;
+}
+
+.cta-section__description {
+  margin: 0;
   color: rgba(248, 246, 241, 0.84);
-  max-width: 42rem;
+  max-width: 40rem;
+  font-size: clamp(1rem, 1.3vw, 1.08rem);
+  font-weight: 500;
+  line-height: 1.7;
 }
 
 .cta-section__actions {
-  margin-top: 1.2rem;
+  position: relative;
+  z-index: 1;
+  margin-top: 1.55rem;
   display: flex;
   gap: 0.85rem;
   flex-wrap: wrap;
+}
+
+.cta-section__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.85rem;
+  padding-inline: 1.2rem;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease,
+    background-color 0.25s ease;
+}
+
+.cta-section__btn:hover {
+  transform: translateY(-2px);
+}
+
+.cta-section__btn.btn-gold:hover {
+  box-shadow: 0 10px 24px rgba(191, 152, 117, 0.28);
+}
+
+.cta-section__btn.btn-outline-light:hover {
+  border-color: rgba(238, 211, 170, 0.55);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.cta-section__btn--whatsapp {
+  color: rgba(248, 246, 241, 0.96);
+}
+
+.cta-section__whatsapp-icon {
+  flex-shrink: 0;
+  color: #25d366;
+  filter: drop-shadow(0 0 8px rgba(37, 211, 102, 0.35));
+}
+
+@media (max-width: 640px) {
+  .cta-section__actions {
+    flex-direction: column;
+  }
+
+  .cta-section__btn {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-section__sheen {
+    animation: none;
+    display: none;
+  }
+
+  .cta-section__btn:hover {
+    transform: none;
+  }
 }

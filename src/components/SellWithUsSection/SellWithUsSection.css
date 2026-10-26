@@ -1,0 +1,517 @@
+.sell-with-us-offer {
+  position: relative;
+  overflow: hidden;
+  scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 6.5rem);
+}
+
+.sell-with-us-offer__ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 45% at 8% 12%, rgba(191, 152, 117, 0.12), transparent 58%),
+    radial-gradient(ellipse 55% 40% at 92% 78%, rgba(18, 32, 51, 0.06), transparent 60%);
+}
+
+.sell-with-us-offer .container {
+  position: relative;
+  z-index: 1;
+  max-width: min(72rem, 100%);
+}
+
+.sell-with-us-offer__header {
+  margin-bottom: clamp(1.85rem, 3.2vw, 2.75rem);
+  max-width: 46rem;
+}
+
+.sell-with-us-offer__eyebrow {
+  margin: 0 0 0.7rem;
+  color: var(--color-accent, #bf9875);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.74rem;
+  font-weight: 650;
+}
+
+.sell-with-us-offer__heading {
+  margin: 0 0 1.15rem;
+  font-size: clamp(2.1rem, 3.2vw, 3.15rem);
+  font-weight: 680;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  color: inherit;
+  text-wrap: balance;
+}
+
+.sell-with-us-offer__intro {
+  padding: clamp(1.05rem, 2vw, 1.35rem) clamp(1.15rem, 2.1vw, 1.55rem);
+  border-radius: calc(var(--radius-md, 12px) + 2px);
+  border: 1px solid rgba(154, 115, 80, 0.28);
+  background:
+    linear-gradient(155deg, rgba(191, 152, 117, 0.12), rgba(255, 255, 255, 0.55));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.sell-with-us-offer__lead {
+  margin: 0 0 0.45rem;
+  font-size: clamp(1.2rem, 1.8vw, 1.42rem);
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+  color: inherit;
+}
+
+.sell-with-us-offer__support {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.65;
+  opacity: 0.84;
+}
+
+.sell-with-us-offer__grid {
+  list-style: none;
+  margin: 0 0 1.85rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.2rem, 2.2vw, 1.75rem);
+}
+
+.sell-with-us-offer__card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: clamp(1.45rem, 2.3vw, 1.95rem);
+  min-height: 100%;
+  border-radius: calc(var(--radius-md, 12px) + 2px);
+  border: 1px solid rgba(217, 182, 128, 0.28);
+  background:
+    radial-gradient(ellipse 90% 70% at 0% 0%, rgba(191, 152, 117, 0.16), transparent 55%),
+    linear-gradient(160deg, rgba(16, 28, 48, 0.97) 0%, rgba(8, 14, 26, 0.98) 100%);
+  box-shadow:
+    0 0 0 1px rgba(191, 152, 117, 0.05),
+    0 22px 42px rgba(0, 0, 0, 0.22);
+  color: rgba(248, 246, 241, 0.96);
+  will-change: transform;
+}
+
+.sell-with-us-offer__card-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 34%,
+    rgba(255, 255, 255, 0.06) 48%,
+    transparent 62%
+  );
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+
+.sell-with-us-offer__card:hover .sell-with-us-offer__card-sheen {
+  animation: sell-offer-sheen 1.05s ease-out;
+}
+
+@keyframes sell-offer-sheen {
+  from {
+    transform: translateX(-130%);
+  }
+  to {
+    transform: translateX(130%);
+  }
+}
+
+.sell-with-us-offer__card-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  min-width: 2.35rem;
+  height: 1.55rem;
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(191, 152, 117, 0.5);
+  background: linear-gradient(165deg, rgba(191, 152, 117, 0.28), rgba(191, 152, 117, 0.08));
+  font-size: 0.68rem;
+  font-weight: 740;
+  letter-spacing: 0.16em;
+  color: rgba(248, 246, 241, 0.96);
+  box-shadow: 0 0 16px rgba(191, 152, 117, 0.16);
+}
+
+.sell-with-us-offer__card-title {
+  margin: 0;
+  font-size: clamp(1.22rem, 1.75vw, 1.5rem);
+  font-weight: 660;
+  letter-spacing: -0.022em;
+  line-height: 1.28;
+  color: rgba(248, 246, 241, 0.98);
+  text-wrap: balance;
+}
+
+.sell-with-us-offer__card-body {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 500;
+  line-height: 1.72;
+  color: rgba(248, 246, 241, 0.86);
+}
+
+.sell-with-us-offer__legal {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.15rem;
+  align-items: start;
+  margin: 0 0 2.35rem;
+  max-width: min(48rem, 100%);
+  padding: clamp(1.35rem, 2.4vw, 1.75rem) clamp(1.3rem, 2.3vw, 1.8rem);
+  border-radius: calc(var(--radius-md, 12px) + 4px);
+  border: 1px solid rgba(217, 182, 128, 0.42);
+  background:
+    radial-gradient(ellipse 85% 75% at 0% 0%, rgba(191, 152, 117, 0.22), transparent 55%),
+    linear-gradient(155deg, rgba(16, 28, 48, 0.97) 0%, rgba(8, 14, 26, 0.98) 100%);
+  color: rgba(248, 246, 241, 0.95);
+  box-shadow:
+    0 0 0 1px rgba(191, 152, 117, 0.08),
+    0 24px 48px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  transition: box-shadow 0.3s ease;
+}
+
+.sell-with-us-offer__legal:hover {
+  box-shadow:
+    0 0 0 1px rgba(191, 152, 117, 0.16),
+    0 28px 56px rgba(0, 0, 0, 0.28),
+    0 0 40px rgba(191, 152, 117, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.sell-with-us-offer__legal-glow {
+  position: absolute;
+  inset: -30% auto auto 55%;
+  width: 50%;
+  height: 75%;
+  background: radial-gradient(circle, rgba(191, 152, 117, 0.18), transparent 70%);
+  pointer-events: none;
+}
+
+.sell-with-us-offer__legal-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 34%,
+    rgba(255, 255, 255, 0.07) 48%,
+    transparent 62%
+  );
+  transform: translateX(-120%);
+  animation: sell-offer-legal-sheen 7s ease-in-out 0.8s infinite;
+  pointer-events: none;
+}
+
+@keyframes sell-offer-legal-sheen {
+  0%,
+  18% {
+    transform: translateX(-120%);
+  }
+  48%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.sell-with-us-offer__legal-accent {
+  position: absolute;
+  top: 0;
+  left: 1.15rem;
+  right: 1.15rem;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(238, 211, 170, 0.8) 22%,
+    rgba(191, 152, 117, 0.95) 50%,
+    rgba(238, 211, 170, 0.8) 78%,
+    transparent
+  );
+}
+
+.sell-with-us-offer__legal-icon {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.1rem;
+  height: 3.1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(191, 152, 117, 0.55);
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.16), transparent 50%),
+    linear-gradient(165deg, rgba(191, 152, 117, 0.34), rgba(191, 152, 117, 0.08));
+  color: rgba(248, 246, 241, 0.98);
+  box-shadow:
+    0 0 22px rgba(191, 152, 117, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.sell-with-us-offer__legal-icon-ring {
+  position: absolute;
+  inset: -5px;
+  border-radius: 999px;
+  border: 1px solid rgba(191, 152, 117, 0.35);
+  animation: sell-offer-legal-pulse 2.8s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes sell-offer-legal-pulse {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.7;
+  }
+  70%,
+  100% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+}
+
+.sell-with-us-offer__legal-copy {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding-top: 0.1rem;
+}
+
+.sell-with-us-offer__legal-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.55rem;
+}
+
+.sell-with-us-offer__legal-label {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 740;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(238, 211, 170, 0.95);
+}
+
+.sell-with-us-offer__legal-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.55rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(191, 152, 117, 0.5);
+  background: linear-gradient(165deg, rgba(191, 152, 117, 0.28), rgba(191, 152, 117, 0.08));
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(248, 246, 241, 0.96);
+  box-shadow: 0 0 16px rgba(191, 152, 117, 0.16);
+}
+
+.sell-with-us-offer__legal-body {
+  margin: 0 0 0.95rem;
+  font-size: 1.04rem;
+  font-weight: 500;
+  line-height: 1.7;
+  color: rgba(248, 246, 241, 0.86);
+}
+
+.sell-with-us-offer__legal-points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.sell-with-us-offer__legal-points li {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.85rem;
+  padding: 0.28rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.78rem;
+  font-weight: 620;
+  letter-spacing: 0.02em;
+  color: rgba(248, 246, 241, 0.9);
+}
+
+.sell-with-us-offer__cta {
+  position: relative;
+  overflow: hidden;
+  max-width: 48rem;
+  padding: clamp(1.6rem, 2.6vw, 2.15rem);
+  border-radius: calc(var(--radius-md, 12px) + 4px);
+  border: 1px solid rgba(191, 152, 117, 0.36);
+  background:
+    radial-gradient(ellipse 90% 80% at 0% 0%, rgba(191, 152, 117, 0.18), transparent 55%),
+    linear-gradient(155deg, rgba(16, 28, 48, 0.98) 0%, rgba(8, 14, 26, 0.99) 100%);
+  color: rgba(248, 246, 241, 0.95);
+  box-shadow:
+    0 0 0 1px rgba(191, 152, 117, 0.06),
+    0 28px 56px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.sell-with-us-offer__cta-glow {
+  position: absolute;
+  inset: -30% auto auto 55%;
+  width: 50%;
+  height: 70%;
+  background: radial-gradient(circle, rgba(191, 152, 117, 0.16), transparent 70%);
+  pointer-events: none;
+}
+
+.sell-with-us-offer__cta-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 36%,
+    rgba(255, 255, 255, 0.045) 49%,
+    transparent 62%
+  );
+  transform: translateX(-120%);
+  animation: sell-offer-cta-sheen 8s ease-in-out 1.2s infinite;
+  pointer-events: none;
+}
+
+@keyframes sell-offer-cta-sheen {
+  0%,
+  20% {
+    transform: translateX(-120%);
+  }
+  50%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.sell-with-us-offer__cta-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.sell-with-us-offer__cta-heading {
+  margin: 0 0 0.8rem;
+  font-size: clamp(1.4rem, 2.3vw, 1.85rem);
+  font-weight: 660;
+  letter-spacing: -0.022em;
+  line-height: 1.28;
+  color: rgba(248, 246, 241, 0.98);
+}
+
+.sell-with-us-offer__cta-body {
+  margin: 0 0 1.45rem;
+  font-size: 1.04rem;
+  font-weight: 500;
+  line-height: 1.72;
+  color: rgba(248, 246, 241, 0.86);
+}
+
+.sell-with-us-offer__actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.sell-with-us-offer__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 2.9rem;
+  padding-inline: 1.05rem;
+  border: none;
+  box-shadow: none;
+  will-change: transform;
+}
+
+.sell-with-us-offer__action.btn-outline-light {
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sell-with-us-offer__action.btn-outline-light:hover {
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.sell-with-us-offer__action.btn-gold {
+  border: none;
+}
+
+.sell-with-us-offer__action-icon {
+  flex-shrink: 0;
+  width: 1.375rem;
+  height: 1.375rem;
+}
+
+.sell-with-us-offer__action--whatsapp .sell-with-us-offer__action-icon {
+  color: #25d366;
+  filter: drop-shadow(0 0 10px rgba(37, 211, 102, 0.4));
+}
+
+.sell-with-us-offer__action--telegram .sell-with-us-offer__action-icon {
+  color: #2aabee;
+  filter: drop-shadow(0 0 10px rgba(42, 171, 238, 0.38));
+}
+
+.sell-with-us-offer__action--email .sell-with-us-offer__action-icon,
+.sell-with-us-offer__action--call .sell-with-us-offer__action-icon {
+  opacity: 0.98;
+}
+
+@media (max-width: 820px) {
+  .sell-with-us-offer__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .sell-with-us-offer__card {
+    padding: 1.3rem 1.2rem;
+  }
+
+  .sell-with-us-offer__actions {
+    flex-direction: column;
+  }
+
+  .sell-with-us-offer__actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sell-with-us-offer__card-sheen,
+  .sell-with-us-offer__cta-sheen,
+  .sell-with-us-offer__legal-sheen,
+  .sell-with-us-offer__legal-icon-ring {
+    animation: none;
+    display: none;
+  }
+
+  .sell-with-us-offer__legal:hover {
+    transform: none;
+  }
+}

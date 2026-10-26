@@ -1,8 +1,33 @@
 import { Link } from 'react-router-dom'
-import { MessageCircle } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useSiteContent } from '../../hooks/useSiteContent'
 import CmsText from '../CmsPreview/CmsText'
+import { WhatsAppBrandIcon } from '../Navbar/SocialBrandIcons'
+import { WHATSAPP_CHAT_URL } from '../../config/externalLinks'
 import './CTASection.css'
+
+const panelReveal = {
+  hidden: { opacity: 0, y: 20 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1],
+      staggerChildren: 0.08,
+      delayChildren: 0.12,
+    },
+  },
+}
+
+const itemReveal = {
+  hidden: { opacity: 0, y: 12 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+  },
+}
 
 function CTASection({
   title,
@@ -13,6 +38,7 @@ function CTASection({
   cmsSection = 'cta',
 }) {
   const { get } = useSiteContent()
+  const reduceMotion = useReducedMotion()
   const resolvedTitle =
     title ??
     get(cmsPage, cmsSection, 'heading', get('home', 'cta', 'heading', 'Ready to Find Your Ideal Property in Cyprus?'))
@@ -52,37 +78,63 @@ function CTASection({
       data-cms-section={cmsSection}
     >
       <div className="container">
-        <div className="cta-section__panel">
-          <CmsText page={cmsPage} section={cmsSection} field="heading" as="h2">
-            {resolvedTitle}
-          </CmsText>
-          <CmsText page={cmsPage} section={cmsSection} field="description" as="p">
-            {resolvedDescription}
-          </CmsText>
-          <div className="cta-section__actions">
-            <Link to={primaryTo} className="btn btn-gold">
-              <CmsText page={cmsPage} section={cmsSection} field="btn_listings" as="span">
-                {listingsLabel}
-              </CmsText>
-            </Link>
-            <Link to="/contact" className="btn btn-outline-light">
-              <CmsText page={cmsPage} section={cmsSection} field="btn_contact" as="span">
-                {contactLabel}
-              </CmsText>
-            </Link>
-            <a
-              href="https://wa.me/35700000000"
-              target="_blank"
-              rel="noreferrer"
-              className="btn btn-outline-light"
+        <motion.div
+          className="cta-section__panel"
+          variants={reduceMotion ? undefined : panelReveal}
+          initial={reduceMotion ? false : 'hidden'}
+          whileInView="show"
+          viewport={{ once: true, amount: 0.25 }}
+        >
+          <span className="cta-section__glow" aria-hidden />
+          <span className="cta-section__sheen" aria-hidden />
+          <span className="cta-section__accent" aria-hidden />
+
+          <motion.div className="cta-section__copy" variants={reduceMotion ? undefined : itemReveal}>
+            <p className="cta-section__eyebrow">United Properties</p>
+            <CmsText page={cmsPage} section={cmsSection} field="heading" as="h2" className="cta-section__heading">
+              {resolvedTitle}
+            </CmsText>
+            <CmsText
+              page={cmsPage}
+              section={cmsSection}
+              field="description"
+              as="p"
+              className="cta-section__description"
             >
-              <MessageCircle size={16} />{' '}
-              <CmsText page={cmsPage} section={cmsSection} field="btn_whatsapp" as="span">
-                {whatsappLabel}
-              </CmsText>
-            </a>
+              {resolvedDescription}
+            </CmsText>
+          </motion.div>
+
+          <div className="cta-section__actions">
+            <motion.div variants={reduceMotion ? undefined : itemReveal}>
+              <Link to={primaryTo} className="btn btn-gold cta-section__btn">
+                <CmsText page={cmsPage} section={cmsSection} field="btn_listings" as="span">
+                  {listingsLabel}
+                </CmsText>
+              </Link>
+            </motion.div>
+            <motion.div variants={reduceMotion ? undefined : itemReveal}>
+              <Link to="/contact" className="btn btn-outline-light cta-section__btn">
+                <CmsText page={cmsPage} section={cmsSection} field="btn_contact" as="span">
+                  {contactLabel}
+                </CmsText>
+              </Link>
+            </motion.div>
+            <motion.div variants={reduceMotion ? undefined : itemReveal}>
+              <a
+                href={WHATSAPP_CHAT_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-outline-light cta-section__btn cta-section__btn--whatsapp"
+              >
+                <WhatsAppBrandIcon size={16} className="cta-section__whatsapp-icon" />
+                <CmsText page={cmsPage} section={cmsSection} field="btn_whatsapp" as="span">
+                  {whatsappLabel}
+                </CmsText>
+              </a>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

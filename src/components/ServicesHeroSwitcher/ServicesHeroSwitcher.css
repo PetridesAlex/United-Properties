@@ -1,0 +1,180 @@
+.services-hero-switch {
+  margin-top: clamp(1.75rem, 3vw, 2.5rem);
+  max-width: 42rem;
+}
+
+.services-hero-switch__stage {
+  position: relative;
+  min-height: 11.5rem;
+  padding: clamp(1.2rem, 2.2vw, 1.55rem) clamp(1.25rem, 2.3vw, 1.7rem);
+  border-radius: calc(var(--radius-md, 12px) + 2px);
+  border: 1px solid rgba(217, 182, 128, 0.34);
+  background:
+    radial-gradient(ellipse 90% 80% at 0% 0%, rgba(191, 152, 117, 0.16), transparent 55%),
+    linear-gradient(155deg, rgba(12, 22, 38, 0.55), rgba(8, 14, 26, 0.42));
+  box-shadow:
+    0 0 0 1px rgba(191, 152, 117, 0.05),
+    0 22px 44px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.services-hero-switch__slide {
+  position: relative;
+}
+
+.services-hero-switch__index {
+  margin: 0 0 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 740;
+  letter-spacing: 0.18em;
+  color: rgba(238, 211, 170, 0.9);
+}
+
+.services-hero-switch__title {
+  margin: 0 0 0.55rem;
+  font-size: clamp(1.45rem, 2.4vw, 1.95rem);
+  font-weight: 660;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: rgba(248, 246, 241, 0.98);
+}
+
+.services-hero-switch__line {
+  margin: 0 0 0.65rem;
+  font-family: var(--font-display, inherit);
+  font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(238, 211, 170, 0.9);
+}
+
+.services-hero-switch__body {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 480;
+  line-height: 1.65;
+  color: rgba(248, 246, 241, 0.8);
+  max-width: 36rem;
+}
+
+.services-hero-switch__nav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.95rem;
+}
+
+.services-hero-switch__tab {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.28rem;
+  width: 100%;
+  padding: 0.75rem 0.8rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(248, 246, 241, 0.78);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.25s ease,
+    background-color 0.25s ease,
+    color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.services-hero-switch__tab:hover {
+  border-color: rgba(217, 182, 128, 0.4);
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateY(-1px);
+}
+
+.services-hero-switch__tab.is-active {
+  border-color: rgba(191, 152, 117, 0.55);
+  background: linear-gradient(165deg, rgba(191, 152, 117, 0.2), rgba(191, 152, 117, 0.06));
+  color: rgba(248, 246, 241, 0.96);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.services-hero-switch__tab-index {
+  font-size: 0.64rem;
+  font-weight: 740;
+  letter-spacing: 0.16em;
+  color: rgba(238, 211, 170, 0.82);
+}
+
+.services-hero-switch__tab-label {
+  font-size: 0.86rem;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.services-hero-switch__tab-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  transform-origin: left center;
+  background: linear-gradient(90deg, rgba(238, 211, 170, 0.95), rgba(191, 152, 117, 0.35));
+}
+
+.services-hero-switch__explore {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 1.05rem;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 182, 128, 0.42);
+  background: rgba(191, 152, 117, 0.12);
+  color: rgba(248, 246, 241, 0.95);
+  font-size: 0.9rem;
+  font-weight: 620;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.services-hero-switch__explore:hover {
+  background: rgba(191, 152, 117, 0.22);
+  border-color: rgba(238, 211, 170, 0.55);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 720px) {
+  .services-hero-switch__nav {
+    grid-template-columns: 1fr;
+  }
+
+  .services-hero-switch__stage {
+    min-height: 12.5rem;
+  }
+
+  .services-hero-switch__tab {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.65rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .services-hero-switch__tab,
+  .services-hero-switch__explore {
+    transition: none;
+  }
+
+  .services-hero-switch__tab:hover,
+  .services-hero-switch__explore:hover {
+    transform: none;
+  }
+}

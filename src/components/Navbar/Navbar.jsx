@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { ChevronDown, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import StaggeredMenu from '../StaggeredMenu/StaggeredMenu'
 import { TELEGRAM_CHAT_URL, WHATSAPP_CHAT_URL } from '../../config/externalLinks'
 import { buildSearchPath } from '../../lib/search/searchPath'
@@ -15,14 +15,6 @@ const CENTER_NAV_ROUTES = [
   { key: 'contact', to: '/contact', fallback: 'Contact' },
 ]
 
-const SERVICES_DROPDOWN_ROUTES = [
-  { key: 'sell', to: '/sell-with-us', fallback: 'Sell with us' },
-  { key: 'invest', to: '/services#invest-with-us', fallback: 'Invest with us' },
-  { key: 'management', to: '/services#property-management', fallback: 'Property Management' },
-  { key: 'rent_property', to: '/services#rent-your-property', fallback: 'Rent your property' },
-  { key: 'concierge', to: '/concierge', fallback: 'Concierge' },
-]
-
 const TICKER_FALLBACKS = [
   'Luxury sales & long-term lettings',
   'Private valuations & viewings',
@@ -32,22 +24,13 @@ const TICKER_FALLBACKS = [
   'Concierge property management',
 ]
 
-function isCenterNavActive(pathname, hash, to) {
-  if (to.includes('#')) {
-    const [path, h] = to.split('#')
-    return pathname === path && hash === `#${h}`
-  }
-  if (to === '/services') {
-    return pathname === '/services' || pathname === '/sell-with-us'
-  }
+function isCenterNavActive(pathname, to) {
   return pathname === to
 }
 
 function Navbar() {
   const { get } = useSiteContent()
   const [isScrolled, setIsScrolled] = useState(false)
-  const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false)
-  const servicesDropdownRef = useRef(null)
   const location = useLocation()
   const navigate = useNavigate()
   const isHome = location.pathname === '/'
@@ -69,26 +52,9 @@ function Navbar() {
     [get],
   )
 
-  const servicesDropdownLinks = useMemo(
-    () =>
-      SERVICES_DROPDOWN_ROUTES.map((item) => ({
-        to: item.to,
-        label: get('navbar', 'services_dropdown', item.key, item.fallback),
-      })),
-    [get],
-  )
-
   const staggeredMenuItems = useMemo(
-    () =>
-      centerNavLinks.map((item) =>
-        item.to === '/services'
-          ? {
-              label: item.label,
-              subItems: servicesDropdownLinks.map((s) => ({ label: s.label, link: s.to })),
-            }
-          : { label: item.label, link: item.to },
-      ),
-    [centerNavLinks, servicesDropdownLinks],
+    () => centerNavLinks.map((item) => ({ label: item.label, link: item.to })),
+    [centerNavLinks],
   )
 
   useEffect(() => {
@@ -102,27 +68,12 @@ function Navbar() {
     setIsScrolled(window.scrollY > 40)
   }, [location.pathname])
 
-  useEffect(() => {
-    setServicesDropdownOpen(false)
-  }, [location.pathname, location.hash])
-
   const navClass = `navbar ${isScrolled || !isHome ? 'navbar--solid' : 'navbar--transparent'} ${
     isHome && isScrolled ? 'navbar--home-scrolled' : ''
   } ${isScrolled ? 'navbar--scrolled' : ''}`.trim()
 
   function openGlobalSearch() {
     navigate(buildSearchPath())
-  }
-
-  function closeUnitedServicesMenu() {
-    setServicesDropdownOpen(false)
-    requestAnimationFrame(() => {
-      const root = servicesDropdownRef.current
-      const active = document.activeElement
-      if (root && active instanceof HTMLElement && root.contains(active)) {
-        active.blur()
-      }
-    })
   }
 
   return (
@@ -164,73 +115,15 @@ function Navbar() {
         <nav className="navbar__center" aria-label={get('navbar', 'nav', 'main_aria', 'Main navigation')}>
           <ul className="navbar__center-list">
             {centerNavLinks.map((item) => {
-              const active = isCenterNavActive(location.pathname, location.hash, item.to)
-              const isServicesItem = item.to === '/services'
+              const active = isCenterNavActive(location.pathname, item.to)
               return (
-                <li
-                  key={item.to}
-                  className={`navbar__center-item${
-                    isServicesItem ? ' navbar__center-item--has-dropdown' : ''
-                  }${
-                    isServicesItem && servicesDropdownOpen ? ' navbar__center-item--services-open' : ''
-                  }`}
-                  onMouseEnter={() => {
-                    if (isServicesItem) setServicesDropdownOpen(true)
-                  }}
-                  onMouseLeave={() => {
-                    if (isServicesItem) setServicesDropdownOpen(false)
-                  }}
-                >
-                  {isServicesItem ? (
-                    <div ref={servicesDropdownRef} className="navbar__center-dropdown">
-                      <Link
-                        className={`navbar__center-link navbar__center-link--with-caret${
-                          active ? ' navbar__center-link--active' : ''
-                        }`}
-                        to={item.to}
-                        aria-haspopup="true"
-                        onClick={closeUnitedServicesMenu}
-                      >
-                        <span>{item.label}</span>
-                        <ChevronDown size={14} aria-hidden="true" />
-                      </Link>
-
-                      <div
-                        className="navbar__center-dropdown-menu"
-                        role="menu"
-                        aria-label={get('navbar', 'nav', 'services_menu_aria', 'United Services links')}
-                      >
-                        {servicesDropdownLinks.map((serviceLink) => {
-                          const serviceActive = isCenterNavActive(
-                            location.pathname,
-                            location.hash,
-                            serviceLink.to,
-                          )
-
-                          return (
-                            <Link
-                              key={serviceLink.to}
-                              className={`navbar__center-dropdown-item${
-                                serviceActive ? ' navbar__center-dropdown-item--active' : ''
-                              }`}
-                              to={serviceLink.to}
-                              role="menuitem"
-                              onClick={closeUnitedServicesMenu}
-                            >
-                              {serviceLink.label}
-                            </Link>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  ) : (
-                    <Link
-                      className={`navbar__center-link${active ? ' navbar__center-link--active' : ''}`}
-                      to={item.to}
-                    >
-                      {item.label}
-                    </Link>
-                  )}
+                <li key={item.to} className="navbar__center-item">
+                  <Link
+                    className={`navbar__center-link${active ? ' navbar__center-link--active' : ''}`}
+                    to={item.to}
+                  >
+                    {item.label}
+                  </Link>
                 </li>
               )
             })}
