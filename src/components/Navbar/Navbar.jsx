@@ -16,12 +16,11 @@ const CENTER_NAV_ROUTES = [
 ]
 
 const TICKER_FALLBACKS = [
-  'Luxury sales & long-term lettings',
-  'Private valuations & viewings',
-  'Investment & relocation advisory',
-  'Featured listings & signature collection',
-  'International private clients',
-  'Concierge property management',
+  'Boutique Portfolio',
+  'Investment Advisory',
+  'Relocation',
+  'Off-Market Properties',
+  'International Private Clients',
 ]
 
 function isCenterNavActive(pathname, to) {

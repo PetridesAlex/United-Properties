@@ -1719,12 +1719,11 @@ export const CONTENT_PAGES: ContentPageDef[] = [
         title: 'Premium services ticker',
         description: 'Scrolling strip above the main nav.',
         fields: [
-          f('item1', 'Ticker item 1', 'Luxury sales & long-term lettings'),
-          f('item2', 'Ticker item 2', 'Private valuations & viewings'),
-          f('item3', 'Ticker item 3', 'Investment & relocation advisory'),
-          f('item4', 'Ticker item 4', 'Featured listings & signature collection'),
-          f('item5', 'Ticker item 5', 'International private clients'),
-          f('item6', 'Ticker item 6', 'Concierge property management'),
+          f('item1', 'Ticker item 1', 'Boutique Portfolio'),
+          f('item2', 'Ticker item 2', 'Investment Advisory'),
+          f('item3', 'Ticker item 3', 'Relocation'),
+          f('item4', 'Ticker item 4', 'Off-Market Properties'),
+          f('item5', 'Ticker item 5', 'International Private Clients'),
         ],
       },
       {
