@@ -18,6 +18,7 @@ const STATIC_PATHS = [
   '/buy',
   '/rent',
   '/contact',
+  '/privacy',
   '/properties',
   '/featured-properties',
   '/signature-listings',

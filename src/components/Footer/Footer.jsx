@@ -1,9 +1,5 @@
 import { Link } from 'react-router-dom'
-import {
-  Instagram,
-  Linkedin,
-  MessageCircle,
-} from 'lucide-react'
+import { Instagram, Linkedin, MessageCircle } from 'lucide-react'
 import { useSiteContent } from '../../hooks/useSiteContent'
 import { INSTAGRAM_URL, LINKEDIN_URL, WHATSAPP_CHAT_URL } from '../../config/externalLinks'
 import CmsText from '../CmsPreview/CmsText'
@@ -11,31 +7,27 @@ import './Footer.css'
 
 function Footer() {
   const { get } = useSiteContent()
+  const year = new Date().getFullYear()
+  const email = get('footer', 'contact', 'email', 'info@unitedproperties.eu')
+  const phone = get('footer', 'contact', 'phone', '+357 96178188')
+  const phoneHref = `tel:${phone.replace(/\s+/g, '')}`
 
   return (
-    <footer className="footer" data-cms-page="footer" data-cms-section="brand">
-      <div className="container footer__grid">
-        <div className="footer__col footer__col--brand">
-          <h3 className="footer__brand">
+    <footer className="up-footer" data-cms-page="footer" data-cms-section="brand">
+      <div className="g">
+        <div className="c">
+          <Link to="/" className="up-footer__logo" aria-label="United Properties — Home">
             <img src="/images/logo/United_Properties_v2.1.svg" alt="United Properties" />
-          </h3>
-          <p className="footer__brand-copy">
-            {get(
-              'footer',
-              'brand',
-              'tagline',
-              'Every property decision begins with inspiration. It deserves someone who protects it.',
-            )}
-          </p>
+          </Link>
         </div>
 
-        <div className="footer__col footer__col--links">
-          <h4 className="footer__section-title">
+        <div className="c">
+          <h4>
             <CmsText page="footer" section="quick_links" field="heading" as="span">
               {get('footer', 'quick_links', 'heading', 'Quick Links')}
             </CmsText>
           </h4>
-          <ul className="footer__list footer__list--links">
+          <ul>
             <li>
               <Link to="/buy">{get('footer', 'quick_links', 'link_buy', 'Buy')}</Link>
             </li>
@@ -48,13 +40,13 @@ function Footer() {
           </ul>
         </div>
 
-        <div className="footer__col footer__col--services">
-          <h4 className="footer__section-title">
+        <div className="c">
+          <h4>
             <CmsText page="footer" section="services" field="heading" as="span">
               {get('footer', 'services', 'heading', 'United Services')}
             </CmsText>
           </h4>
-          <ul className="footer__list footer__list--services">
+          <ul>
             <li>
               <Link to="/services#invest-with-us">
                 {get('footer', 'services', 'link_invest', 'Invest with us')}
@@ -73,37 +65,38 @@ function Footer() {
           </ul>
         </div>
 
-        <div className="footer__col footer__col--contact footer__contact-block">
-          <h4 className="footer__section-title">
+        <div className="c">
+          <h4>
             <CmsText page="footer" section="contact" field="heading" as="span">
               {get('footer', 'contact', 'heading', 'Contact')}
             </CmsText>
           </h4>
-          <ul className="footer__list footer__list--contact">
-            <li>
-              {get('footer', 'contact', 'address', '18 Marina Avenue, Limassol, Cyprus')}
+          <ul>
+            <li className="pl">
+              {get(
+                'footer',
+                'contact',
+                'address',
+                'John F. Kennedy 8, Neapolis, Limassol, Cyprus',
+              )}
             </li>
             <li>
-              <a href={`mailto:${get('footer', 'contact', 'email', 'info@unitedproperties.eu')}`}>
-                {get('footer', 'contact', 'email', 'info@unitedproperties.eu')}
-              </a>
+              <a href={`mailto:${email}`}>{email}</a>
             </li>
             <li>
-              <a
-                href={`tel:${get('footer', 'contact', 'phone', '+357 96178188').replace(/\s+/g, '')}`}
-              >
-                {get('footer', 'contact', 'phone', '+357 96178188')}
-              </a>
+              <a href={phoneHref}>{phone}</a>
             </li>
           </ul>
-          <div className="footer__socials">
+          <div className="soc">
             <a
               href={INSTAGRAM_URL}
               aria-label={get('footer', 'social', 'instagram', 'Instagram')}
               target="_blank"
               rel="noreferrer"
             >
-              <Instagram size={16} />
+              <i>
+                <Instagram size={18} aria-hidden="true" />
+              </i>
             </a>
             <a
               href={LINKEDIN_URL}
@@ -111,7 +104,9 @@ function Footer() {
               target="_blank"
               rel="noreferrer"
             >
-              <Linkedin size={16} />
+              <i>
+                <Linkedin size={18} aria-hidden="true" />
+              </i>
             </a>
             <a
               href={WHATSAPP_CHAT_URL}
@@ -119,35 +114,26 @@ function Footer() {
               target="_blank"
               rel="noreferrer"
             >
-              <MessageCircle size={16} />
+              <i>
+                <MessageCircle size={18} aria-hidden="true" />
+              </i>
             </a>
           </div>
         </div>
       </div>
 
-      <div className="footer__bottom">
-        <div className="container footer__bottom-inner">
-          <p className="footer__copyright">
-            <span className="footer__copyright-line">
-              <span className="footer__copyright-symbol" aria-hidden="true">
-                —
-              </span>{' '}
-              <span className="footer__copyright-year">© {new Date().getFullYear()}</span>
-              <span className="footer__copyright-brand">
-                {' '}
-                {get('footer', 'legal', 'brand', 'United Properties')}
-              </span>
-              <span className="footer__copyright-dot"> · </span>
-              <span className="footer__copyright-rights">
-                {get('footer', 'legal', 'rights', 'All rights reserved')}
-              </span>
-              <span className="footer__copyright-symbol" aria-hidden="true">
-                {' '}
-                —
-              </span>
-            </span>
-          </p>
-        </div>
+      <div className="leg">
+        <p>{get('footer', 'legal', 'company', 'PKM United Properties Ltd')}</p>
+        <p>{get('footer', 'legal', 'reg', 'Reg. No. 1393 · Lic. No. 703/E')}</p>
+      </div>
+
+      <div className="cp">
+        — © {year} {get('footer', 'legal', 'brand', 'United Properties')} ·{' '}
+        {get('footer', 'legal', 'rights', 'All rights reserved')} ·{' '}
+        <Link to="/privacy" className="up-footer__privacy">
+          {get('footer', 'legal', 'privacy', 'Privacy Policy')}
+        </Link>{' '}
+        —
       </div>
     </footer>
   )

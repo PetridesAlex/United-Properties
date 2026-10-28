@@ -20,7 +20,12 @@ import './Contact.css'
 function Contact() {
   const { get } = useSiteContent()
 
-  const officeAddress = get('contact', 'office', 'address', '18 Marina Avenue, Limassol, Cyprus')
+  const officeAddress = get(
+    'contact',
+    'office',
+    'address',
+    'John F. Kennedy 8, Neapolis, Limassol, Cyprus',
+  )
   const officePhone = get('contact', 'office', 'phone', '+357 96178188')
   const officeEmail = get('contact', 'office', 'email', 'info@unitedproperties.eu')
   const officeHours = get('contact', 'office', 'hours', 'Mon - Fri: 9:00 - 18:00')

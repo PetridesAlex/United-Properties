@@ -1,31 +1,36 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import Hero from '../components/Hero/Hero'
-import SectionHeader from '../components/SectionHeader/SectionHeader'
-import ModalCards from '../components/ModalCards/ModalCards'
-import ServiceCard from '../components/ServiceCard/ServiceCard'
-import AgentCard from '../components/AgentCard/AgentCard'
-import TestimonialCard from '../components/TestimonialCard/TestimonialCard'
-import CTASection from '../components/CTASection/CTASection'
-import SignatureCollection from '../components/SignatureCollection/SignatureCollection'
 import OptimizedImage from '../components/OptimizedImage/OptimizedImage'
 import CmsText from '../components/CmsPreview/CmsText'
-import CmsStaggeredHeading from '../components/StaggeredText/CmsStaggeredHeading'
-import { properties } from '../data/properties'
-import { services } from '../data/services'
-import { agents } from '../data/agents'
-import { testimonials } from '../data/testimonials'
 import { useMergedProperties } from '../hooks/useMergedProperties'
 import { useSiteContent } from '../hooks/useSiteContent'
 import './Home.css'
 
-const MotionDiv = motion.div
-const HOME_SIGNATURE_PREVIEW_COUNT = 6
-/** Featured ModalCards: max cards; prefer featured flag, then fill from pool for layout preview */
-const FEATURED_MODAL_PREVIEW_COUNT = 12
+const FEATURED_COUNT = 6
 
-/** Cover photo from CMS (gallery #1 / is_featured) — never stock placeholders. */
+const DEFAULT_SERVICES = [
+  {
+    key: 'invest',
+    title: 'Invest with us',
+    text: "Every investor has a different goal. Here's how we help you reach yours.",
+    href: '/services#invest-with-us',
+  },
+  {
+    key: 'sell',
+    title: 'Sell with us',
+    text: "Your property deserves more than a listing. Here's how we sell it.",
+    href: '/services#sell-with-us',
+  },
+  {
+    key: 'manage',
+    title: 'Property management',
+    text: 'Let your property work for you. Two plans. One standard of care.',
+    href: '/services#property-management',
+  },
+]
+
 function propertyCoverImage(property) {
   if (!property) return ''
   if (typeof property.image === 'string' && property.image.trim()) return property.image.trim()
@@ -34,95 +39,135 @@ function propertyCoverImage(property) {
   return first ? first.trim() : ''
 }
 
-function takeFeaturedWithFill(pool, maxCount) {
-  const withCover = pool.filter((p) => propertyCoverImage(p))
-  const featured = withCover.filter((p) => p.featured)
-  if (featured.length >= maxCount) return featured.slice(0, maxCount)
-  const seen = new Set(featured.map((p) => String(p.id)))
-  const filler = withCover.filter((p) => !seen.has(String(p.id)))
-  return [...featured, ...filler].slice(0, maxCount)
+function formatPrice(value, status) {
+  const n = Number(value)
+  if (!Number.isFinite(n)) return ''
+  const formatted = new Intl.NumberFormat('en-US').format(n)
+  return status === 'For Rent' ? `EUR ${formatted} / month` : `EUR ${formatted}`
 }
 
-function isSignatureProperty(property) {
-  if (!property) return false
-  if (property.isSignature === true) return true
+function takeFeaturedMix(pool, maxCount) {
+  const withCover = pool.filter((p) => propertyCoverImage(p) && p.slug)
+  const rent = withCover.filter((p) => /rent/i.test(String(p.status || '')))
+  const buy = withCover.filter((p) => /sale/i.test(String(p.status || '')))
+  const mixed = []
+  let r = 0
+  let b = 0
+  while (mixed.length < maxCount && (r < rent.length || b < buy.length)) {
+    if (r < rent.length) mixed.push(rent[r++])
+    if (mixed.length >= maxCount) break
+    if (b < buy.length) mixed.push(buy[b++])
+  }
+  if (mixed.length >= maxCount) return mixed.slice(0, maxCount)
 
-  const category = typeof property.category === 'string' ? property.category.toLowerCase() : ''
-  const tags = Array.isArray(property.badges) ? property.badges.map((tag) => String(tag).toLowerCase()) : []
-  const type = typeof property.type === 'string' ? property.type.toLowerCase() : ''
+  const seen = new Set(mixed.map((p) => String(p.id)))
+  const filler = withCover.filter((p) => !seen.has(String(p.id)))
+  return [...mixed, ...filler].slice(0, maxCount)
+}
 
-  return (
-    category.includes('signature') ||
-    tags.some((tag) => tag.includes('signature')) ||
-    type.includes('signature')
-  )
+function useNavbarOffset() {
+  const [top, setTop] = useState(0)
+
+  useEffect(() => {
+    function measure() {
+      const nav = document.querySelector('header.navbar')
+      const next = nav ? Math.round(nav.getBoundingClientRect().height) : 0
+      setTop((prev) => (prev === next ? prev : next))
+    }
+
+    measure()
+    window.addEventListener('resize', measure)
+    window.addEventListener('scroll', measure, { passive: true })
+    return () => {
+      window.removeEventListener('resize', measure)
+      window.removeEventListener('scroll', measure)
+    }
+  }, [])
+
+  return top
 }
 
 function Home() {
   const { list: listingProperties } = useMergedProperties()
   const { get } = useSiteContent()
-  const featuredProperties = useMemo(
-    () => takeFeaturedWithFill(listingProperties, FEATURED_MODAL_PREVIEW_COUNT),
+  const topOffset = useNavbarOffset()
+
+  const featured = useMemo(
+    () => takeFeaturedMix(listingProperties, FEATURED_COUNT),
     [listingProperties],
   )
-  const featuredModalCards = useMemo(
-    () =>
-      featuredProperties.map((property) => ({
-        id: String(property.id),
-        imageUrl: propertyCoverImage(property),
-        title: property.title,
-        description:
-          property.description ||
-          `Discover this ${property.type || 'property'} in ${property.location}.`,
-        slug: property.slug,
-        price: property.price,
-        status: property.status,
-      })),
-    [featuredProperties],
+
+  const featuredDescriptionRaw = get(
+    'home',
+    'featured',
+    'description',
+    'A selection from our current listings, to buy and to rent.',
   )
-  const signatureCollectionProperties = useMemo(() => {
-    const source = (listingProperties.length ? listingProperties : properties).filter(
-      (property) => propertyCoverImage(property),
-    )
-    const signatureOnly = source.filter(isSignatureProperty)
+  const featuredDescription = /most exclusive houses|townhomes|penthouses/i.test(
+    String(featuredDescriptionRaw || ''),
+  )
+    ? 'A selection from our current listings, to buy and to rent.'
+    : featuredDescriptionRaw
 
-    // Prefer signature, then featured, then fill from remaining.
-    let selected
-    if (signatureOnly.length >= HOME_SIGNATURE_PREVIEW_COUNT) {
-      selected = signatureOnly.slice(0, HOME_SIGNATURE_PREVIEW_COUNT)
-    } else {
-      const featuredFallback = source.filter((property) => property.featured)
-      const prioritized = signatureOnly.length ? signatureOnly : featuredFallback
-      const remainder = source.filter(
-        (property) => !prioritized.some((candidate) => candidate.id === property.id),
+  const servicesHeadingRaw = get(
+    'home',
+    'services',
+    'heading',
+    'Invest, sell, or let us manage your property.',
+  )
+  const servicesHeading = /comprehensive advisory|property services/i.test(
+    String(servicesHeadingRaw || ''),
+  )
+    ? 'Invest, sell, or let us manage your property.'
+    : servicesHeadingRaw
+
+  const servicesEyebrowRaw = get('home', 'services', 'eyebrow', 'United Services')
+  const servicesEyebrow = /^services$/i.test(String(servicesEyebrowRaw || '').trim())
+    ? 'United Services'
+    : servicesEyebrowRaw
+
+  const services = DEFAULT_SERVICES.map((service, index) => {
+    const n = index + 1
+    const title = get('home', 'services', `card${n}_title`, service.title)
+    const text = get('home', 'services', `card${n}_body`, service.text)
+    const legacyTitle =
+      /property sales|luxury rentals|luxury portfolio|investment advisory|holiday home|relocation|international client/i.test(
+        String(title || ''),
       )
-      selected = [...prioritized, ...remainder].slice(0, HOME_SIGNATURE_PREVIEW_COUNT)
-    }
-
-    return selected.map((property) => ({
-      ...property,
-      coverImage: propertyCoverImage(property),
-    }))
-  }, [listingProperties])
-
-  const featuredAgents = agents.slice(0, 3)
-  const homeServices = services.slice(0, 8).map((service, index) => ({
-    ...service,
-    title: get('home', 'services', `card${index + 1}_title`, service.title),
-    description: get('home', 'services', `card${index + 1}_body`, service.description),
-  }))
-  const homeTestimonials = [1, 2, 3].map((n, index) => {
-    const fallback = testimonials[index]
     return {
-      id: n,
-      name: get('home', 'testimonials', `name${n}`, fallback?.name || ''),
-      location: get('home', 'testimonials', `location${n}`, fallback?.location || ''),
-      avatarUrl: fallback?.avatarUrl || '',
-      quote: get('home', 'testimonials', `quote${n}`, fallback?.quote || ''),
+      ...service,
+      title: legacyTitle ? service.title : title,
+      text: legacyTitle
+        ? service.text
+        : /acquisition strategy|relocation and portfolio/i.test(String(text || ''))
+          ? service.text
+          : text,
     }
   })
 
-  const signatureViewCta = get('home', 'signature', 'view_cta', 'View Property')
+  const ctaHeadingRaw = get('home', 'cta', 'heading', "Tell us what you're looking for.")
+  const ctaHeading = /ready to find your ideal|ideal property in cyprus/i.test(
+    String(ctaHeadingRaw || ''),
+  )
+    ? "Tell us what you're looking for."
+    : ctaHeadingRaw
+
+  const ctaDescRaw = get(
+    'home',
+    'cta',
+    'description',
+    'Buying, renting, selling or investing, it starts with a conversation.',
+  )
+  const ctaDescription = /tailored strategy|premium cyprus locations|connect with our advisors/i.test(
+    String(ctaDescRaw || ''),
+  )
+    ? 'Buying, renting, selling or investing, it starts with a conversation.'
+    : ctaDescRaw
+
+  const ctaBtnRaw = get('home', 'cta', 'btn_quiz', 'Answer a few questions')
+  const ctaBtn = /view listings|contact our team/i.test(String(ctaBtnRaw || ''))
+    ? 'Answer a few questions'
+    : ctaBtnRaw
 
   return (
     <>
@@ -140,148 +185,108 @@ function Home() {
           )}
         />
       </Helmet>
-      <Hero />
 
-      <section
-        className="section section--light"
-        id="featured-properties"
-        data-cms-page="home"
-        data-cms-section="featured"
-      >
-        <div className="container home-featured-container">
-          <SectionHeader
-            eyebrow={get('home', 'featured', 'eyebrow')}
-            title={get('home', 'featured', 'heading')}
-            description={get('home', 'featured', 'description')}
-            className="section-header--featured"
-            cmsPage="home"
-            cmsSection="featured"
-          />
-          <ModalCards cards={featuredModalCards} className="home-featured-modal-cards" />
-        </div>
-      </section>
+      <div className="up-home" style={{ '--up-top': `${topOffset}px` }}>
+        <Hero />
 
-      <section
-        className="section section--alt home-signature-section"
-        data-cms-page="home"
-        data-cms-section="signature"
-      >
-        <div className="container home-signature-container">
-          <SectionHeader
-            eyebrow={get('home', 'signature', 'eyebrow')}
-            title={get(
-              'home',
-              'signature',
-              'heading',
-              'Explore Our Most Exclusive Addresses',
-            )}
-            description={get(
-              'home',
-              'signature',
-              'description',
-              'A curated signature collection — browse each residence with smooth, lightweight motion.',
-            )}
-            cmsPage="home"
-            cmsSection="signature"
-          />
-          <SignatureCollection
-            properties={signatureCollectionProperties}
-            viewCta={signatureViewCta}
-          />
-        </div>
-      </section>
-
-      <section className="section section--light" data-cms-page="home" data-cms-section="services">
-        <div className="container">
-          <SectionHeader
-            eyebrow={get('home', 'services', 'eyebrow')}
-            title={get('home', 'services', 'heading')}
-            description={get('home', 'services', 'description')}
-            cmsPage="home"
-            cmsSection="services"
-          />
-          <div className="grid-4">
-            {homeServices.map((service) => (
-              <ServiceCard key={service.id} service={service} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section section--alt" data-cms-page="home" data-cms-section="editorial">
-        <div className="container home-editorial">
-          <MotionDiv
-            initial={{ opacity: 0, x: -18 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.6 }}
-          >
-            <CmsText page="home" section="editorial" field="eyebrow" as="p" className="home-editorial__eyebrow">
-              {get('home', 'editorial', 'eyebrow')}
+        <section
+          className="hl"
+          id="featured-properties"
+          data-cms-page="home"
+          data-cms-section="featured"
+        >
+          <div className="hl__inner">
+            <CmsText page="home" section="featured" field="eyebrow" as="span" className="eb">
+              {get('home', 'featured', 'eyebrow', 'Featured Properties')}
             </CmsText>
-            <CmsStaggeredHeading
-              page="home"
-              section="editorial"
-              field="heading"
-              as="h2"
-              text={get('home', 'editorial', 'heading')}
-            />
-            <CmsText page="home" section="editorial" field="body" as="p">
-              {get('home', 'editorial', 'body')}
+            <CmsText page="home" section="featured" field="heading" as="h2" className="tt">
+              {get('home', 'featured', 'heading', 'Featured Properties')}
             </CmsText>
-          </MotionDiv>
-          <OptimizedImage
-            src="https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1600&q=80"
-            alt="Luxury Cyprus property lifestyle"
-            preset="mosaicHero"
-            loading="lazy"
-            sizes="(max-width: 900px) 92vw, 640px"
-          />
-        </div>
-      </section>
+            <CmsText page="home" section="featured" field="description" as="p" className="tp">
+              {featuredDescription}
+            </CmsText>
+            <div className="lv-rule" aria-hidden />
 
-      <section className="section section--light" data-cms-page="home" data-cms-section="team">
-        <div className="container">
-          <SectionHeader
-            eyebrow={get('home', 'team', 'eyebrow')}
-            title={get('home', 'team', 'heading')}
-            description={get('home', 'team', 'description')}
-            cmsPage="home"
-            cmsSection="team"
-          />
-          <div className="grid-3">
-            {featuredAgents.map((agent) => (
-              <AgentCard key={agent.id} agent={agent} />
-            ))}
+            <div className="fg">
+              {featured.map((property) => (
+                <Link
+                  key={property.id}
+                  className="fc2"
+                  to={`/properties/${property.slug}`}
+                  aria-label={`View listing: ${property.title}`}
+                >
+                  <OptimizedImage
+                    src={propertyCoverImage(property)}
+                    alt=""
+                    preset="card"
+                    sizes="(max-width: 760px) 94vw, (max-width: 1000px) 46vw, 32vw"
+                  />
+                  <div className="cap">
+                    <div className="ct">{property.title}</div>
+                    <div className="cp">{formatPrice(property.price, property.status)}</div>
+                  </div>
+                  <div className="plus" aria-hidden>
+                    +
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section
-        className="section section--alt home-testimonials"
-        data-cms-page="home"
-        data-cms-section="testimonials"
-      >
-        <div className="container home-testimonials__container">
-          <SectionHeader
-            eyebrow={get('home', 'testimonials', 'eyebrow')}
-            title={get('home', 'testimonials', 'heading')}
-            className="home-testimonials__header"
-            cmsPage="home"
-            cmsSection="testimonials"
-          />
-          <div className="grid-3 home-testimonials__grid">
-            {homeTestimonials.map((testimonial) => (
-              <TestimonialCard key={testimonial.id} testimonial={testimonial} />
-            ))}
+        <section className="sd" data-cms-page="home" data-cms-section="services">
+          <div className="sd__inner">
+            <CmsText page="home" section="services" field="eyebrow" as="span" className="eb">
+              {servicesEyebrow}
+            </CmsText>
+            <CmsText page="home" section="services" field="heading" as="h2" className="tt">
+              {servicesHeading}
+            </CmsText>
+            <div className="lv-rule" aria-hidden />
+            <div className="svg3">
+              {services.map((service, index) => (
+                <Link key={service.key} className="sv" to={service.href}>
+                  <CmsText
+                    page="home"
+                    section="services"
+                    field={`card${index + 1}_title`}
+                    as="h3"
+                  >
+                    {service.title}
+                  </CmsText>
+                  <CmsText page="home" section="services" field={`card${index + 1}_body`} as="p">
+                    {service.text}
+                  </CmsText>
+                  <span className="lm">
+                    Learn more <span className="ar">&#8599;</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <CTASection
-        title={get('home', 'cta', 'heading')}
-        description={get('home', 'cta', 'description')}
-      />
+        <section className="hc" data-cms-page="home" data-cms-section="cta">
+          <div className="cta">
+            <CmsText page="home" section="cta" field="eyebrow" as="span" className="lbl">
+              {get('home', 'cta', 'eyebrow', 'United Properties')}
+            </CmsText>
+            <CmsText page="home" section="cta" field="heading" as="h2" className="tt">
+              {ctaHeading}
+            </CmsText>
+            <CmsText page="home" section="cta" field="description" as="p" className="tp">
+              {ctaDescription}
+            </CmsText>
+            <div className="bt">
+              <Link className="cb" to="/contact">
+                <CmsText page="home" section="cta" field="btn_quiz" as="span">
+                  {ctaBtn}
+                </CmsText>
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
     </>
   )
 }

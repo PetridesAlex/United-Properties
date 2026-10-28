@@ -17,7 +17,6 @@ import CategoryFilters from '../components/SearchPanel/CategoryFilters'
 import BedroomFilters from '../components/SearchPanel/BedroomFilters'
 import PriceFilters from '../components/SearchPanel/PriceFilters'
 import DiscoveryResults from '../components/SearchPanel/DiscoveryResults'
-import SearchMap from '../components/SearchPanel/SearchMap'
 import '../components/SearchPanel/SearchPanel.css'
 import './Search.css'
 
@@ -51,12 +50,35 @@ function formatEuro(value) {
   }).format(value)
 }
 
+function useNavbarOffset() {
+  const [top, setTop] = useState(0)
+
+  useEffect(() => {
+    function measure() {
+      const nav = document.querySelector('header.navbar')
+      const next = nav ? Math.round(nav.getBoundingClientRect().height) : 0
+      setTop((prev) => (prev === next ? prev : next))
+    }
+
+    measure()
+    window.addEventListener('resize', measure)
+    window.addEventListener('scroll', measure, {passive: true})
+    return () => {
+      window.removeEventListener('resize', measure)
+      window.removeEventListener('scroll', measure)
+    }
+  }, [])
+
+  return top
+}
+
 function Search() {
   const {get} = useSiteContent()
   const {list: properties, loading} = useMergedProperties()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const skipParamSyncRef = useRef(false)
+  const topOffset = useNavbarOffset()
 
   const initial = readFiltersFromParams(searchParams)
   const [query, setQuery] = useState(initial.query)
@@ -98,7 +120,6 @@ function Search() {
     return () => window.clearTimeout(timer)
   }, [query, activeCity, activeCategory, bedrooms, minPrice, maxPrice, navigate])
 
-  // If min > max after a change, clear the conflicting bound.
   useEffect(() => {
     if (minPrice > 0 && maxPrice > 0 && minPrice > maxPrice) {
       setMaxPrice(0)
@@ -155,15 +176,6 @@ function Search() {
     })
   }, [properties, activeCity, activeCategory, bedrooms, minPrice, maxPrice, query])
 
-  const mapProperties = useMemo(
-    () =>
-      filtered.map((property) => ({
-        ...property,
-        city: extractCity(property.location) || property.location,
-      })),
-    [filtered],
-  )
-
   function resetFilters() {
     setQuery('')
     setActiveCity('All Cyprus')
@@ -219,95 +231,95 @@ function Search() {
         <meta name="description" content={description} />
       </Helmet>
 
-      <section
-        className="section section--light search-page"
+      <div
+        className="up-search"
+        style={{'--up-top': `${topOffset}px`}}
         data-cms-page="search"
         data-cms-section="head"
       >
-        <div className="container search-page__shell">
-          <header className="search-page__head">
-            <div className="search-page__head-glow" aria-hidden="true" />
-            <div className="search-page__head-copy">
-              <p className="search-page__eyebrow">
-                {get('search', 'head', 'eyebrow', 'United Properties · Search')}
-              </p>
-              <h1 className="search-page__title">{heading}</h1>
-              <p className="search-page__sub">{description}</p>
-            </div>
-            <output className="search-page__stat" aria-live="polite">
-              <span className="search-page__stat-value">{loading ? '…' : filtered.length}</span>
-              <span className="search-page__stat-label">{matchLabel}</span>
+        <header className="up-search__hero">
+          <div className="up-search__hero-inner">
+            <p className="up-search__lbl">
+              {get('search', 'head', 'eyebrow', 'United Properties · Search')}
+            </p>
+            <h1 className="up-search__title">{heading}</h1>
+            <p className="up-search__lead">{description}</p>
+            <output className="up-search__stat" aria-live="polite">
+              <span className="up-search__stat-value">{loading ? '…' : filtered.length}</span>
+              <span className="up-search__stat-label">{matchLabel}</span>
             </output>
-          </header>
+          </div>
+        </header>
 
-          <div className="search-page__layout">
-            <aside className="search-page__sidebar" aria-label="Search filters">
-              <div className="search-page__sidebar-card search-panel__toolbar">
-                <div className="search-page__sidebar-top">
-                  <p className="search-page__sidebar-title">Filters</p>
-                  <button type="button" className="search-panel__reset" onClick={resetFilters}>
-                    {get('search', 'filters', 'clear', 'Clear all')}
-                  </button>
+        <section className="up-search__body" aria-label="Search listings">
+          <div className="up-search__shell">
+            <div className="up-search__layout">
+              <aside className="up-search__sidebar" aria-label="Search filters">
+                <div className="up-search__sidebar-card search-panel__toolbar">
+                  <div className="up-search__sidebar-top">
+                    <p className="up-search__sidebar-title">Filters</p>
+                    <button type="button" className="search-panel__reset" onClick={resetFilters}>
+                      {get('search', 'filters', 'clear', 'Clear all')}
+                    </button>
+                  </div>
+
+                  <SearchBar
+                    value={query}
+                    onChange={setQuery}
+                    placeholder={get(
+                      'search',
+                      'filters',
+                      'search_placeholder',
+                      'Search by name or area…',
+                    )}
+                  />
+                  <CityFilters
+                    cities={cities}
+                    activeCity={activeCity}
+                    onSelect={setActiveCity}
+                    locationLabel={get('search', 'filters', 'location_label', 'Location')}
+                  />
+                  <CategoryFilters
+                    categories={LISTING_FILTERS}
+                    activeCategory={activeCategory}
+                    onSelect={handleCategoryChange}
+                    onReset={resetFilters}
+                    categoryLabel={get('search', 'filters', 'category_label', 'Type')}
+                    clearLabel={get('search', 'filters', 'clear', 'Clear')}
+                  />
+                  <BedroomFilters
+                    value={bedrooms}
+                    onSelect={setBedrooms}
+                    label={get('search', 'filters', 'bedrooms_label', 'Bedrooms')}
+                  />
+                  <PriceFilters
+                    category={activeCategory}
+                    minPrice={minPrice}
+                    maxPrice={maxPrice}
+                    onMinChange={setMinPrice}
+                    onMaxChange={setMaxPrice}
+                    label={get('search', 'filters', 'price_label', 'Price')}
+                    minLabel={get('search', 'filters', 'price_min', 'Minimum')}
+                    maxLabel={get('search', 'filters', 'price_max', 'Maximum')}
+                  />
                 </div>
+              </aside>
 
-                <SearchBar
-                  value={query}
-                  onChange={setQuery}
-                  placeholder={get(
-                    'search',
-                    'filters',
-                    'search_placeholder',
-                    'Search by name or area…',
-                  )}
-                />
-                <CityFilters
-                  cities={cities}
-                  activeCity={activeCity}
-                  onSelect={setActiveCity}
-                  locationLabel={get('search', 'filters', 'location_label', 'Location')}
-                />
-                <CategoryFilters
-                  categories={LISTING_FILTERS}
-                  activeCategory={activeCategory}
-                  onSelect={handleCategoryChange}
-                  onReset={resetFilters}
-                  categoryLabel={get('search', 'filters', 'category_label', 'Type')}
-                  clearLabel={get('search', 'filters', 'clear', 'Clear')}
-                />
-                <BedroomFilters
-                  value={bedrooms}
-                  onSelect={setBedrooms}
-                  label={get('search', 'filters', 'bedrooms_label', 'Bedrooms')}
-                />
-                <PriceFilters
-                  category={activeCategory}
-                  minPrice={minPrice}
-                  maxPrice={maxPrice}
-                  onMinChange={setMinPrice}
-                  onMaxChange={setMaxPrice}
-                  label={get('search', 'filters', 'price_label', 'Price')}
-                  minLabel={get('search', 'filters', 'price_min', 'Minimum')}
-                  maxLabel={get('search', 'filters', 'price_max', 'Maximum')}
-                />
-              </div>
-            </aside>
-
-            <div className="search-page__main">
-              <div className="search-page__listings">
-                <div className="search-page__results-bar">
-                  <p className="search-page__results-count">
+              <div className="up-search__main">
+                <div className="up-search__results-bar">
+                  <p className="up-search__results-count">
                     {loading ? 'Loading homes…' : `${filtered.length} ${matchLabel}`}
                   </p>
                   {activeFilterChips.length ? (
-                    <div className="search-page__active-filters" aria-label="Active filters">
+                    <div className="up-search__active-filters" aria-label="Active filters">
                       {activeFilterChips.map((chip) => (
-                        <span key={chip.key} className="search-page__active-chip">
+                        <span key={chip.key} className="up-search__active-chip">
                           {chip.label}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <p className="search-page__results-hint">Showing all available listings</p>
+                    <p className="up-search__results-hint">Showing all available listings</p>
                   )}
                 </div>
 
@@ -323,36 +335,10 @@ function Search() {
                   )}
                 />
               </div>
-
-              <aside className="search-page__map-panel" aria-label="Map view">
-                <div className="search-page__map-head">
-                  <div>
-                    <p className="search-page__map-eyebrow">
-                      {get('search', 'map', 'heading', 'Map')}
-                    </p>
-                    <h2 className="search-page__map-title">Explore on the map</h2>
-                    <p className="search-page__map-sub">
-                      {activeCity === 'All Cyprus'
-                        ? 'Homes across Cyprus — refine filters to focus the view.'
-                        : `Focused on ${activeCity} and nearby areas.`}
-                    </p>
-                  </div>
-                  <output className="search-page__map-stat" aria-live="polite">
-                    <span className="search-page__map-stat-value">{filtered.length}</span>
-                    <span className="search-page__map-stat-label">on map</span>
-                  </output>
-                </div>
-                <SearchMap
-                  properties={mapProperties}
-                  activeCity={activeCity}
-                  className="search-page__map-canvas"
-                  interactive
-                />
-              </aside>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </>
   )
 }

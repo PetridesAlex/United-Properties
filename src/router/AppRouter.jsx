@@ -11,6 +11,7 @@ const SellWithUs = lazy(() => import('../pages/SellWithUs'))
 const Concierge = lazy(() => import('../pages/Concierge'))
 const Agents = lazy(() => import('../pages/Agents'))
 const Contact = lazy(() => import('../pages/Contact'))
+const Privacy = lazy(() => import('../pages/Privacy'))
 const HeroVideoWatch = lazy(() => import('../pages/HeroVideoWatch'))
 const NotFound = lazy(() => import('../pages/NotFound'))
 const AdminRoutes = lazy(() => import('../pages/admin/AdminRoutes'))
@@ -54,6 +55,7 @@ function AppRouter() {
         <Route path="/concierge" element={<Concierge />} />
         <Route path="/agents" element={<Agents />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/privacy" element={<Privacy />} />
         <Route path="/videos/luxury-real-estate-cyprus" element={<HeroVideoWatch />} />
         <Route
           path="/video/hero-video"

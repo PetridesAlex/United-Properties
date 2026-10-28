@@ -1,26 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDown } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { buildSearchPath } from '../../lib/search/searchPath'
 import { useSiteContent } from '../../hooks/useSiteContent'
 import CmsText from '../CmsPreview/CmsText'
-import CmsStaggeredHeading from '../StaggeredText/CmsStaggeredHeading'
-import './Hero.css'
 
 /** Served from `public/video/hero-video-optimize-united-properties.mp4` */
 const HERO_VIDEO_SRC = '/video/hero-video-optimize-united-properties.mp4'
 const HERO_VIDEO_POSTER = '/images/video/hero-luxury-real-estate-cyprus-poster.jpg'
 
 const DEFAULT_HERO_LEDE = 'Cyprus leads. Limassol grows. Be part of it.'
-
-/** Keep the brand line as two balanced rows when CMS uses the tagline. */
-function balanceHeroHeading(raw) {
-  const text = String(raw || '').trim()
-  if (/^confidence\s+in\s+every\s+move\.?$/i.test(text)) {
-    return 'Confidence in|every move'
-  }
-  return text
-}
+const HEADING_WORDS = ['Confidence', 'in', 'every', 'move.']
 
 /** Prefer the new premium lede when CMS still holds the retired boutique line. */
 function resolveHeroLede(raw) {
@@ -34,13 +23,28 @@ function Hero() {
   const sectionRef = useRef(null)
   const videoRef = useRef(null)
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false)
+  const [reduceMotion, setReduceMotion] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
 
+  const headingRaw = get('home', 'hero', 'heading', 'Confidence in every move.')
+  const headingTrimmed = String(headingRaw || '').trim() || 'Confidence in every move.'
+  const displayHeading = /\.$/.test(headingTrimmed) ? headingTrimmed : `${headingTrimmed}.`
+  const useAnimatedHeading = /^confidence\s+in\s+every\s+move\.?$/i.test(displayHeading)
+  const eyebrow = get('home', 'hero', 'eyebrow', 'United Properties  ·  Cyprus')
+  const lede = resolveHeroLede(get('home', 'hero', 'description', DEFAULT_HERO_LEDE))
+
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-    if (mediaQuery.matches) return undefined
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const sync = () => setReduceMotion(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || reduceMotion) return undefined
 
     const section = sectionRef.current
     if (!section) return undefined
@@ -64,13 +68,9 @@ function Hero() {
 
     observer.observe(section)
     return () => observer.disconnect()
-  }, [])
+  }, [reduceMotion])
 
-  useEffect(() => {
-    const onOpenSearch = () => navigate(buildSearchPath())
-    window.addEventListener('open-property-search-panel', onOpenSearch)
-    return () => window.removeEventListener('open-property-search-panel', onOpenSearch)
-  }, [navigate])
+  const loadVideo = shouldLoadVideo && !reduceMotion
 
   useEffect(() => {
     const params = new URLSearchParams(location.search)
@@ -78,9 +78,8 @@ function Hero() {
     navigate(buildSearchPath(), { replace: true })
   }, [location.pathname, location.search, navigate])
 
-  /** Browsers often need an explicit play() after dynamic src attach (muted + playsInline still). */
   useEffect(() => {
-    if (!shouldLoadVideo) return undefined
+    if (!loadVideo) return undefined
     const el = videoRef.current
     if (!el) return undefined
 
@@ -94,65 +93,58 @@ function Hero() {
     tryPlay()
     el.addEventListener('loadeddata', tryPlay)
     return () => el.removeEventListener('loadeddata', tryPlay)
-  }, [shouldLoadVideo])
+  }, [loadVideo])
 
   return (
-    <section
-      className="hero-section"
-      ref={sectionRef}
-      data-cms-page="home"
-      data-cms-section="hero"
-    >
-      <div className="hero-section__media" aria-hidden="true">
-        <video
-          ref={videoRef}
-          className="hero-section__video"
-          src={shouldLoadVideo ? HERO_VIDEO_SRC : undefined}
-          poster={HERO_VIDEO_POSTER}
-          autoPlay={shouldLoadVideo}
-          muted
-          loop
-          playsInline
-          preload={shouldLoadVideo ? 'metadata' : 'none'}
-          disablePictureInPicture
-        />
-      </div>
+    <section className="hh" ref={sectionRef} data-cms-page="home" data-cms-section="hero">
+      <video
+        ref={videoRef}
+        className="up-hero-media"
+        src={loadVideo ? HERO_VIDEO_SRC : undefined}
+        poster={HERO_VIDEO_POSTER}
+        autoPlay={loadVideo}
+        muted
+        loop
+        playsInline
+        preload={loadVideo ? 'metadata' : 'none'}
+        disablePictureInPicture
+        aria-hidden="true"
+      />
 
-      <div className="hero-section__premium" aria-hidden="true">
-        <div className="hero-section__ambient" />
-        <div className="hero-section__vignette" />
-        <div className="hero-section__grain" />
-      </div>
-
-      <div className="hero-section__overlay" />
-
-      <div className="hero-section__copy">
-        {get('home', 'hero', 'eyebrow') ? (
-          <CmsText page="home" section="hero" field="eyebrow" as="p" className="hero-section__eyebrow">
-            {get('home', 'hero', 'eyebrow')}
+      <div className="hh__copy">
+        {eyebrow ? (
+          <CmsText page="home" section="hero" field="eyebrow" as="span" className="lbl lbl--center">
+            {eyebrow}
           </CmsText>
         ) : null}
-        {get('home', 'hero', 'heading') ? (
-          <CmsStaggeredHeading
+
+        {useAnimatedHeading && !reduceMotion ? (
+          <h1 aria-label={displayHeading}>
+            {HEADING_WORDS.map((word, i) => (
+              <span key={word} className="bw" style={{ animationDelay: `${0.05 + i * 0.1}s` }}>
+                {word}
+                {i < HEADING_WORDS.length - 1 ? ' ' : ''}
+              </span>
+            ))}
+          </h1>
+        ) : headingTrimmed ? (
+          <CmsText page="home" section="hero" field="heading" as="h1">
+            {displayHeading}
+          </CmsText>
+        ) : null}
+
+        {lede ? (
+          <CmsText
             page="home"
             section="hero"
-            field="heading"
-            as="h1"
-            className="hero-section__heading"
-            separator="|"
-            text={balanceHeroHeading(get('home', 'hero', 'heading', 'Confidence in every move'))}
-          />
-        ) : null}
-        {resolveHeroLede(get('home', 'hero', 'description', DEFAULT_HERO_LEDE)) ? (
-          <CmsText page="home" section="hero" field="description" as="p" className="hero-section__lede">
-            {resolveHeroLede(get('home', 'hero', 'description', DEFAULT_HERO_LEDE))}
+            field="description"
+            as="p"
+            className={`sub${reduceMotion || !useAnimatedHeading ? '' : ' fc'}`}
+          >
+            {lede}
           </CmsText>
         ) : null}
       </div>
-
-      <a className="hero-section__indicator" href="#featured-properties" aria-label="Scroll">
-        <ChevronDown size={22} />
-      </a>
     </section>
   )
 }
