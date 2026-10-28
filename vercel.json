@@ -9,6 +9,11 @@
       "source": "/developments",
       "destination": "/properties",
       "permanent": true
+    },
+    {
+      "source": "/offices",
+      "destination": "/offices/",
+      "permanent": false
     }
   ],
   "headers": [
@@ -38,6 +43,42 @@
           "value": "application/xml; charset=utf-8"
         }
       ]
+    },
+    {
+      "source": "/offices/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    },
+    {
+      "source": "/offices/(.*)\\.pdf",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/pdf"
+        }
+      ]
+    },
+    {
+      "source": "/offices/(.*)\\.svg",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "source": "/offices/(.*)\\.jpg",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "image/jpeg"
+        }
+      ]
     }
   ],
   "rewrites": [
@@ -46,7 +87,7 @@
       "destination": "/api/bazaraki-xml"
     },
     {
-      "source": "/((?!api).*)",
+      "source": "/((?!api|offices).*)",
       "destination": "/index.html"
     }
   ],
