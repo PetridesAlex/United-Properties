@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import StaggeredMenu from '../StaggeredMenu/StaggeredMenu'
+import UnitedTicker from '../UnitedTicker/UnitedTicker'
 import { INSTAGRAM_URL, LINKEDIN_URL, TELEGRAM_CHAT_URL, WHATSAPP_CHAT_URL } from '../../config/externalLinks'
 import { buildSearchPath } from '../../lib/search/searchPath'
 import { useSiteContent } from '../../hooks/useSiteContent'
@@ -15,14 +16,6 @@ const CENTER_NAV_ROUTES = [
   { key: 'contact', to: '/contact', fallback: 'Contact' },
 ]
 
-const TICKER_FALLBACKS = [
-  'Boutique Portfolio',
-  'Investment Advisory',
-  'Relocation',
-  'Off-Market Properties',
-  'International Private Clients',
-]
-
 function isCenterNavActive(pathname, to) {
   return pathname === to
 }
@@ -33,14 +26,6 @@ function Navbar() {
   const location = useLocation()
   const navigate = useNavigate()
   const isHome = location.pathname === '/'
-
-  const premiumServicesTicker = useMemo(
-    () =>
-      TICKER_FALLBACKS.map((fallback, index) =>
-        get('navbar', 'ticker', `item${index + 1}`, fallback),
-      ),
-    [get],
-  )
 
   const centerNavLinks = useMemo(
     () =>
@@ -77,30 +62,7 @@ function Navbar() {
 
   return (
     <header className={navClass} data-cms-page="navbar" data-cms-section="nav">
-      <section
-        className="navbar__ticker"
-        aria-label={get('navbar', 'nav', 'ticker_aria', 'Premium services')}
-        role="region"
-      >
-        <div className="navbar__ticker-viewport">
-          <div className="navbar__ticker-track" aria-hidden="true">
-            <div className="navbar__ticker-row">
-              {premiumServicesTicker.map((label, index) => (
-                <span key={`ticker-a-${index}`} className="navbar__ticker-chip">
-                  {label}
-                </span>
-              ))}
-            </div>
-            <div className="navbar__ticker-row">
-              {premiumServicesTicker.map((label, index) => (
-                <span key={`ticker-b-${index}`} className="navbar__ticker-chip">
-                  {label}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <UnitedTicker />
 
       <div className="container navbar__inner navbar__inner--wide">
         <Link

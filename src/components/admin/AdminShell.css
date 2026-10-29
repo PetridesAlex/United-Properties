@@ -2578,17 +2578,19 @@
 /* Hide public chrome on admin routes */
 body:has(.admin-shell) .navbar,
 body:has(.admin-shell) .footer,
-body:has(.admin-shell) .quick-contact-fab,
+body:has(.admin-shell) .up-fab,
 body:has(.admin-login) .navbar,
 body:has(.admin-login) .footer,
-body:has(.admin-login) .quick-contact-fab,
+body:has(.admin-login) .up-fab,
 body:has(.admin-entry) .navbar,
 body:has(.admin-entry) .footer,
-body:has(.admin-entry) .quick-contact-fab,
+body:has(.admin-entry) .up-fab,
 body:has(.admin-denied) .navbar,
 body:has(.admin-denied) .footer,
+body:has(.admin-denied) .up-fab,
 body:has(.admin-loading) .navbar,
-body:has(.admin-loading) .footer {
+body:has(.admin-loading) .footer,
+body:has(.admin-loading) .up-fab {
   display: none !important;
 }
 

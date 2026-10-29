@@ -448,7 +448,7 @@
   text-align: center;
 }
 
-html.cookie-consent-open .quick-contact-fab {
+html.cookie-consent-open .up-fab {
   bottom: max(7.25rem, calc(env(safe-area-inset-bottom, 0px) + 6.5rem));
   transition: bottom 0.35s ease;
 }
@@ -572,7 +572,7 @@ html.cookie-consent-open .quick-contact-fab {
   .cookie-preferences__btn:active,
   .cookie-preferences__bar,
   .cookie-preferences__scrim,
-  html.cookie-consent-open .quick-contact-fab {
+  html.cookie-consent-open .up-fab {
     transition: none;
     animation: none;
     transform: none;

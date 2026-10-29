@@ -347,10 +347,18 @@
 }
 
 .up-home .sv .lm .ar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--up-gold);
-  font-size: 0.62em;
-  margin-left: 2px;
-  vertical-align: 0.12em;
+  margin-left: 4px;
+  line-height: 0;
+}
+
+.up-home .sv .lm .ar svg {
+  display: block;
+  width: 12px;
+  height: 12px;
 }
 
 /* Closing CTA */

@@ -99,7 +99,7 @@
 }
 
 .up-contact .ct-hero {
-  padding: 72px 56px;
+  padding: calc(var(--up-top, 0px) + 56px) 56px 44px;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)),
     #0c1528;
@@ -379,7 +379,10 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .up-contact .ct-hero,
+  .up-contact .ct-hero {
+    padding: calc(var(--up-top, 0px) + 28px) 22px 36px;
+  }
+
   .up-contact .ct-close {
     padding-left: 22px;
     padding-right: 22px;

@@ -7,7 +7,7 @@ import Navbar from './components/Navbar/Navbar'
 import Footer from './components/Footer/Footer'
 import ScrollToTop from './components/ScrollToTop/ScrollToTop'
 import CookiePreferences from './components/CookiePreferences/CookiePreferences'
-import QuickContactFab from './components/QuickContactFab/QuickContactFab'
+import UnitedFloatingContact from './components/UnitedFloatingContact/UnitedFloatingContact'
 import SitePreloader from './components/SitePreloader/SitePreloader'
 import CmsInlineEditor from './components/CmsPreview/InlineEditor'
 import AppRouter from './router/AppRouter'
@@ -30,7 +30,7 @@ function AppChrome({ cmsPreview }) {
         <AppRouter />
       </main>
       <Footer />
-      {!hideOverlays ? <QuickContactFab /> : null}
+      {!hideOverlays ? <UnitedFloatingContact /> : null}
       {/* Cookie bar steals clicks on the live site; show it in CMS edit so its text can be edited. */}
       {!hideOverlays || showCookiesInEdit ? <CookiePreferences /> : null}
       <CmsInlineEditor />

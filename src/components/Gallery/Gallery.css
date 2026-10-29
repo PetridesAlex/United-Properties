@@ -250,7 +250,7 @@
 
 /* Hide site chrome while the image preview is open */
 html.gallery-lightbox-open .navbar,
-html.gallery-lightbox-open .quick-contact-fab,
+html.gallery-lightbox-open .up-fab,
 html.gallery-lightbox-open .cookie-preferences__launcher {
   visibility: hidden !important;
   pointer-events: none !important;

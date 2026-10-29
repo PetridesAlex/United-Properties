@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   CONTACT_MAILTO_HREF,
   CONTACT_PHONE_TEL,
@@ -5,6 +6,28 @@ import {
   WHATSAPP_CHAT_URL,
 } from '../config/externalLinks'
 import './UnitedContact.css'
+
+function useNavbarOffset() {
+  const [top, setTop] = useState(0)
+
+  useEffect(() => {
+    function measure() {
+      const nav = document.querySelector('header.navbar')
+      const next = nav ? Math.round(nav.getBoundingClientRect().height) : 0
+      setTop((prev) => (prev === next ? prev : next))
+    }
+
+    measure()
+    window.addEventListener('resize', measure)
+    window.addEventListener('scroll', measure, { passive: true })
+    return () => {
+      window.removeEventListener('resize', measure)
+      window.removeEventListener('scroll', measure)
+    }
+  }, [])
+
+  return top
+}
 
 const CONTACTS = [
   {
@@ -76,9 +99,11 @@ function Icon({ children }) {
   )
 }
 
-export default function UnitedContact({ quizHref = '#questions' }) {
+export default function UnitedContact({ quizHref = '#' }) {
+  const topOffset = useNavbarOffset()
+
   return (
-    <div className="up-contact">
+    <div className="up-contact" style={{ '--up-top': `${topOffset}px` }}>
       <section className="ct-hero">
         <div>
           <span className="lbl">CONTACT</span>

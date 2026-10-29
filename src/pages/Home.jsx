@@ -258,7 +258,18 @@ function Home() {
                     {service.text}
                   </CmsText>
                   <span className="lm">
-                    Learn more <span className="ar">&#8599;</span>
+                    Learn more{' '}
+                    <span className="ar" aria-hidden>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path
+                          d="M3.2 8.8L8.8 3.2M8.8 3.2H4.4M8.8 3.2V7.6"
+                          stroke="currentColor"
+                          strokeWidth="1.35"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
                   </span>
                 </Link>
               ))}

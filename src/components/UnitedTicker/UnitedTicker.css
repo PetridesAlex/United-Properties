@@ -1,0 +1,58 @@
+.up-ticker {
+  overflow: hidden;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  background: rgba(11, 17, 30, 0.96);
+  border-bottom: 1px solid rgba(217, 190, 143, 0.22);
+}
+
+.up-tk {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: up-tick 60s linear infinite;
+}
+
+.up-tk span {
+  font-family: Montserrat, system-ui, sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.34em;
+  font-weight: 300;
+  color: rgba(232, 228, 218, 0.82);
+  padding: 0 30px;
+}
+
+.up-tk i {
+  display: block;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #b89a6e;
+  opacity: 0.8;
+}
+
+@keyframes up-tick {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-25%);
+  }
+}
+
+@media (max-width: 760px) {
+  .up-ticker {
+    height: 40px;
+  }
+
+  .up-tk span {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .up-tk {
+    animation: none !important;
+  }
+}
