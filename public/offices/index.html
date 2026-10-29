@@ -98,6 +98,8 @@ aside{flex:1 1 320px;max-width:100%;min-width:0;border-left:1px solid var(--line
 .pop a.btn.dl[hidden]{display:none}
 .vmsg{color:#fff;font-size:17px;padding:24px;text-align:center}
 @media (prefers-reduced-motion:reduce){.pin,.leaflet-zoom-anim .leaflet-zoom-animated{transition:none}}
+.toast{position:fixed;left:50%;bottom:max(18px, env(safe-area-inset-bottom, 0px));transform:translateX(-50%);z-index:4000;background:#0b1728;color:#fff;border:1px solid #b48a65;padding:12px 18px;font-family:var(--sans);font-size:12px;letter-spacing:.04em;max-width:calc(100% - 32px);box-shadow:0 6px 20px rgba(11,23,40,.3)}
+.toast[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -124,62 +126,84 @@ aside{flex:1 1 320px;max-width:100%;min-width:0;border-left:1px solid var(--line
     </aside>
   </main>
 </div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
 (function(){
-  var W=2560,H=2304;
-  var FN=["Tower 55","Morpheus Business Hub","C View Tower","Neocleous Tower 15th Floor","Wall Street Business Center","Equilibrium Office Building","Small Whole Building - Limassol Marina","Small Whole Building - Historical Centre"];
-  var P=[
-    {n:1,name:"Tower 55",area:"Makarios Avenue",price:"For sale · €15,000,000",pdf:"pdf/1-tower-55.pdf",x:643,y:1014,ll:"34.6875956,33.0441831"},
-    {n:2,name:"Morpheus Business Hub",area:"Limassol",price:"For rent · from €13,000 per month + VAT",pdf:"pdf/2-morpheus-business-hub.pdf",x:1010,y:692,ll:"34.6932889,33.0520704"},
-    {n:3,name:"C View Tower",area:"Seafront · Agios Athanasios",price:"Prices from early November",pdf:"pdf/3-c-view-tower.pdf",x:1875,y:923,ll:"34.6892078,33.0706337"},
-    {n:4,name:"Neocleous Tower, 15th Floor",area:"Arch. Makarios III Avenue",price:"Sale €4,800,000 + VAT · Rent €25,000 per month + VAT",pdf:"pdf/4-neocleous-tower-15th-floor.pdf",x:918,y:1040,ll:"34.6871458,33.0500854"},
-    {n:5,name:"Wall Street Business Center",area:"Spyrou Kyprianou Avenue",price:"Units G1 and G3 · rent from €23,500 per month + VAT",pdf:"pdf/5-wall-street-business-center.pdf",x:1353,y:344,ll:"34.6994233,33.05942"},
-    {n:6,name:"Equilibrium Office Building",area:"Agia Zoni",price:"Whole building · €43,000 per month + VAT · ready April 2027",pdf:"pdf/6-equilibrium.pdf",x:946,y:1089,ll:"34.686285,33.0506914"},
-    {n:7,name:"Small Whole Building",area:"Limassol Marina",price:"For rent · €15,000 per month",pdf:"pdf/7-small-whole-building-marina.pdf",x:636,y:1838,ll:"34.6730652,33.0440416"},
-    {n:8,name:"Small Whole Building",area:"Historical Centre",price:"For rent · €18,000 per month + VAT",pdf:"pdf/8-small-whole-building-historical-centre.pdf",x:883,y:1243,ll:"34.6835613,33.0493393"}
-  ];
+  var W=2560,H=2304, POLL=120000;
+  var list=document.getElementById('list'), toast=document.getElementById('toast');
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+  function show(msg){toast.textContent=msg;toast.hidden=false;clearTimeout(show.t);show.t=setTimeout(function(){toast.hidden=true},8000)}
 
-  var dl=true;
-  var list=document.getElementById('list');
-  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
-  P.forEach(function(p){
-    var li=document.createElement('li');
-    li.innerHTML='<button type="button" id="opt-'+p.n+'"><span class="num">'+p.n+'</span><span class="li-t"><b>'+esc(p.name)+'</b><span>'+esc(p.area)+'</span><span>'+esc(p.price)+'</span></span></button>';
-    list.appendChild(li); p.btn=li.firstChild;
-  });
-
-  if(!window.L){document.getElementById('map').innerHTML='<p style="padding:16px">The map could not load. Use the list to open each option.</p>';
-    P.forEach(function(p){p.btn.addEventListener('click',function(){window.open(p.pdf,'_blank')})});return;}
-
-  var map=L.map('map',{crs:L.CRS.Simple,minZoom:-2,maxZoom:1,zoomSnap:0.25,attributionControl:true,maxBoundsViscosity:0.8});
-  var b=[[-H,0],[0,W]];
-  L.imageOverlay('limassol.jpg',b).addTo(map);
-  map.attributionControl.setPrefix(false).addAttribution('© OpenStreetMap contributors');
-  map.setMaxBounds([[-H-200,-200],[200,W+200]]);
-  var pts=P.map(function(p){return [-p.y,p.x]});
-  function fit(){map.fitBounds(L.latLngBounds(pts).pad(0.35))}
-  fit(); window.addEventListener('resize',function(){map.invalidateSize()});
-
-  var active=null;
-  P.forEach(function(p){
-    var icon=L.divIcon({className:'',html:'<div class="pin" id="pin-'+p.n+'">'+p.n+'</div>',iconSize:[34,34],iconAnchor:[17,17],popupAnchor:[0,-14]});
-    var m=L.marker([-p.y,p.x],{icon:icon,title:p.n+'. '+p.name,riseOnHover:true}).addTo(map);
-    var html=function(){return '<div class="pop"><img src="thumb/'+p.n+'.jpg" alt=""><span class="a">Option '+p.n+' · '+esc(p.area)+'</span><h3>'+esc(p.name)+'</h3><span class="p">'+esc(p.price)+'</span><div class="btns"><a class="btn" href="'+p.pdf+'" target="_blank" rel="noopener">Open the PDF</a><a class="btn dl" href="'+p.pdf+'" download="'+FN[p.n-1]+' - United Properties.pdf">Download the PDF</a><a class="lnk" href="https://www.google.com/maps?q='+p.ll+'" target="_blank" rel="noopener">Directions in Google Maps</a></div></div>';};
-    m.bindPopup(html,{maxWidth:260,keepInView:true,autoPanPaddingTopLeft:[20,30],autoPanPaddingBottomRight:[20,20]});
-    m.on('popupopen',function(){setActive(p)}); m.on('popupclose',function(){if(active===p)setActive(null)});
-    p.m=m;
-    p.btn.addEventListener('click',function(){
-      map.flyTo([-p.y,p.x],0,{duration:.6});
-      setTimeout(function(){m.openPopup()},650);
-      if(window.innerWidth<=900)document.getElementById('map').scrollIntoView({behavior:'smooth',block:'start'});
-    });
-  });
-  function setActive(p){
-    P.forEach(function(q){var el=document.getElementById('pin-'+q.n);if(el)el.classList.toggle('on',q===p);q.btn.setAttribute('aria-current',q===p?'true':'false')});
-    active=p;
+  var hasMap=!!window.L, map=null, active=null, items={}, firstLoad=true, lastSig='';
+  if(hasMap){
+    map=L.map('map',{crs:L.CRS.Simple,minZoom:-2,maxZoom:1,zoomSnap:0.25,maxBoundsViscosity:0.8});
+    L.imageOverlay('limassol.jpg',[[-H,0],[0,W]]).addTo(map);
+    map.attributionControl.setPrefix(false).addAttribution('© OpenStreetMap contributors');
+    map.setMaxBounds([[-H-200,-200],[200,W+200]]);
+    map.fitBounds([[-H*0.85,W*0.15],[-H*0.12,W*0.8]]);
+    window.addEventListener('resize',function(){map.invalidateSize()});
+  } else {
+    document.getElementById('map').innerHTML='<p style="padding:16px">The map could not load. Use the list to open each option.</p>';
   }
+
+  function popup(p){
+    return '<div class="pop"><img src="'+esc(p.thumb)+'" alt=""><span class="a">Option '+p.n+' · '+esc(p.area)+'</span><h3>'+esc(p.name)+'</h3><span class="p">'+esc(p.price)+'</span><div class="btns"><a class="btn" href="'+esc(p.pdf)+'" target="_blank" rel="noopener">Open the PDF</a><a class="btn dl" href="'+esc(p.pdf)+'" download="'+esc(p.file||p.name)+' - United Properties.pdf">Download the PDF</a><a class="lnk" href="https://www.google.com/maps?q='+esc(p.lat)+','+esc(p.lng)+'" target="_blank" rel="noopener">Directions in Google Maps</a></div></div>';
+  }
+  function setActive(n){
+    active=n;
+    Object.keys(items).forEach(function(k){var it=items[k];var el=document.getElementById('pin-'+k);if(el)el.classList.toggle('on',+k===n);it.btn.setAttribute('aria-current',+k===n?'true':'false')});
+  }
+  function render(opts){
+    var seen={};
+    opts.sort(function(a,b){return a.n-b.n});
+    list.innerHTML='';
+    opts.forEach(function(p){
+      seen[p.n]=1;
+      var li=document.createElement('li');
+      li.innerHTML='<button type="button"><span class="num">'+p.n+'</span><span class="li-t"><b>'+esc(p.name)+'</b><span>'+esc(p.area)+'</span><span>'+esc(p.price)+'</span></span></button>';
+      list.appendChild(li);
+      var btn=li.firstChild, it=items[p.n];
+      if(hasMap){
+        var ll=[-p.y,p.x];
+        if(!it){
+          var icon=L.divIcon({className:'',html:'<div class="pin" id="pin-'+p.n+'">'+p.n+'</div>',iconSize:[34,34],iconAnchor:[17,17],popupAnchor:[0,-14]});
+          var m=L.marker(ll,{icon:icon,title:p.n+'. '+p.name,riseOnHover:true}).addTo(map);
+          m.on('popupopen',function(){setActive(p.n)}); m.on('popupclose',function(){if(active===p.n)setActive(null)});
+          it=items[p.n]={m:m};
+        } else { it.m.setLatLng(ll); }
+        it.m.bindPopup(popup(p),{maxWidth:260,keepInView:true,autoPanPaddingTopLeft:[20,30],autoPanPaddingBottomRight:[20,20]});
+        btn.addEventListener('click',function(){
+          map.flyTo(ll,0,{duration:.6}); setTimeout(function(){items[p.n]&&items[p.n].m.openPopup()},650);
+          if(window.innerWidth<=900)document.getElementById('map').scrollIntoView({behavior:'smooth',block:'start'});
+        });
+      } else {
+        it=items[p.n]=items[p.n]||{};
+        btn.addEventListener('click',function(){window.open(p.pdf,'_blank')});
+      }
+      it.btn=btn; it.p=p;
+    });
+    Object.keys(items).forEach(function(k){ if(!seen[k]){ if(items[k].m)map.removeLayer(items[k].m); delete items[k]; } });
+    if(active!=null && items[active]) setActive(active);
+  }
+  function load(){
+    return fetch('options.json?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error(r.status);return r.text()}).then(function(txt){
+      if(txt===lastSig)return;
+      var data=JSON.parse(txt), opts=data.options||[];
+      var before=Object.keys(items).map(Number);
+      render(opts);
+      if(!firstLoad){
+        var added=opts.filter(function(p){return before.indexOf(p.n)<0});
+        if(added.length) show('New option added: '+added.map(function(p){return p.n+'. '+p.name}).join(', '));
+        else show('The list of options has been updated.');
+      }
+      firstLoad=false; lastSig=txt;
+    }).catch(function(){ if(firstLoad) list.innerHTML='<li class="foot">The options could not load. Please refresh the page.</li>'; });
+  }
+  load();
+  setInterval(function(){ if(!document.hidden) load(); }, POLL);
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden) load(); });
 })();
 </script>
 </body>

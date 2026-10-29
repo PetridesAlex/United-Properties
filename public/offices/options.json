@@ -1,0 +1,121 @@
+{
+  "options": [
+    {
+      "n": 1,
+      "name": "Tower 55",
+      "area": "Makarios Avenue",
+      "price": "For sale · €15,000,000",
+      "pdf": "pdf/1-tower-55.pdf",
+      "thumb": "thumb/1.jpg",
+      "file": "Tower 55",
+      "lat": 34.6875956,
+      "lng": 33.0441831,
+      "x": 643,
+      "y": 1014
+    },
+    {
+      "n": 2,
+      "name": "Morpheus Business Hub",
+      "area": "Limassol",
+      "price": "For rent · from €13,000 per month + VAT",
+      "pdf": "pdf/2-morpheus-business-hub.pdf",
+      "thumb": "thumb/2.jpg",
+      "file": "Morpheus Business Hub",
+      "lat": 34.6932889,
+      "lng": 33.0520704,
+      "x": 1010,
+      "y": 692
+    },
+    {
+      "n": 3,
+      "name": "C View Tower",
+      "area": "Seafront · Agios Athanasios",
+      "price": "Prices from early November",
+      "pdf": "pdf/3-c-view-tower.pdf",
+      "thumb": "thumb/3.jpg",
+      "file": "C View Tower",
+      "lat": 34.6892078,
+      "lng": 33.0706337,
+      "x": 1875,
+      "y": 923
+    },
+    {
+      "n": 4,
+      "name": "Neocleous Tower, 15th Floor",
+      "area": "Arch. Makarios III Avenue",
+      "price": "Sale €4,800,000 + VAT · Rent €25,000 per month + VAT",
+      "pdf": "pdf/4-neocleous-tower-15th-floor.pdf",
+      "thumb": "thumb/4.jpg",
+      "file": "Neocleous Tower 15th Floor",
+      "lat": 34.6871458,
+      "lng": 33.0500854,
+      "x": 918,
+      "y": 1040
+    },
+    {
+      "n": 5,
+      "name": "Wall Street Business Center",
+      "area": "Spyrou Kyprianou Avenue",
+      "price": "Units G1 and G3 · rent from €23,500 per month + VAT",
+      "pdf": "pdf/5-wall-street-business-center.pdf",
+      "thumb": "thumb/5.jpg",
+      "file": "Wall Street Business Center",
+      "lat": 34.6994233,
+      "lng": 33.05942,
+      "x": 1353,
+      "y": 344
+    },
+    {
+      "n": 6,
+      "name": "Equilibrium Office Building",
+      "area": "Agia Zoni",
+      "price": "Whole building · €43,000 per month + VAT · ready April 2027",
+      "pdf": "pdf/6-equilibrium.pdf",
+      "thumb": "thumb/6.jpg",
+      "file": "Equilibrium Office Building",
+      "lat": 34.686285,
+      "lng": 33.0506914,
+      "x": 946,
+      "y": 1089
+    },
+    {
+      "n": 7,
+      "name": "Small Whole Building",
+      "area": "Limassol Marina",
+      "price": "For rent · €15,000 per month",
+      "pdf": "pdf/7-small-whole-building-marina.pdf",
+      "thumb": "thumb/7.jpg",
+      "file": "Small Whole Building - Limassol Marina",
+      "lat": 34.6730652,
+      "lng": 33.0440416,
+      "x": 636,
+      "y": 1838
+    },
+    {
+      "n": 8,
+      "name": "Small Whole Building",
+      "area": "Historical Centre",
+      "price": "For rent · €18,000 per month + VAT",
+      "pdf": "pdf/8-small-whole-building-historical-centre.pdf",
+      "thumb": "thumb/8.jpg",
+      "file": "Small Whole Building - Historical Centre",
+      "lat": 34.6835613,
+      "lng": 33.0493393,
+      "x": 883,
+      "y": 1243
+    },
+    {
+      "n": 9,
+      "name": "Ground Floor Offices",
+      "area": "Agia Triada",
+      "price": "For rent · €30,000 per month + VAT",
+      "pdf": "pdf/9-ground-floor-offices-agia-triada.pdf",
+      "thumb": "thumb/9.jpg",
+      "file": "Ground Floor Offices - Agia Triada",
+      "lat": 34.6781304,
+      "lng": 33.0505423,
+      "x": 939,
+      "y": 1551
+    }
+  ]
+}

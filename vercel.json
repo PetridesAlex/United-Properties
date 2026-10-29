@@ -54,6 +54,19 @@
       ]
     },
     {
+      "source": "/offices/options.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/offices/(.*)\\.pdf",
       "headers": [
         {
