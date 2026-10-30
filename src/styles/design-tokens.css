@@ -26,3 +26,25 @@
   font-variant-numeric: lining-nums !important;
   font-feature-settings: 'lnum' 1, 'pnum' 0 !important;
 }
+
+/* Small gold labels: no dash before, a short fading hairline under (approved) */
+.lbl::before,
+.eb::before {
+  content: none !important;
+  display: none !important;
+}
+.lbl,
+.eb {
+  position: relative;
+  padding-bottom: 12px;
+}
+.lbl::after,
+.eb::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 26px;
+  height: 1px;
+  background: linear-gradient(90deg, #cda984, rgba(205, 169, 132, 0));
+}
