@@ -16,20 +16,19 @@
 
 .up-tk span {
   font-family: Montserrat, system-ui, sans-serif;
-  font-size: 10.5px;
-  letter-spacing: 0.34em;
-  font-weight: 300;
-  color: rgba(232, 228, 218, 0.82);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  font-weight: 500;
+  color: #e4dfd3;
   padding: 0 30px;
 }
 
 .up-tk i {
   display: block;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: #8c6640;
-  opacity: 0.8;
+  width: 1px;
+  height: 10px;
+  background: #cda984;
+  opacity: 0.7;
 }
 
 @keyframes up-tick {

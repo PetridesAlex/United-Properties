@@ -183,16 +183,11 @@ function Home() {
     <>
       <Helmet>
         <title>
-          {get('home', 'seo', 'title', 'United Properties | Luxury Real Estate in Cyprus')}
+          United Properties | Boutique real estate agency in Limassol
         </title>
         <meta
           name="description"
-          content={get(
-            'home',
-            'seo',
-            'description',
-            'Curated homes, seafront living, and private-client advisory across Limassol and beyond.',
-          )}
+          content="A boutique real estate agency born in Limassol. Residential and commercial properties to buy and rent, investment advice and property management."
         />
       </Helmet>
 
