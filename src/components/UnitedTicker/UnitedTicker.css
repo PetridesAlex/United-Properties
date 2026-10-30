@@ -26,9 +26,8 @@
 .up-tk i {
   display: block;
   width: 1px;
-  height: 10px;
-  background: #cda984;
-  opacity: 0.7;
+  height: 8px;
+  background: rgba(205, 169, 132, 0.6);
 }
 
 @keyframes up-tick {
