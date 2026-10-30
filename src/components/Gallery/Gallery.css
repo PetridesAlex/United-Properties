@@ -573,3 +573,23 @@ html.gallery-lightbox-open .cookie-preferences__launcher {
     max-height: calc(100vh - 230px);
   }
 }
+/* Steady frame: same box for every photo (no resize jump when the next photo loads);
+   the photo sits inside it whole (contain) */
+.gallery-lightbox__frame {
+  aspect-ratio: auto;
+  width: 100%;
+  height: calc(100vh - 250px);
+  max-height: none;
+}
+.gallery-lightbox__stage:not(.is-dragging) .gallery-lightbox__image {
+  transition: none;
+}
+.gallery-lightbox__frame.is-zoomed .gallery-lightbox__image {
+  transition: transform 0.2s ease;
+}
+@media (max-width: 680px) {
+  .gallery-lightbox__frame {
+    height: min(62vh, calc(100vh - 230px));
+    width: 100%;
+  }
+}

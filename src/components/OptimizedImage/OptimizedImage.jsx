@@ -17,6 +17,7 @@ function OptimizedImage({
   draggable = false,
   onLoad,
   onError,
+  noSrcSet = false,
   ...rest
 }) {
   const imgRef = useRef(null)
@@ -32,7 +33,7 @@ function OptimizedImage({
 
   if (!src) return null
 
-  const showSrcSet = !failedOptimized && srcSet && currentSrc === optimized && optimized !== src
+  const showSrcSet = !noSrcSet && !failedOptimized && srcSet && currentSrc === optimized && optimized !== src
 
   return (
     <img
