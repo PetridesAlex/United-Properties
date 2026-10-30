@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
+import { Bath, BedDouble, MapPin, Ruler } from 'lucide-react'
 import Hero from '../components/Hero/Hero'
 import OptimizedImage from '../components/OptimizedImage/OptimizedImage'
 import CmsText from '../components/CmsPreview/CmsText'
@@ -14,19 +15,19 @@ const DEFAULT_SERVICES = [
   {
     key: 'invest',
     title: 'Invest with us',
-    text: "Every investor has a different goal. Here's how we help you reach yours.",
+    text: "Here's how we help you reach yours.",
     href: '/services#invest-with-us',
   },
   {
     key: 'sell',
     title: 'Sell with us',
-    text: "Your property deserves more than a listing. Here's how we sell it.",
+    text: "Here's how we sell it.",
     href: '/services#sell-with-us',
   },
   {
     key: 'manage',
     title: 'Property management',
-    text: 'Let your property work for you. Two plans. One standard of care.',
+    text: 'Two plans. One standard of care.',
     href: '/services#property-management',
   },
 ]
@@ -44,6 +45,27 @@ function formatPrice(value, status) {
   if (!Number.isFinite(n)) return ''
   const formatted = new Intl.NumberFormat('en-US').format(n)
   return status === 'For Rent' ? `EUR ${formatted} / month` : `EUR ${formatted}`
+}
+
+function priceParts(value, status) {
+  const n = Number(value)
+  if (!Number.isFinite(n)) return { amount: '', unit: '' }
+  return {
+    amount: new Intl.NumberFormat('en-US').format(n),
+    unit: status === 'For Rent' ? '/ month' : '',
+  }
+}
+
+function sqmValue(property) {
+  const n = Number(property?.sqm)
+  return Number.isFinite(n) && n > 0 ? new Intl.NumberFormat('en-US').format(n) : ''
+}
+
+function listingTag(status) {
+  const s = String(status || '').toLowerCase()
+  if (s.includes('rent')) return 'For rent'
+  if (s.includes('sale')) return 'For sale'
+  return status ? String(status).charAt(0).toUpperCase() + String(status).slice(1).toLowerCase() : ''
 }
 
 function takeFeaturedMix(pool, maxCount) {
@@ -145,24 +167,12 @@ function Home() {
     }
   })
 
-  const ctaHeadingRaw = get('home', 'cta', 'heading', "Tell us what you're looking for.")
-  const ctaHeading = /ready to find your ideal|ideal property in cyprus/i.test(
+  const ctaHeadingRaw = get('home', 'cta', 'heading', 'What is your story?')
+  const ctaHeading = /ready to find your ideal|ideal property in cyprus|looking for/i.test(
     String(ctaHeadingRaw || ''),
   )
-    ? "Tell us what you're looking for."
+    ? 'What is your story?'
     : ctaHeadingRaw
-
-  const ctaDescRaw = get(
-    'home',
-    'cta',
-    'description',
-    'Buying, renting, selling or investing, it starts with a conversation.',
-  )
-  const ctaDescription = /tailored strategy|premium cyprus locations|connect with our advisors/i.test(
-    String(ctaDescRaw || ''),
-  )
-    ? 'Buying, renting, selling or investing, it starts with a conversation.'
-    : ctaDescRaw
 
   const ctaBtnRaw = get('home', 'cta', 'btn_quiz', 'Answer a few questions')
   const ctaBtn = /view listings|contact our team/i.test(String(ctaBtnRaw || ''))
@@ -221,9 +231,41 @@ function Home() {
                     preset="card"
                     sizes="(max-width: 760px) 94vw, (max-width: 1000px) 46vw, 32vw"
                   />
+                  <span className="ftag">{listingTag(property.status)}</span>
                   <div className="cap">
-                    <div className="ct">{property.title}</div>
-                    <div className="cp">{formatPrice(property.price, property.status)}</div>
+                    {property.location ? (
+                      <div className="cl">
+                        <MapPin size={16} strokeWidth={1.6} aria-hidden />
+                        <span>{property.location}</span>
+                      </div>
+                    ) : null}
+                    <div className="cp">
+                      <div className="cs">
+                        {sqmValue(property) ? (
+                          <span>
+                            <Ruler aria-hidden />
+                            {sqmValue(property)}
+                          </span>
+                        ) : null}
+                        {Number(property.bedrooms) > 0 ? (
+                          <span>
+                            <BedDouble aria-hidden />
+                            {property.bedrooms}
+                          </span>
+                        ) : null}
+                        {Number(property.bathrooms) > 0 ? (
+                          <span>
+                            <Bath aria-hidden />
+                            {property.bathrooms}
+                          </span>
+                        ) : null}
+                      </div>
+                      <small>EUR</small>
+                      <b>{priceParts(property.price, property.status).amount}</b>
+                      {priceParts(property.price, property.status).unit ? (
+                        <em>{priceParts(property.price, property.status).unit}</em>
+                      ) : null}
+                    </div>
                   </div>
                   <div className="plus" aria-hidden>
                     +
@@ -285,9 +327,7 @@ function Home() {
             <CmsText page="home" section="cta" field="heading" as="h2" className="tt">
               {ctaHeading}
             </CmsText>
-            <CmsText page="home" section="cta" field="description" as="p" className="tp">
-              {ctaDescription}
-            </CmsText>
+            <p className="sty">A few personal questions help us begin the right way.</p>
             <div className="bt">
               <Link className="cb" to="/contact">
                 <CmsText page="home" section="cta" field="btn_quiz" as="span">
