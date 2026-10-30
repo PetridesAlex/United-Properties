@@ -21,6 +21,13 @@ function formatSqm(sqm) {
   return n.toLocaleString('en-US')
 }
 
+function listingTagText(status) {
+  const s = String(status || '').toLowerCase()
+  if (s.includes('rent')) return 'For rent'
+  if (s.includes('sale')) return 'For sale'
+  return status || ''
+}
+
 function badgeVariantFromStatus(status) {
   const s = (status || '').toLowerCase()
   if (s.includes('rent')) return 'rent'
@@ -141,8 +148,7 @@ function PropertyCard({
               sizes="(max-width: 640px) 96vw, (max-width: 1100px) 46vw, 380px"
             />
             <span className="upc__tag" data-listing={badgeVariant}>
-              {property.status}
-              {property.type ? ` · ${property.type}` : ''}
+              {listingTagText(property.status)}
             </span>
             {isSignature && <span className="upc__signature">United Properties. Signature</span>}
           </div>

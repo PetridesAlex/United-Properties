@@ -23,7 +23,7 @@
 
 .upc__media {
   position: relative;
-  aspect-ratio: 4 / 3;
+  height: 260px;
   overflow: hidden;
 }
 .upc__media img {
@@ -68,7 +68,7 @@
   padding: 20px 22px 18px;
 }
 
-.upc__title {
+.upc .upc__title {
   margin: 0;
   font-family: var(--up-serif, 'Cormorant Garamond', serif);
   font-weight: 500;
@@ -81,7 +81,7 @@
   overflow: hidden;
 }
 
-.upc__location {
+.upc .upc__location {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -160,4 +160,16 @@
   .upc__foot {
     flex-wrap: wrap;
   }
+}
+
+/* keep the card text readable whatever the page sets for headings and links */
+.upc .upc__title {
+  color: #f5efe8;
+}
+.upc .upc__location,
+.upc .upc__price {
+  color: var(--up-gold, #cda984);
+}
+.upc__specs li span {
+  color: #f4f1ea;
 }
