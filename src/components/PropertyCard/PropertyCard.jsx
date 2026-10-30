@@ -15,6 +15,11 @@ function formatPrice(value, status) {
     : `EUR ${formatter.format(value)}`
 }
 
+function formatAmount(value) {
+  const n = Number(value)
+  return Number.isFinite(n) ? new Intl.NumberFormat('en-US').format(n) : ''
+}
+
 function formatSqm(sqm) {
   const n = Number(sqm)
   if (!Number.isFinite(n) || n <= 0) return null
@@ -188,7 +193,11 @@ function PropertyCard({
                   </li>
                 ) : null}
               </ul>
-              <p className="upc__price">{formatPrice(property.price, property.status)}</p>
+              <p className="upc__price">
+                <small>EUR</small>
+                <b>{formatAmount(property.price)}</b>
+                {property.status === 'For Rent' ? <em>/ month</em> : null}
+              </p>
             </div>
           </div>
         </Link>

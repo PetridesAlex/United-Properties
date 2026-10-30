@@ -173,3 +173,58 @@
 .upc__specs li span {
   color: #f4f1ea;
 }
+
+/* same height cards in a row; specs never wrap; price = tiny gold EUR + number + small "/ month" */
+.property-card:has(> .upc) {
+  display: flex;
+  height: 100%;
+}
+.property-card > .upc {
+  flex: 1;
+}
+.upc__specs li,
+.upc__specs li span {
+  white-space: nowrap;
+}
+.upc__specs {
+  font-size: 19px;
+}
+.upc__specs li {
+  padding: 0 12px;
+}
+.upc .upc__price {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-weight: 500;
+  font-size: 26px;
+  line-height: 1;
+}
+.upc .upc__price small {
+  font: 500 9px 'Montserrat', sans-serif;
+  letter-spacing: 0.28em;
+  color: var(--up-gold, #cda984);
+}
+.upc .upc__price b {
+  font: 500 26px/1 var(--up-serif, 'Cormorant Garamond', serif);
+  color: #f5efe8;
+}
+.upc .upc__price em {
+  font: 500 14px var(--up-serif, 'Cormorant Garamond', serif);
+  font-style: normal;
+  color: #e4dfd3;
+}
+.upc__foot {
+  flex-wrap: nowrap;
+}
+@media (max-width: 760px) {
+  .upc__foot {
+    flex-wrap: nowrap;
+  }
+  .upc__specs {
+    font-size: 17px;
+  }
+  .upc .upc__price b {
+    font-size: 22px;
+  }
+}
