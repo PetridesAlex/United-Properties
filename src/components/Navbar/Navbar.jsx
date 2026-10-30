@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Search } from 'lucide-react'
-import StaggeredMenu from '../StaggeredMenu/StaggeredMenu'
+import SiteMenu from '../SiteMenu/SiteMenu'
 import UnitedTicker from '../UnitedTicker/UnitedTicker'
 import { INSTAGRAM_URL, LINKEDIN_URL, TELEGRAM_CHAT_URL, WHATSAPP_CHAT_URL } from '../../config/externalLinks'
 import { buildSearchPath } from '../../lib/search/searchPath'
@@ -14,6 +14,14 @@ const CENTER_NAV_ROUTES = [
   { key: 'services', to: '/services', fallback: 'United Services' },
   { key: 'about', to: '/about', fallback: 'About' },
   { key: 'contact', to: '/contact', fallback: 'Contact' },
+]
+
+const MENU_ROUTES = [
+  { to: '/buy', label: 'Buy' },
+  { to: '/rent', label: 'Rent' },
+  { to: '/services', label: 'United services' },
+  { to: '/about', label: 'About' },
+  { to: '/contact', label: 'Contact' },
 ]
 
 function isCenterNavActive(pathname, to) {
@@ -34,11 +42,6 @@ function Navbar() {
         label: get('navbar', 'nav', item.key, item.fallback),
       })),
     [get],
-  )
-
-  const staggeredMenuItems = useMemo(
-    () => centerNavLinks.map((item) => ({ label: item.label, link: item.to })),
-    [centerNavLinks],
   )
 
   useEffect(() => {
@@ -102,23 +105,14 @@ function Navbar() {
           </button>
 
           <div className="navbar__ctas">
-            <StaggeredMenu
-              className="navbar__staggered"
-              position="right"
-              items={staggeredMenuItems}
-              socialItems={[
-                { label: get('navbar', 'social', 'instagram', 'Instagram'), link: INSTAGRAM_URL },
-                { label: get('navbar', 'social', 'linkedin', 'LinkedIn'), link: LINKEDIN_URL },
-                { label: get('navbar', 'social', 'whatsapp', 'WhatsApp'), link: WHATSAPP_CHAT_URL },
-                { label: get('navbar', 'social', 'telegram', 'Telegram'), link: TELEGRAM_CHAT_URL },
+            <SiteMenu
+              items={MENU_ROUTES}
+              socials={[
+                { key: 'instagram', label: 'Instagram', link: INSTAGRAM_URL },
+                { key: 'linkedin', label: 'LinkedIn', link: LINKEDIN_URL },
+                { key: 'whatsapp', label: 'WhatsApp', link: WHATSAPP_CHAT_URL },
+                { key: 'telegram', label: 'Telegram', link: TELEGRAM_CHAT_URL },
               ]}
-              displaySocials
-              displayItemNumbering={false}
-              menuButtonColor="#ffffff"
-              openMenuButtonColor="#ffffff"
-              changeMenuColorOnOpen
-              colors={['rgba(20, 17, 15, 0.94)', 'rgba(10, 8, 7, 0.96)']}
-              accentColor="#cda984"
             />
           </div>
         </div>

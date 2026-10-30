@@ -1,0 +1,172 @@
+.up-menu-btn {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.up-menu-btn span {
+  display: block;
+  width: 24px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: #f4f1ea;
+}
+
+.up-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(120% 60% at 50% 0%, rgba(205, 169, 132, 0.07), transparent 60%), #0b1324;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.55s ease, visibility 0s linear 0.55s;
+}
+.up-menu.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.55s ease, visibility 0s;
+}
+.up-menu__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 22px 0;
+  flex: none;
+}
+.up-menu__logo img {
+  display: block;
+  width: 55px;
+  height: auto;
+}
+.up-menu__x {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(205, 169, 132, 0.4);
+  background: transparent;
+  color: #f5efe8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: box-shadow 0.35s, border-color 0.35s;
+}
+.up-menu__x:hover {
+  box-shadow: 0 0 0 6px rgba(205, 169, 132, 0.12);
+  border-color: #cda984;
+}
+.up-menu__nav {
+  padding: 34px 22px 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  width: 100%;
+  max-width: 720px;
+  box-sizing: border-box;
+}
+.up-menu__nav a {
+  display: flex;
+  align-items: center;
+  font: 500 34px/1.1 'Cormorant Garamond', Georgia, serif;
+  color: #f4f1ea;
+  text-decoration: none;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(205, 169, 132, 0.22);
+}
+.up-menu__nav a:hover {
+  color: #cda984;
+}
+.up-menu__bottom {
+  flex: none;
+  display: flex;
+  gap: 10px;
+  padding: 18px 22px calc(24px + env(safe-area-inset-bottom, 0px));
+}
+.up-menu__so {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(205, 169, 132, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e4dfd3;
+  transition: box-shadow 0.35s;
+}
+.up-menu__so:hover {
+  box-shadow: 0 0 0 6px rgba(205, 169, 132, 0.12);
+}
+.up-menu__so--whatsapp {
+  color: #25d366;
+}
+.up-menu__so--telegram {
+  color: #2aa3ea;
+}
+
+/* fade-in only: the menu, then each item .08s apart, then the icons */
+@keyframes up-mfade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.up-menu.is-open .up-menu__top,
+.up-menu.is-open .up-menu__nav a,
+.up-menu.is-open .up-menu__bottom {
+  animation: up-mfade 0.7s ease both;
+}
+.up-menu.is-open .up-menu__top {
+  animation-delay: 0.1s;
+}
+.up-menu.is-open .up-menu__nav a:nth-child(1) {
+  animation-delay: 0.18s;
+}
+.up-menu.is-open .up-menu__nav a:nth-child(2) {
+  animation-delay: 0.26s;
+}
+.up-menu.is-open .up-menu__nav a:nth-child(3) {
+  animation-delay: 0.34s;
+}
+.up-menu.is-open .up-menu__nav a:nth-child(4) {
+  animation-delay: 0.42s;
+}
+.up-menu.is-open .up-menu__nav a:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.up-menu.is-open .up-menu__bottom {
+  animation-delay: 0.6s;
+}
+@media (min-width: 761px) {
+  .up-menu__top,
+  .up-menu__nav,
+  .up-menu__bottom {
+    padding-left: 56px;
+    padding-right: 56px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .up-menu,
+  .up-menu * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* hide floating buttons and cookie card while the menu is open */
+html.up-menu-open .up-fab {
+  visibility: hidden !important;
+}
