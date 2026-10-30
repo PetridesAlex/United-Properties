@@ -1271,8 +1271,6 @@
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03)),
     rgba(14, 22, 40, 0.55) !important;
-  backdrop-filter: blur(18px) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(150%) !important;
   box-shadow:
     0 14px 36px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
@@ -1280,4 +1278,10 @@
 .navbar--scrolled {
   background: transparent !important;
   box-shadow: none !important;
+}
+
+/* Blur for the glass bar (own rule so the build keeps it) */
+header.navbar.navbar--scrolled > .navbar__inner,
+header.navbar.navbar--scrolled .navbar__inner {
+  backdrop-filter: blur(18px) saturate(150%) !important;
 }
