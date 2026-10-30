@@ -84,3 +84,59 @@
     bottom: 12px;
   }
 }
+
+/* Approved design (2026-10): glass pill, gold dividers, no glow animation, quiet hover halo */
+.up-fab {
+  gap: 14px;
+  padding: 14px 20px 14px 26px;
+  bottom: 24px;
+  border: 1px solid rgba(205, 169, 132, 0.7);
+  border-right: none;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03)),
+    rgba(14, 22, 40, 0.55);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  animation: none !important;
+}
+.up-fab__dv {
+  flex: none;
+  width: 1px;
+  height: 40px;
+  background: rgba(205, 169, 132, 0.6);
+  margin: 0 6px;
+}
+.up-fab__b {
+  position: relative;
+}
+.up-fab__b::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: background 0.35s ease, border-color 0.35s ease;
+  pointer-events: none;
+}
+.up-fab__b:hover::after {
+  background: rgba(205, 169, 132, 0.12);
+  border-color: rgba(205, 169, 132, 0.7);
+}
+@media (max-width: 760px) {
+  .up-fab {
+    gap: 8px;
+    padding: 10px 12px 10px 16px;
+    bottom: 18px;
+  }
+  .up-fab__dv {
+    height: 28px;
+    margin: 0 2px;
+  }
+  .up-fab__b,
+  .up-fab__b svg {
+    width: 29px;
+    height: 29px;
+  }
+}

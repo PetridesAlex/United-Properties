@@ -2,9 +2,9 @@
   --up-navy: #0b1324;
   --up-navy-mid: #0e182d;
   --up-cream: #f4f1ea;
-  --up-cream-paper: #fbfaf7;
-  --up-gold: #d9be8f;
-  --up-gold-deep: #b89a6e;
+  --up-cream-paper: #f5efe8;
+  --up-gold: #cda984;
+  --up-gold-deep: #8c6640;
   --up-ink: #0b1324;
   --up-ink-body: #3a4459;
   --up-ink-licence: #6b5a3c;
@@ -107,7 +107,7 @@
   background: var(--up-cream-paper);
   color: var(--up-ink);
   padding: 56px 64px 64px;
-  border: 1px solid rgba(184, 154, 110, 0.75);
+  border: 1px solid rgba(205, 169, 132, 0.75);
   border-radius: 28px;
   box-shadow:
     inset 0 1px 0 #fff,
@@ -242,5 +242,113 @@
 
   .up-about .lbl::before {
     width: 20px;
+  }
+}
+
+/* Approved design (2026-10): letter ornament, opener line, "What we do" row */
+.up-about .orn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.up-about .orn i {
+  flex: 1;
+  height: 1.5px;
+  background: linear-gradient(90deg, rgba(205, 169, 132, 0), #cda984);
+}
+.up-about .orn i:last-child {
+  background: linear-gradient(90deg, #cda984, rgba(205, 169, 132, 0));
+}
+.up-about .orn b {
+  display: block;
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+  border: 1.5px solid #cda984;
+  background: #f5efe8;
+}
+.up-about .ltr p.opener {
+  font-size: clamp(26px, 2.5vw, 32px);
+  line-height: 1.25;
+  font-weight: 500;
+  color: #0b1324;
+  margin-bottom: 4px;
+}
+.up-about .ltr .gold {
+  width: 44px;
+  height: 1px;
+  background: #cda984;
+  margin: 6px 0 10px;
+}
+.up-about .cred .cl {
+  color: #8c6640;
+}
+
+.up-about__wwd {
+  padding: 0 56px 110px;
+}
+.up-about__wwd .up-about__shell {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+.up-about__wwd-title {
+  margin: 0;
+  max-width: 900px;
+  font-family: var(--up-serif);
+  font-size: clamp(32px, 3.34vw, 48px);
+  line-height: 1.08;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: #f4f1ea;
+}
+.up-about .wwd {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 28px;
+}
+.up-about .wwd a {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid rgba(205, 169, 132, 0.6);
+  padding-top: 20px;
+  color: #f4f1ea;
+  text-decoration: none;
+}
+.up-about .wwd h3 {
+  margin: 0;
+  font-family: var(--up-serif);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: #f4f1ea;
+  transition: color 0.35s;
+}
+.up-about .wwd p {
+  margin: 0;
+  font-family: var(--up-serif);
+  font-size: 21px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #e4dfd3;
+}
+.up-about .wwd a:hover h3 {
+  color: #cda984;
+}
+@media (max-width: 1100px) {
+  .up-about .wwd {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 36px;
+  }
+}
+@media (max-width: 760px) {
+  .up-about__wwd {
+    padding: 0 22px 80px;
+  }
+  .up-about .sheet {
+    padding: 34px 24px 40px;
+    border-radius: 22px;
   }
 }
