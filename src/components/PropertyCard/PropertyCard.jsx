@@ -3,6 +3,7 @@ import { BedDouble, Bath, Ruler, MapPin } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import OptimizedImage from '../OptimizedImage/OptimizedImage'
 import './PropertyCard.css'
+import './PropertyCardListing.css'
 
 const MotionArticle = motion.article
 const MotionSpan = motion.span
@@ -127,57 +128,64 @@ function PropertyCard({
           </div>
         </Link>
       ) : (
-        <>
-          <div className="property-card__media">
+        <Link
+          className="upc"
+          to={`/properties/${property.slug}`}
+          aria-label={`View listing: ${property.title}`}
+        >
+          <div className="upc__media">
             <OptimizedImage
               src={property.image}
               alt={`${property.title} in ${property.location}`}
               preset="card"
               sizes="(max-width: 640px) 96vw, (max-width: 1100px) 46vw, 380px"
             />
-            <MotionSpan
-              className={`property-card__badge property-card__badge--${badgeVariant}`}
-              data-listing={badgeVariant}
-              initial={reduceMotion ? false : { opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-              whileHover={reduceMotion ? undefined : { scale: 1.03 }}
-            >
-              <span className="property-card__badge-main">{property.status}</span>
-              {property.type ? (
-                <>
-                  <span className="property-card__badge-sep" aria-hidden="true" />
-                  <span className="property-card__badge-type">{property.type}</span>
-                </>
-              ) : null}
-            </MotionSpan>
-            {isSignature && <span className="property-card__signature">United Properties. Signature</span>}
+            <span className="upc__tag" data-listing={badgeVariant}>
+              {property.status}
+              {property.type ? ` · ${property.type}` : ''}
+            </span>
+            {isSignature && <span className="upc__signature">United Properties. Signature</span>}
           </div>
-          <div className="property-card__content">
-            <p className="property-card__price">{formatPrice(property.price, property.status)}</p>
-            <h3>{property.title}</h3>
-            <p className="property-card__location">
-              <MapPin size={15} /> {property.location}
-            </p>
-            {showDescription && <p className="property-card__description">{property.description}</p>}
-            <div className="property-card__meta">
-              <span>
-                <BedDouble size={16} /> {property.bedrooms} Beds
-              </span>
-              <span>
-                <Bath size={16} /> {property.bathrooms} Baths
-              </span>
-              <span>
-                <Ruler size={16} /> {property.sqm} sqm
-              </span>
+          <div className="upc__body">
+            <h3 className="upc__title">{property.title}</h3>
+            {locationLine ? (
+              <p className="upc__location">
+                <MapPin size={14} strokeWidth={1.6} aria-hidden /> {locationLine}
+              </p>
+            ) : null}
+            {showDescription && <p className="upc__description">{property.description}</p>}
+            <hr className="upc__rule" />
+            <div className="upc__foot">
+              <ul className="upc__specs">
+                {areaLabel ? (
+                  <li>
+                    <Ruler size={14} strokeWidth={1.6} aria-hidden />
+                    <span>{areaLabel}</span>
+                  </li>
+                ) : null}
+                {Number(property.bedrooms) > 0 ? (
+                  <li>
+                    <BedDouble size={14} strokeWidth={1.6} aria-hidden />
+                    <span>
+                      {property.bedrooms}
+                      <span className="upc__sr"> {bedsLabel}</span>
+                    </span>
+                  </li>
+                ) : null}
+                {Number(property.bathrooms) > 0 ? (
+                  <li>
+                    <Bath size={14} strokeWidth={1.6} aria-hidden />
+                    <span>
+                      {property.bathrooms}
+                      <span className="upc__sr"> {bathsLabel}</span>
+                    </span>
+                  </li>
+                ) : null}
+              </ul>
+              <p className="upc__price">{formatPrice(property.price, property.status)}</p>
             </div>
-            {showButton && (
-              <Link className="btn btn-outline-dark" to={`/properties/${property.slug}`}>
-                View Details
-              </Link>
-            )}
           </div>
-        </>
+        </Link>
       )}
     </MotionArticle>
   )
