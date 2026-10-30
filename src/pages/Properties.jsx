@@ -2,6 +2,8 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLocation } from 'react-router-dom'
 import PropertyCard from '../components/PropertyCard/PropertyCard'
+import ListingFilters from '../components/ListingFilters/ListingFilters'
+import { EMPTY_FILTERS, applyListingFilters } from '../lib/search/listingFilters'
 import CmsText from '../components/CmsPreview/CmsText'
 import { useMergedProperties } from '../hooks/useMergedProperties'
 import { useSiteContent } from '../hooks/useSiteContent'
@@ -376,7 +378,28 @@ function Properties() {
     () => getHeroContent(mode, filters.status, get),
     [mode, filters.status, get],
   )
-  const discoveryIntro = useMemo(() => getDiscoveryIntro(mode, get), [mode, get])
+  const discoveryIntro = useMemo(() => {
+    const base = getDiscoveryIntro(mode, get)
+    if (mode === 'buy') {
+      return {
+        ...base,
+        eyebrow: 'United Properties',
+        title: 'Explore listings',
+        description: 'Apartments, villas, offices and investment homes.',
+        note: 'Not every property is listed publicly. Speak with one of our consultants about off-market opportunities.',
+      }
+    }
+    if (mode === 'rent') {
+      return {
+        ...base,
+        eyebrow: 'United Properties',
+        title: 'Explore rentals',
+        description: 'Apartments, villas, furnished homes and offices to rent.',
+        note: 'Not every property is listed publicly. Speak with one of our consultants about off-market options.',
+      }
+    }
+    return base
+  }, [mode, get])
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
@@ -387,7 +410,20 @@ function Properties() {
     return () => mq.removeEventListener('change', sync)
   }, [])
 
+  const baseListing = mode === 'rent' ? 'For Rent' : mode === 'buy' ? 'For Sale' : ''
+  const [ui, setUi] = useState({ ...EMPTY_FILTERS, listing: baseListing })
+  useEffect(() => {
+    setUi({ ...EMPTY_FILTERS, listing: baseListing })
+  }, [baseListing])
+  const showBar = mode === 'buy' || mode === 'rent'
+
   const filtered = useMemo(() => {
+    if (showBar) {
+      return applyListingFilters(
+        allProperties.filter((p) => matchesListingLocation(p.location, 'Limassol')),
+        ui,
+      )
+    }
     const keyword = filters.keyword.toLowerCase()
     const result = allProperties.filter((property) => {
       const inLimassol = matchesListingLocation(property.location, 'Limassol')
@@ -421,7 +457,7 @@ function Properties() {
     })
 
     return result
-  }, [filters, allProperties])
+  }, [filters, allProperties, showBar, ui])
 
   const visibleProperties = filtered.slice(0, visibleCount)
   const heroSection = heroContent.cmsSection || 'hero_buy'
@@ -486,15 +522,17 @@ function Properties() {
               </CmsText>
             )}
 
-            <CmsText
-              page="properties"
-              section={heroSection}
-              field="description"
-              as="p"
-              className={`lead${reduceMotion || !heroContent.animated ? '' : ' fc'}`}
-            >
-              {heroContent.description}
-            </CmsText>
+            {showBar ? null : (
+              <CmsText
+                page="properties"
+                section={heroSection}
+                field="description"
+                as="p"
+                className={`lead${reduceMotion || !heroContent.animated ? '' : ' fc'}`}
+              >
+                {heroContent.description}
+              </CmsText>
+            )}
           </div>
         </section>
 
@@ -544,6 +582,15 @@ function Properties() {
               </CmsText>
             ) : null}
             <div className="lv-rule" aria-hidden />
+            {showBar ? (
+              <ListingFilters
+                filters={ui}
+                onChange={(patch) => setUi((prev) => ({ ...prev, ...patch }))}
+                onClear={() => setUi({ ...EMPTY_FILTERS, listing: baseListing })}
+                pool={allProperties.filter((p) => matchesListingLocation(p.location, 'Limassol'))}
+                count={filtered.length}
+              />
+            ) : null}
             <p className="lvc">
               {filtered.length} {countLabel}
             </p>
@@ -555,8 +602,7 @@ function Properties() {
                     <PropertyCard
                       key={property.id}
                       property={property}
-                      variant="cover"
-                      imageSizes="(max-width: 860px) 94vw, 48vw"
+                      imageSizes="(max-width: 760px) 94vw, (max-width: 1100px) 46vw, 32vw"
                     />
                   ))}
                 </div>
