@@ -165,7 +165,6 @@ export default function UnitedContact({ quizHref = '#' }) {
         <div className="cta">
           <span className="lbl">UNITED PROPERTIES</span>
           <h2 className="tt">Tell us what you&apos;re looking for.</h2>
-          <p className="tp">Buying, renting, selling or investing, it starts with a conversation.</p>
           <div className="bt">
             <a className="cb" href={quizHref}>
               Answer a few questions
