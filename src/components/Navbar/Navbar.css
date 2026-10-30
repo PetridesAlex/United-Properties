@@ -1254,15 +1254,21 @@
   }
 }
 
-/* Approved design (2026-10): glass bar after scroll with a fine gold edge, same glass as the floating buttons */
-.navbar--solid.navbar--scrolled .navbar__inner {
-  border: 1px solid rgba(205, 169, 132, 0.55);
+/* Approved design (2026-10): glass bar after scroll with a fine gold edge, same glass as the floating buttons.
+   !important is needed because the base bar rule removes border and shadow with !important. */
+.navbar--scrolled .navbar__inner {
+  border: 1px solid rgba(205, 169, 132, 0.55) !important;
+  border-radius: 44px !important;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03)),
-    rgba(14, 22, 40, 0.55);
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
+    rgba(14, 22, 40, 0.55) !important;
+  backdrop-filter: blur(18px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(150%) !important;
   box-shadow:
     0 14px 36px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+.navbar--scrolled {
+  background: transparent !important;
+  box-shadow: none !important;
 }
