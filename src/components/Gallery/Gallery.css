@@ -558,3 +558,18 @@ html.gallery-lightbox-open .cookie-preferences__launcher {
     display: none;
   }
 }
+/* Photo never cropped: the frame always fits above the counter and thumbnails */
+.gallery-lightbox__chrome {
+  max-height: calc(100vh - 80px);
+}
+.gallery-lightbox__frame {
+  max-height: calc(100vh - 250px);
+  width: min(100%, calc((100vh - 250px) * var(--gallery-ratio, 1.333333)));
+}
+@media (max-width: 680px) {
+  .gallery-lightbox__frame {
+    height: auto;
+    width: 100%;
+    max-height: calc(100vh - 230px);
+  }
+}

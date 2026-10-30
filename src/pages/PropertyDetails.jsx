@@ -33,7 +33,6 @@ const PROPERTY_SECTION_IDS = [
   'property-details',
   'property-floorplans',
   'property-location',
-  'property-enquire',
 ]
 
 function scrollToPropertySection(id) {
