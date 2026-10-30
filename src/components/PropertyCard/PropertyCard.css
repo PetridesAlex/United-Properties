@@ -473,7 +473,7 @@
 .property-card__cover-location svg {
   flex-shrink: 0;
   margin-top: 0.12rem;
-  color: #bf9875;
+  color: #cda984;
 }
 
 .property-card__cover-location span {
@@ -515,7 +515,7 @@
 
 .property-card__specs li svg {
   flex-shrink: 0;
-  color: #bf9875;
+  color: #cda984;
 }
 
 @media (max-width: 720px) {

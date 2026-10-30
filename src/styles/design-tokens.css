@@ -46,5 +46,30 @@
   bottom: 0;
   width: 26px;
   height: 1px;
-  background: linear-gradient(90deg, #cda984, rgba(205, 169, 132, 0));
+  background: linear-gradient(90deg, currentColor, transparent);
+}
+
+
+/* Quiet fade for titles: opacity only, whole title, no blur or movement (approved) */
+@keyframes up-qfade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.bw {
+  animation: up-qfade 1.8s ease both !important;
+  animation-delay: 0s !important;
+}
+.fc {
+  animation: up-qfade 1.8s ease 0.5s both !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bw,
+  .fc {
+    animation: none !important;
+  }
+}
+
+h1,
+h2 {
+  text-wrap: balance;
 }

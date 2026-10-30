@@ -26,7 +26,7 @@
 
 .property-mgmt__eyebrow {
   margin: 0 0 0.7rem;
-  color: var(--color-accent, #bf9875);
+  color: var(--color-accent, #cda984);
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: 0.74rem;
@@ -197,7 +197,7 @@
 
 .property-mgmt__mark--yes {
   color: #11223a;
-  background: linear-gradient(155deg, #f0dcc4 0%, #bf9875 55%, #a8825f 100%);
+  background: linear-gradient(155deg, #f0dcc4 0%, #cda984 55%, #a8825f 100%);
   box-shadow:
     0 0 0 1px rgba(191, 152, 117, 0.35),
     0 8px 18px rgba(0, 0, 0, 0.22),

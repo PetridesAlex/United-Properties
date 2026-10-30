@@ -3,8 +3,8 @@
   --up-navy-mid: #0e182d;
   --up-cream: #f4f1ea;
   --up-cream-paper: #fbfaf7;
-  --up-gold: #d9be8f;
-  --up-gold-deep: #b89a6e;
+  --up-gold: #cda984;
+  --up-gold-deep: #8c6640;
   --up-muted: #c9c4b8;
   --up-ink-soft: #1d2740;
   --up-ink-mid: #4b5365;
@@ -15,7 +15,7 @@
   width: 100%;
   box-sizing: border-box;
   background:
-    radial-gradient(60% 28% at 85% 6%, rgba(217, 190, 143, 0.1), transparent 70%),
+    radial-gradient(60% 28% at 85% 6%, rgba(205, 169, 132, 0.1), transparent 70%),
     radial-gradient(50% 24% at 8% 48%, rgba(120, 150, 220, 0.08), transparent 70%),
     linear-gradient(180deg, var(--up-navy) 0%, var(--up-navy-mid) 50%, var(--up-navy) 100%);
   color: var(--up-cream);
@@ -64,7 +64,7 @@
   background: var(--up-cream-paper);
   color: var(--up-navy);
   padding: 12px 40px 36px;
-  border: 1px solid rgba(184, 154, 110, 0.75);
+  border: 1px solid rgba(205, 169, 132, 0.75);
   border-radius: 28px;
   box-shadow:
     inset 0 1px 0 #fff,
@@ -79,7 +79,7 @@
   display: none;
   margin: 0 0 0 28px;
   padding: 12px 0 14px 18px;
-  border-left: 1px solid rgba(217, 190, 143, 0.5);
+  border-left: 1px solid rgba(205, 169, 132, 0.5);
   font-family: var(--up-serif);
   font-size: 18px;
   line-height: 1.6;
@@ -172,7 +172,7 @@
 
 .up-services .h2 {
   margin: 0;
-  font-size: clamp(30px, 3.1vw, 44px);
+  font-size: clamp(32px, 3.34vw, 48px);
   line-height: 1.08;
   font-weight: 500;
   letter-spacing: -0.005em;
@@ -183,7 +183,7 @@
   margin: 0;
   max-width: 360px;
   font-family: var(--up-serif);
-  font-size: 19px;
+  font-size: 21px;
   line-height: 1.5;
   font-weight: 500;
   color: #e4dfd3;
@@ -205,7 +205,7 @@
 }
 
 .up-services .row:hover .rowt {
-  color: #9a7b4a;
+  color: #8c6640;
 }
 
 .up-services .row:hover .rowt::before {
@@ -437,7 +437,7 @@
   font-size: clamp(20px, 1.9vw, 25px);
   line-height: 1.4;
   font-weight: 500;
-  color: #9a7b4a;
+  color: #8c6640;
   transition:
     opacity 0.9s ease,
     transform 0.9s ease,
@@ -580,7 +580,7 @@
 }
 
 .up-contact__copy .h2 {
-  font-size: clamp(28px, 3vw, 42px);
+  font-size: clamp(32px, 3.34vw, 48px);
 }
 
 .up-contact__copy .lead {
@@ -644,7 +644,7 @@
     background: rgba(11, 19, 36, 0.97);
     backdrop-filter: blur(22px) saturate(160%);
     -webkit-backdrop-filter: blur(22px) saturate(160%);
-    border: 1px solid rgba(184, 154, 110, 0.75);
+    border: 1px solid rgba(205, 169, 132, 0.75);
     border-bottom-color: transparent;
     border-radius: 22px 22px 0 0;
     box-shadow: 0 -20px 0 20px var(--up-navy);
@@ -736,7 +736,7 @@
     padding: 6px 22px 28px;
     border-radius: 0 0 22px 22px;
     margin-top: 0;
-    border-top-color: rgba(184, 154, 110, 0.75);
+    border-top-color: rgba(205, 169, 132, 0.75);
     box-shadow:
       inset 0 1px 0 #fff,
       0 30px 60px -30px rgba(0, 0, 0, 0.6);

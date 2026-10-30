@@ -64,7 +64,7 @@
   height: 1.1rem;
   border: 0;
   background: transparent;
-  color: #d9be8f;
+  color: #cda984;
   flex-shrink: 0;
   transition: color 0.25s ease;
 }
@@ -120,11 +120,11 @@
 
 /* PDF: same minimal pill, a touch of gold so it reads as the primary action */
 .property-action--pdf {
-  background: rgba(217, 190, 143, 0.16);
+  background: rgba(205, 169, 132, 0.16);
 }
 
 .property-action--pdf:hover {
-  background: rgba(217, 190, 143, 0.26);
+  background: rgba(205, 169, 132, 0.26);
 }
 
 .property-action--pdf.is-busy,

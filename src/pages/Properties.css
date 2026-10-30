@@ -2,9 +2,9 @@
   --up-navy: #0b1324;
   --up-navy-mid: #0e182d;
   --up-cream: #f4f1ea;
-  --up-gold: #d9be8f;
-  --up-gold-deep: #b89a6e;
-  --up-gold-chip: #c2a57a;
+  --up-gold: #cda984;
+  --up-gold-deep: #8c6640;
+  --up-gold-chip: #cda984;
   --up-ink: #17263b;
   --up-serif: 'Cormorant Garamond', Georgia, serif;
   --up-sans: 'Montserrat', system-ui, sans-serif;
@@ -14,7 +14,7 @@
   color: var(--up-cream);
   font-family: var(--up-sans);
   background:
-    radial-gradient(60% 28% at 85% 6%, rgba(217, 190, 143, 0.1), transparent 70%),
+    radial-gradient(60% 28% at 85% 6%, rgba(205, 169, 132, 0.1), transparent 70%),
     radial-gradient(50% 24% at 8% 48%, rgba(120, 150, 220, 0.08), transparent 70%),
     linear-gradient(180deg, var(--up-navy) 0%, var(--up-navy-mid) 50%, var(--up-navy) 100%);
 }
@@ -80,7 +80,7 @@
   margin: 0;
   max-width: 560px;
   font-family: var(--up-serif);
-  font-size: 19px;
+  font-size: 21px;
   line-height: 1.5;
   font-weight: 500;
   color: #e4dfd3;
@@ -118,14 +118,14 @@
   font-size: 12px;
   letter-spacing: 0.18em;
   font-weight: 700;
-  color: #9a7b4a;
+  color: #8c6640;
   text-transform: uppercase;
 }
 
 .up-buy .lvh {
   margin: 0;
   font-family: var(--up-serif);
-  font-size: clamp(36px, 4vw, 54px);
+  font-size: clamp(32px, 3.34vw, 48px);
   line-height: 1.08;
   font-weight: 500;
   letter-spacing: -0.005em;

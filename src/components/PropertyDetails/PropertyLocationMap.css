@@ -131,8 +131,8 @@
   height: 36px;
   background:
     radial-gradient(circle at 50% 38%, #fff8ef 0 28%, transparent 29%),
-    radial-gradient(circle at 50% 38%, #bf9875 0 42%, transparent 43%),
-    linear-gradient(180deg, #d4b08a 0%, #bf9875 55%, #8f6a4a 100%);
+    radial-gradient(circle at 50% 38%, #cda984 0 42%, transparent 43%),
+    linear-gradient(180deg, #d4b08a 0%, #cda984 55%, #8f6a4a 100%);
   clip-path: polygon(50% 100%, 92% 42%, 92% 22%, 75% 6%, 50% 0, 25% 6%, 8% 22%, 8% 42%);
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.28));
 }

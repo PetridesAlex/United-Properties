@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   background: rgba(11, 17, 30, 0.96);
-  border-bottom: 1px solid rgba(217, 190, 143, 0.22);
+  border-bottom: 1px solid rgba(205, 169, 132, 0.22);
 }
 
 .up-tk {
@@ -28,7 +28,7 @@
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: #b89a6e;
+  background: #8c6640;
   opacity: 0.8;
 }
 

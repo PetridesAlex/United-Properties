@@ -149,8 +149,8 @@
 }
 
 .up-footer .soc a:hover i {
-  border-color: rgba(184, 154, 110, 0.55);
-  color: #d9be8f;
+  border-color: rgba(205, 169, 132, 0.55);
+  color: #cda984;
 }
 
 .up-footer .soc svg {
@@ -208,7 +208,7 @@
 }
 
 .up-footer .up-footer__privacy {
-  color: #b89a6e;
+  color: #8c6640;
   font-style: normal;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -216,7 +216,7 @@
 }
 
 .up-footer .up-footer__privacy:hover {
-  color: #d9be8f;
+  color: #cda984;
 }
 
 @media (max-width: 1100px) {

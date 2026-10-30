@@ -24,7 +24,7 @@
 
 .up-find__ctaband { padding: 80px 56px; background: #f5efe8; }
 .up-find__cta {
-  max-width: 1240px; margin: 0 auto; padding: 56px; border: 1px solid rgba(184, 154, 110, 0.55);
+  max-width: 1240px; margin: 0 auto; padding: 56px; border: 1px solid rgba(205, 169, 132, 0.55);
   border-radius: 22px; background: #0c1528; display: flex; flex-direction: column; gap: 18px;
 }
 .up-find__cta .lbl::before { display: none; }

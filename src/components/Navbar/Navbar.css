@@ -91,7 +91,7 @@
 }
 
 .navbar__center-link--active {
-  color: var(--color-accent-light, #d5b59a);
+  color: var(--color-accent-light, #cda984);
   font-weight: 700;
 }
 
