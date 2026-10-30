@@ -133,10 +133,16 @@ function Gallery({
       if (Math.abs(dx) >= Math.abs(dy)) {
         swipe.locked = true
       } else {
-        swipe.active = false
-        setDragX(0)
-        return
+        // vertical: a swipe down closes the viewer (phones)
+        swipe.vertical = true
+        swipe.locked = true
       }
+    }
+
+    if (swipe.vertical) {
+      swipe.dy = dy
+      if (e.cancelable) e.preventDefault()
+      return
     }
 
     swipe.dx = dx
@@ -153,6 +159,16 @@ function Gallery({
       swipe.active = false
       swipe.pointerId = null
 
+      if (swipe.vertical) {
+        swipe.vertical = false
+        if ((swipe.dy || 0) > 90) {
+          swipe.swiped = true
+          closeLightbox()
+        }
+        swipe.dy = 0
+        return
+      }
+
       if (swipe.locked && Math.abs(dx) >= SWIPE_MIN_PX) {
         swipe.swiped = true
         go(dx < 0 ? 1 : -1)
@@ -161,7 +177,7 @@ function Gallery({
 
       setDragX(0)
     },
-    [go],
+    [go, closeLightbox],
   )
 
   const onPointerUp = useCallback(
@@ -375,10 +391,10 @@ function Gallery({
                 }}
                 aria-label="Exit image preview"
               >
-                <X size={18} strokeWidth={2.3} aria-hidden />
-                <span>Exit</span>
+                <X size={17} strokeWidth={1.4} aria-hidden />
               </button>
 
+              <p className="gallery-lightbox__title">{title}</p>
               <div className="gallery-lightbox__chrome" onClick={(e) => e.stopPropagation()}>
                 <div
                   className={`gallery-lightbox__stage${count > 1 && zoom <= 1 ? ' is-swipeable' : ''}${
@@ -397,7 +413,7 @@ function Gallery({
                       onClick={() => go(-1)}
                       aria-label="Previous image"
                     >
-                      <ChevronLeft size={26} strokeWidth={2} />
+                      <ChevronLeft size={17} strokeWidth={1.4} />
                     </button>
                   ) : null}
 
@@ -431,14 +447,14 @@ function Gallery({
                       onClick={() => go(1)}
                       aria-label="Next image"
                     >
-                      <ChevronRight size={26} strokeWidth={2} />
+                      <ChevronRight size={17} strokeWidth={1.4} />
                     </button>
                   ) : null}
                 </div>
 
                 {count > 1 ? (
                   <p className="gallery-lightbox__hint" aria-hidden>
-                    Swipe for next photo · {activeIndex + 1} / {count}
+                    {activeIndex + 1} / {count}
                   </p>
                 ) : null}
 

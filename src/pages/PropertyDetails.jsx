@@ -5,49 +5,32 @@ import {
   BedDouble,
   Bath,
   Ruler,
-  Car,
   CalendarClock,
-  LandPlot,
   MapPin,
   ChevronLeft,
   ChevronRight,
-  LayoutTemplate,
-  Map as MapIcon,
-  Mail,
-  Phone,
-  Sparkles,
-  FileDown,
-  UserRound,
   X,
-  ZoomIn,
 } from 'lucide-react'
 import Gallery from '../components/Gallery/Gallery'
 import OptimizedImage from '../components/OptimizedImage/OptimizedImage'
-import InquiryForm from '../components/InquiryForm/InquiryForm'
-import SectionHeader from '../components/SectionHeader/SectionHeader'
 import PropertyCard from '../components/PropertyCard/PropertyCard'
-import AnimatedStatValue from '../components/PropertyDetails/AnimatedStatValue'
 import PropertyLocationMap from '../components/PropertyDetails/PropertyLocationMap'
-import PropertyShareMenu from '../components/PropertyDetails/PropertyShareMenu'
-import { agents } from '../data/agents'
 import { useMergedProperties } from '../hooks/useMergedProperties'
 import { useSiteContent } from '../hooks/useSiteContent'
-import { useInViewOnce } from '../hooks/useCountUp'
 import { buildPublicPropertyAttributes } from '../lib/properties/publicAttributes'
 import { fetchPublishedPropertyBySlug } from '../lib/properties/api'
 import { mapPropertyToPublicCard } from '../lib/properties/mappers'
 import { resolvePropertyCoordinates } from '../lib/properties/mapCoords'
-import './Properties.css'
-import './PropertyDetails.css'
+import PropertyShare from '../components/PropertyDetails/PropertyShare'
+import PrivateConsultation from '../components/PropertyDetails/PrivateConsultation'
+import './PropertyPage.css'
 
-const DESCRIPTION_PREVIEW_CHARS = 280
 const SIMILAR_MAX = 3
 
 const PROPERTY_SECTION_IDS = [
   'property-overview',
   'property-description',
   'property-details',
-  'property-amenities',
   'property-floorplans',
   'property-location',
   'property-enquire',
@@ -143,16 +126,12 @@ function PropertyDetails() {
   )
   const [directProperty, setDirectProperty] = useState(null)
   const [directSettled, setDirectSettled] = useState(false)
-  const [descriptionExpanded, setDescriptionExpanded] = useState(false)
-  const [overviewRef, overviewInView] = useInViewOnce()
   const [floorPlanIndex, setFloorPlanIndex] = useState(0)
   const [floorPlanLightboxOpen, setFloorPlanLightboxOpen] = useState(false)
   const [activeSection, setActiveSection] = useState('property-description')
   const sectionNavRef = useRef(null)
 
   const property = fromList || (directProperty?.slug === slug ? directProperty : null)
-
-  const agent = property ? agents.find((item) => item.id === property.agentId) : null
 
   const similarProperties = useMemo(
     () => (property ? pickSimilarProperties(allProperties, property) : []),
@@ -233,18 +212,12 @@ function PropertyDetails() {
 
     observed.forEach((el) => observer.observe(el))
     return () => observer.disconnect()
-  }, [
-    property?.id,
-    property?.description,
-    property?.features,
-    property?.showLocationMap,
-    floorPlanImages.length,
-  ])
+  }, [property?.id, property?.description, property?.showLocationMap, floorPlanImages.length])
 
   useEffect(() => {
     const track = sectionNavRef.current
     if (!track) return
-    const active = track.querySelector('.property-details__section-nav-link.is-active')
+    const active = track.querySelector('.pp-tabs__link.is-on')
     if (!(active instanceof HTMLElement)) return
     // Horizontal only — never call scrollIntoView (it fights page scroll / sticky).
     const left = active.offsetLeft - (track.clientWidth - active.offsetWidth) / 2
@@ -317,10 +290,10 @@ function PropertyDetails() {
     )
   }
 
-  const featureList = Array.isArray(property.features) ? property.features : []
-  const floorplanHeading = get('property', 'info_tiles', 'floorplan_heading', 'Floor plan')
-  const locationHeading = get('property', 'info_tiles', 'location_heading', 'Location')
-  const {facts: attributeFacts, meta: attributeMeta} = buildPublicPropertyAttributes(property)
+  const AIR_LABELS = { 1: 'Full, all rooms', 2: 'Partly', 3: 'No' }
+  const PARKING_LABELS = { 1: 'Covered', 2: 'Uncovered', 3: 'No' }
+  const { facts: attributeFacts } = buildPublicPropertyAttributes(property)
+  const includedRow = attributeFacts.find((row) => row.label === 'Included')
   const descriptionParagraphs = splitDescriptionParagraphs(property.description)
   const hasFloorPlans = floorPlanImages.length > 0
   const activeFloorPlan =
@@ -334,249 +307,143 @@ function PropertyDetails() {
     area: property.area,
     district: property.district,
   })
-  const showLocationMap = Boolean(property.showLocationMap)
-  const hasMapPin = showLocationMap && Boolean(mapCoords)
-  const mapLatitude = hasMapPin ? mapCoords.latitude : null
-  const mapLongitude = hasMapPin ? mapCoords.longitude : null
-  const showInfoTiles = !hasFloorPlans || !hasMapPin
+  const hasMapPin = Boolean(property.showLocationMap) && Boolean(mapCoords)
   const mapZoom = mapCoords?.source === 'city' ? 12 : mapCoords?.source === 'pin' ? 15 : 14
+  const isRent = property.status === 'For Rent'
+  const reference = String(property.referenceId || '').trim()
+  const cityName = String(property.location || '').split(',').pop().trim() || 'Limassol'
 
-  const overviewStats = [
-    hasStatValue(property.bedrooms)
-      ? {
-          id: 'bedrooms',
-          value: property.bedrooms,
-          label: get('property', 'stats', 'label_bedrooms', 'Bedrooms'),
-          icon: BedDouble,
-          duration: 900,
-        }
+  const sqmText = (n) => `${Number(n).toLocaleString('en-US')} sqm`
+
+  // Facts strip: four equal cells, empty ones drop out
+  const facts = [
+    hasStatValue(property.sqm) && Number(property.sqm) > 0
+      ? { id: 'area', icon: Ruler, value: Number(property.sqm).toLocaleString('en-US'), unit: ' sqm', label: 'TOTAL PRIVATE AREA' }
       : null,
-    hasStatValue(property.bathrooms)
-      ? {
-          id: 'bathrooms',
-          value: property.bathrooms,
-          label: get('property', 'stats', 'label_bathrooms', 'Bathrooms'),
-          icon: Bath,
-          duration: 950,
-          className: 'property-details__stat--bath',
-        }
+    hasStatValue(property.bedrooms) && Number(property.bedrooms) > 0
+      ? { id: 'beds', icon: BedDouble, value: property.bedrooms, label: 'BEDROOMS' }
       : null,
-    hasStatValue(property.sqm)
-      ? {
-          id: 'sqm',
-          value: property.sqm,
-          label: get('property', 'stats', 'label_sqm', 'sqm internal area'),
-          icon: Ruler,
-          duration: 1200,
-        }
+    hasStatValue(property.bathrooms) && Number(property.bathrooms) > 0
+      ? { id: 'baths', icon: Bath, value: property.bathrooms, label: 'BATHROOMS' }
       : null,
-    hasStatValue(property.plotSize)
-      ? {
-          id: 'plot',
-          value: property.plotSize,
-          label: get('property', 'stats', 'label_plot', 'sqm plot size'),
-          icon: LandPlot,
-          duration: 1200,
-        }
-      : null,
-    hasStatValue(property.parking)
-      ? {
-          id: 'parking',
-          value: property.parking,
-          label: get('property', 'stats', 'label_parking', 'Parking'),
-          icon: Car,
-          duration: 1000,
-        }
-      : null,
-    hasStatValue(property.yearBuilt)
-      ? {
-          id: 'built',
-          value: property.yearBuilt,
-          label: get('property', 'stats', 'label_built', 'Built in'),
-          icon: CalendarClock,
-          duration: 1400,
-        }
-      : null,
+    hasStatValue(property.yearBuilt) ? { id: 'built', icon: CalendarClock, value: property.yearBuilt, label: 'BUILT IN' } : null,
   ].filter(Boolean)
+
+  // Specifications: every field only when filled in the CMS ("Online viewing" is never shown)
+  const wideSpecs = [
+    property.type?.trim() ? { k: 'TYPE', v: property.type.trim() } : null,
+    property.furnishing?.trim() ? { k: 'FURNISHING', v: property.furnishing.trim() } : null,
+  ].filter(Boolean)
+  const specs = [
+    Number(property.sqm) > 0 ? { k: 'TOTAL PRIVATE AREA', v: sqmText(property.sqm) } : null,
+    Number(property.coveredArea) > 0 ? { k: 'INTERNAL COVERED AREA', v: sqmText(property.coveredArea) } : null,
+    Number(property.plotSize) > 0 ? { k: 'PLOT AREA', v: sqmText(property.plotSize) } : null,
+    Number(property.bedrooms) > 0 ? { k: 'BEDROOMS', v: String(property.bedrooms) } : null,
+    Number(property.bathrooms) > 0 ? { k: 'BATHROOMS', v: String(property.bathrooms) } : null,
+    property.parkingType != null && PARKING_LABELS[property.parkingType]
+      ? { k: 'PARKING', v: PARKING_LABELS[property.parkingType] }
+      : Number(property.parking) > 0
+        ? { k: 'PARKING', v: `${property.parking} space${Number(property.parking) === 1 ? '' : 's'}` }
+        : null,
+    property.airConditioning != null && AIR_LABELS[property.airConditioning]
+      ? { k: 'AIR CONDITIONING', v: AIR_LABELS[property.airConditioning] }
+      : null,
+    property.floor != null && property.floor !== ''
+      ? { k: 'FLOOR', v: Number(property.floor) === 0 ? 'Ground' : String(property.floor) }
+      : null,
+    property.energyEfficiency?.trim() ? { k: 'ENERGY EFFICIENCY', v: property.energyEfficiency.trim() } : null,
+    property.condition?.trim() ? { k: 'CONDITION', v: property.condition.trim() } : null,
+    hasStatValue(property.yearBuilt) ? { k: 'CONSTRUCTION YEAR', v: String(property.yearBuilt) } : null,
+    includedRow ? { k: 'INCLUDED', v: includedRow.value } : null,
+    property.postalCode?.trim() ? { k: 'POSTAL CODE', v: property.postalCode.trim() } : null,
+  ].filter(Boolean)
+  const hasSpecs = wideSpecs.length > 0 || specs.length > 0 || Boolean(reference)
 
   const sectionLinks = [
-    overviewStats.length
-      ? { id: 'property-overview', label: get('property', 'nav', 'overview', 'Overview') }
-      : null,
-    { id: 'property-description', label: get('property', 'nav', 'description', 'Description') },
-    attributeFacts.length > 0 || attributeMeta.length > 0
-      ? { id: 'property-details', label: get('property', 'nav', 'details', 'Property details') }
-      : null,
-    featureList.length > 0
-      ? { id: 'property-amenities', label: get('property', 'nav', 'amenities', 'Amenities') }
-      : null,
-    hasFloorPlans
-      ? { id: 'property-floorplans', label: get('property', 'nav', 'floorplans', 'Floor plans') }
-      : null,
-    hasMapPin
-      ? { id: 'property-location', label: get('property', 'nav', 'location', 'Location') }
-      : null,
-    { id: 'property-enquire', label: get('property', 'nav', 'enquire', 'Enquire') },
+    facts.length ? { id: 'property-overview', label: 'OVERVIEW' } : null,
+    { id: 'property-description', label: 'DESCRIPTION' },
+    hasSpecs ? { id: 'property-details', label: 'SPECIFICATIONS' } : null,
+    hasFloorPlans ? { id: 'property-floorplans', label: 'LAYOUT' } : null,
+    hasMapPin ? { id: 'property-location', label: 'LOCATION' } : null,
+    { id: 'property-enquire', label: 'ENQUIRE' },
   ].filter(Boolean)
+
+  const backTo = isRent ? '/rent' : '/buy'
 
   return (
     <>
       <Helmet>
         <title>{property.title} | United Properties</title>
+        {property.seoDescription ? <meta name="description" content={property.seoDescription} /> : null}
       </Helmet>
 
-      <section className="property-signature" aria-label="Property showcase">
-        <div className="container property-signature__inner">
-          <div className="property-signature__gallery">
-            <Gallery
-              images={property.gallery}
-              title={property.title}
-              brandLabel=""
-              statusLabel={property.status}
-            />
-          </div>
+      <div className="up-pp">
+        <section className="pp-hero" aria-label="Property showcase">
+          <div className="pp-wrap pp-hero__inner">
+            <Link to={backTo} className="pp-back">
+              &larr; Back to listings
+            </Link>
 
-          <div className="property-signature__meta">
-            <div className="property-signature__meta-main">
-              <h1 className="property-signature__title">{property.title}</h1>
-              <p className="property-signature__location">
-                <MapPin size={15} aria-hidden />
+            <div className="pp-gal">
+              <Gallery images={property.gallery} title={property.title} brandLabel="" statusLabel="" />
+            </div>
+
+            <div className="pp-tb">
+              <h1 className="pp-title">{property.title}</h1>
+              <p className="pp-place">
+                <MapPin size={18} strokeWidth={1.6} aria-hidden />
                 <span>{property.location}</span>
               </p>
-              <p
-                className="property-signature__price"
-                aria-label={`Price EUR ${property.price.toLocaleString()}${
-                  property.status === 'For Rent' ? ' per month' : ''
-                }`}
-              >
-                <span className="property-signature__price-currency">EUR</span>
-                <span className="property-signature__price-figure">
-                  {property.price.toLocaleString()}
-                </span>
-                {property.status === 'For Rent' ? (
-                  <span className="property-signature__price-period">
-                    {get('property', 'stats', 'price_period', '/ month')}
-                  </span>
-                ) : null}
-              </p>
-              <ul className="property-signature__facts" aria-label="Key facts">
-                {hasStatValue(property.bedrooms) ? (
-                  <li className="property-signature__fact">
-                    <BedDouble size={15} strokeWidth={1.75} aria-hidden />
-                    <span>
-                      <strong>{property.bedrooms}</strong>{' '}
-                      {get('property', 'stats', 'label_bedrooms', 'Bedrooms')}
-                    </span>
-                  </li>
-                ) : null}
-                {hasStatValue(property.bathrooms) ? (
-                  <li className="property-signature__fact">
-                    <Bath size={15} strokeWidth={1.75} aria-hidden />
-                    <span>
-                      <strong>{property.bathrooms}</strong>{' '}
-                      {get('property', 'stats', 'label_bathrooms', 'Bathrooms')}
-                    </span>
-                  </li>
-                ) : null}
-                {hasStatValue(property.sqm) ? (
-                  <li className="property-signature__fact">
-                    <Ruler size={15} strokeWidth={1.75} aria-hidden />
-                    <span>
-                      <strong>{property.sqm}</strong>{' '}
-                      {get('property', 'stats', 'label_sqm', 'sqm')}
-                    </span>
-                  </li>
-                ) : null}
-                {hasStatValue(property.plotSize) ? (
-                  <li className="property-signature__fact">
-                    <LandPlot size={15} strokeWidth={1.75} aria-hidden />
-                    <span>
-                      <strong>{property.plotSize}</strong>{' '}
-                      {get('property', 'stats', 'label_plot', 'sqm plot')}
-                    </span>
-                  </li>
-                ) : null}
-              </ul>
-            </div>
-
-            <div className="property-signature__actions">
-              <PropertyShareMenu
-                property={property}
-                whatsappLabel={get('property', 'actions', 'whatsapp_title', 'Chat on WhatsApp')}
-                pdfLabel={get('property', 'actions', 'pdf_title', 'Download PDF')}
-              />
+              <div className="pp-prr">
+                <p
+                  className="pp-price"
+                  aria-label={`Price EUR ${Number(property.price).toLocaleString('en-US')}${isRent ? ' per month' : ''}`}
+                >
+                  <small>EUR</small>
+                  <b>{Number(property.price).toLocaleString('en-US')}</b>
+                  {isRent ? <em>/ month</em> : null}
+                </p>
+                <PropertyShare property={property} />
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="section section--light property-details__main">
-        <div className="container property-details">
-          {property.brochureUrl ? (
-            <div className="property-details__brochure">
-              <a
-                className="btn btn-outline-dark property-details__brochure-link"
-                href={property.brochureUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                download={property.brochureFilename || undefined}
+        <section className="pp-main">
+          <div className="pp-wrap pp-main__inner">
+            {facts.length ? (
+              <div
+                id="property-overview"
+                className="pp-facts"
+                style={{ '--pp-facts': String(facts.length) }}
+                aria-label="Key facts"
               >
-                <FileDown size={18} strokeWidth={2.1} aria-hidden />
-                <span>
-                  {property.brochureFilename
-                    ? `Download ${property.brochureFilename}`
-                    : get('property', 'actions', 'brochure_fallback', 'Download brochure (PDF)')}
-                </span>
-              </a>
-            </div>
-          ) : null}
+                {facts.map((f) => {
+                  const Icon = f.icon
+                  return (
+                    <div key={f.id} className="pp-fact">
+                      <span className="pp-fact__icon" aria-hidden>
+                        <Icon size={20} strokeWidth={1.5} />
+                      </span>
+                      <div>
+                        <b>
+                          {f.value}
+                          {f.unit ? <em>{f.unit}</em> : null}
+                        </b>
+                        <i>{f.label}</i>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : null}
 
-          {overviewStats.length ? (
-            <div
-              ref={overviewRef}
-              id="property-overview"
-              key={property.id}
-              className="property-details__overview"
-              style={{ '--overview-cols': String(Math.min(overviewStats.length, 6)) }}
-              aria-label="Property key facts"
-            >
-              {overviewStats.map((stat) => {
-                const Icon = stat.icon
-                return (
-                  <div
-                    key={stat.id}
-                    className={['property-details__stat', stat.className].filter(Boolean).join(' ')}
-                  >
-                    <span className="property-details__stat-icon" aria-hidden="true">
-                      <Icon size={15} strokeWidth={1.9} />
-                    </span>
-                    <span className="property-details__stat-copy">
-                      <AnimatedStatValue
-                        value={stat.value}
-                        active={overviewInView}
-                        duration={stat.duration}
-                      />
-                      <span className="property-details__stat-label">{stat.label}</span>
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          ) : null}
-
-          <nav
-            ref={sectionNavRef}
-            className="property-details__section-nav"
-            aria-label="Property sections"
-          >
-            <div className="property-details__section-nav-track">
+            <nav ref={sectionNavRef} className="pp-tabs" aria-label="Property sections">
               {sectionLinks.map((link) => (
                 <button
                   key={link.id}
                   type="button"
-                  className={`property-details__section-nav-link${
-                    activeSection === link.id ? ' is-active' : ''
-                  }`}
+                  className={`pp-tabs__link${activeSection === link.id ? ' is-on' : ''}`}
                   aria-current={activeSection === link.id ? 'true' : undefined}
                   onClick={() => {
                     setActiveSection(link.id)
@@ -586,482 +453,213 @@ function PropertyDetails() {
                   {link.label}
                 </button>
               ))}
-            </div>
-          </nav>
+            </nav>
 
-          <div className="property-details__content-grid">
-            <article
-              id="property-description"
-              className="property-details__description"
-              aria-labelledby="property-description-title"
-            >
-              <header className="property-details__description-header">
-                <span className="property-details__description-eyebrow">
-                  <Sparkles size={14} strokeWidth={2.2} aria-hidden />
-                  {get('property', 'description', 'eyebrow', 'Listing')}
-                </span>
-                <h3 id="property-description-title" className="property-details__description-title">
-                  {get('property', 'description', 'heading', 'Description')}
-                </h3>
-              </header>
+            <div className="pp-cols">
+              <div className="pp-stack">
+                <h2 className="pp-ptt">Property details</h2>
 
-              <div
-                id="property-description-body"
-                className={`property-details__description-body ${descriptionExpanded ? 'is-expanded' : ''}`}
-              >
-                {descriptionParagraphs.map((paragraph, index) => (
-                  <p key={`desc-${index}`}>{paragraph}</p>
-                ))}
-              </div>
-              {property.description.length > DESCRIPTION_PREVIEW_CHARS ? (
-                <button
-                  type="button"
-                  className="property-details__readmore"
-                  onClick={() => setDescriptionExpanded((open) => !open)}
-                  aria-expanded={descriptionExpanded}
-                  aria-controls="property-description-body"
-                >
-                  {descriptionExpanded
-                    ? get('property', 'description', 'show_less', 'Show less')
-                    : get('property', 'description', 'read_more', 'Read full description')}
-                </button>
-              ) : null}
+                <article id="property-description" className="pp-card">
+                  <span className="eb">DESCRIPTION</span>
+                  {descriptionParagraphs.map((paragraph, index) => (
+                    <p key={`desc-${index}`} className="pp-dx">
+                      {paragraph}
+                    </p>
+                  ))}
+                </article>
 
-              {(attributeFacts.length > 0 || attributeMeta.length > 0) ? (
-                <section
-                  id="property-details"
-                  className="property-details__attrs"
-                  aria-labelledby="property-attributes-title"
-                >
-                  <div className="property-details__attrs-heading">
-                    <span
-                      className="property-details__attrs-eyebrow"
-                      {...{
-                        'data-cms-page': 'property',
-                        'data-cms-section': 'stats',
-                        'data-cms-field': 'specs_eyebrow',
-                        'data-cms-keys': 'property.stats.specs_eyebrow',
-                        'data-cms-editable': '1',
-                      }}
-                    >
-                      {get('property', 'stats', 'specs_eyebrow', 'Specifications')}
-                    </span>
-                    <h4 id="property-attributes-title" className="property-details__attrs-title">
-                      Property details
-                    </h4>
-                  </div>
+                {hasSpecs ? (
+                  <article id="property-details" className="pp-card">
+                    <span className="eb">SPECIFICATIONS</span>
+                    {wideSpecs.length || specs.length ? (
+                      <div className="pp-sg">
+                        {wideSpecs.map((row) => (
+                          <div key={row.k} className="pp-spw">
+                            <span className="pp-sk">{row.k}</span>
+                            <span className="pp-sv">{row.v}</span>
+                          </div>
+                        ))}
+                        {specs.map((row) => (
+                          <div key={row.k} className="pp-spc">
+                            <span className="pp-sk">{row.k}</span>
+                            <span className="pp-sv">{row.v}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                    {reference ? (
+                      <div className="pp-refl">
+                        <span>REFERENCE NUMBER</span>
+                        <b>{reference}</b>
+                      </div>
+                    ) : null}
+                  </article>
+                ) : null}
 
-                  {attributeFacts.length > 0 ? (
-                    <dl className="property-details__attrs-list">
-                      {attributeFacts.map((row, index) => (
-                        <div
-                          key={row.label}
-                          className="property-details__attrs-row"
-                          style={{ '--attr-i': index }}
-                        >
-                          <dt className="property-details__attrs-label">{row.label}</dt>
-                          <dd className="property-details__attrs-value">{row.value}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  ) : null}
-
-                  {attributeMeta.length > 0 ? (
-                    <div className="property-details__attrs-meta">
-                      {attributeMeta.map((row) => (
-                        <div key={row.label} className="property-details__attrs-meta-row">
-                          <span className="property-details__attrs-meta-label">{row.label}</span>
-                          <span className="property-details__attrs-meta-value">{row.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                </section>
-              ) : null}
-
-              {featureList.length > 0 ? (
-                <section
-                  id="property-amenities"
-                  className="property-details__amenities-section"
-                  aria-labelledby="amenities-heading"
-                >
-                  <h4 id="amenities-heading">
-                    {get('property', 'description', 'amenities_heading', 'Amenities & features')}
-                  </h4>
-                  <ul className="property-details__amenities-list">
-                    {featureList.map((feature) => (
-                      <li key={feature}>{feature}</li>
-                    ))}
-                  </ul>
-                </section>
-              ) : null}
-
-              {hasFloorPlans ? (
-                <section
-                  id="property-floorplans"
-                  className="property-details__floorplans"
-                  aria-labelledby="floorplans-heading"
-                >
-                  <header className="property-details__floorplans-head">
-                    <div className="property-details__floorplans-head-copy">
-                      <span className="property-details__floorplans-eyebrow">
-                        <LayoutTemplate size={14} strokeWidth={2.2} aria-hidden />
-                        {get('property', 'floorplans', 'eyebrow', 'Layout')}
+                {hasFloorPlans ? (
+                  <article id="property-floorplans" className="pp-card">
+                    <div className="pp-cardhead">
+                      <span className="eb">LAYOUT</span>
+                      <span className="pp-chip">
+                        <span className="pp-dg">{floorPlanImages.length}</span>{' '}
+                        {floorPlanImages.length === 1 ? 'PLAN' : 'PLANS'}
                       </span>
-                      <h4 id="floorplans-heading">{floorplanHeading}</h4>
-                      <p>
-                        {get(
-                          'property',
-                          'floorplans',
-                          'lede',
-                          'Study the layout in detail — open any plan for a larger view.',
-                        )}
-                      </p>
                     </div>
-                    <span className="property-details__floorplans-count">
-                      {floorPlanImages.length}{' '}
-                      {floorPlanImages.length === 1
-                        ? get('property', 'floorplans', 'count_one', 'plan')
-                        : get('property', 'floorplans', 'count_many', 'plans')}
-                    </span>
-                  </header>
-
-                  <div className="property-details__floorplans-stage">
                     <button
                       type="button"
-                      className="property-details__floorplans-viewer"
+                      className="pp-plbig"
                       onClick={() => setFloorPlanLightboxOpen(true)}
-                      aria-label={get(
-                        'property',
-                        'floorplans',
-                        'open_label',
-                        'Open floor plan full size',
-                      )}
+                      aria-label="Open floor plan full size"
                     >
                       <OptimizedImage
                         src={activeFloorPlan}
-                        alt={`${property.title} — ${floorplanHeading} ${floorPlanIndex + 1}`}
+                        alt={`${property.title}, plan ${floorPlanIndex + 1}`}
                         preset="lightbox"
-                        loading="eager"
-                        sizes="(max-width: 900px) 96vw, min(960px, 70vw)"
+                        loading="lazy"
+                        sizes="(max-width: 1000px) 92vw, 720px"
                       />
-                      <span className="property-details__floorplans-zoom">
-                        <ZoomIn size={16} strokeWidth={2.2} aria-hidden />
-                        {get('property', 'floorplans', 'enlarge', 'Enlarge')}
-                      </span>
-                    </button>
-
-                    {floorPlanImages.length > 1 ? (
-                      <div className="property-details__floorplans-nav" role="group" aria-label="Floor plan navigation">
-                        <button
-                          type="button"
-                          className="property-details__floorplans-nav-btn"
-                          aria-label="Previous floor plan"
-                          onClick={() =>
-                            setFloorPlanIndex(
-                              (i) => (i - 1 + floorPlanImages.length) % floorPlanImages.length,
-                            )
-                          }
-                        >
-                          <ChevronLeft size={18} strokeWidth={2.2} aria-hidden />
-                        </button>
-                        <span className="property-details__floorplans-nav-label">
-                          {floorPlanIndex + 1} / {floorPlanImages.length}
+                      <span className="pp-enl">ENLARGE</span>
+                      {floorPlanImages.length > 1 ? (
+                        <span className="pp-cn">
+                          <span className="pp-dg">{floorPlanIndex + 1}</span> /{' '}
+                          <span className="pp-dg">{floorPlanImages.length}</span>
                         </span>
-                        <button
-                          type="button"
-                          className="property-details__floorplans-nav-btn"
-                          aria-label="Next floor plan"
-                          onClick={() =>
-                            setFloorPlanIndex((i) => (i + 1) % floorPlanImages.length)
-                          }
-                        >
-                          <ChevronRight size={18} strokeWidth={2.2} aria-hidden />
-                        </button>
+                      ) : null}
+                    </button>
+                    {floorPlanImages.length > 1 ? (
+                      <div className="pp-plth">
+                        {floorPlanImages.map((src, index) => (
+                          <button
+                            type="button"
+                            key={`${src}-${index}`}
+                            className={index === floorPlanIndex ? 'is-on' : ''}
+                            aria-pressed={index === floorPlanIndex}
+                            onClick={() => setFloorPlanIndex(index)}
+                          >
+                            <OptimizedImage src={src} alt="" preset="lightboxThumb" loading="lazy" sizes="140px" />
+                            <b>
+                              PLAN <span className="pp-dg">{index + 1}</span>
+                            </b>
+                          </button>
+                        ))}
                       </div>
                     ) : null}
-                  </div>
+                  </article>
+                ) : null}
 
-                  {floorPlanImages.length > 1 ? (
-                    <div className="property-details__floorplans-thumbs" role="list">
-                      {floorPlanImages.map((src, index) => (
-                        <button
-                          type="button"
-                          role="listitem"
-                          key={`${src}-${index}`}
-                          className={`property-details__floorplans-thumb${
-                            index === floorPlanIndex ? ' is-active' : ''
-                          }`}
-                          aria-label={`${floorplanHeading} ${index + 1}`}
-                          aria-pressed={index === floorPlanIndex}
-                          onClick={() => setFloorPlanIndex(index)}
-                        >
-                          <OptimizedImage
-                            src={src}
-                            alt=""
-                            preset="lightboxThumb"
-                            loading="lazy"
-                            sizes="120px"
-                          />
-                          <span>Plan {index + 1}</span>
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                </section>
-              ) : null}
+                {hasMapPin ? (
+                  <article id="property-location" className="pp-card">
+                    <span className="eb">LOCATION</span>
+                    <PropertyLocationMap
+                      latitude={mapCoords.latitude}
+                      longitude={mapCoords.longitude}
+                      title={property.title}
+                      locationLabel={property.location || property.address || undefined}
+                      heading=""
+                      zoom={mapZoom}
+                      lede=""
+                    />
+                  </article>
+                ) : null}
+              </div>
 
-              {hasMapPin && mapLatitude != null && mapLongitude != null ? (
-                <div id="property-location">
-                  <PropertyLocationMap
-                    latitude={mapLatitude}
-                    longitude={mapLongitude}
-                    title={property.title}
-                    locationLabel={property.location || property.address || undefined}
-                    heading={locationHeading}
-                    zoom={mapZoom}
-                    lede={get(
-                      'property',
-                      'location_map',
-                      'lede',
-                      mapCoords?.source === 'pin'
-                        ? 'Exact pin from the listing — explore the neighbourhood on the map.'
-                        : 'Location based on the listing area — open Google Maps for directions.',
-                    )}
-                  />
-                </div>
-              ) : null}
-
-              {showInfoTiles ? (
-                <div
-                  className={`property-details__info-tiles${
-                    !hasFloorPlans && !hasMapPin ? '' : ' property-details__info-tiles--single'
-                  }`}
-                >
-                  {!hasFloorPlans ? (
-                    <div
-                      className="property-details__info-tile"
-                      role="group"
-                      aria-label={`${floorplanHeading} — available on request`}
-                    >
-                      <span className="property-details__info-tile-icon" aria-hidden="true">
-                        <LayoutTemplate size={22} strokeWidth={2} />
-                      </span>
-                      <div className="property-details__info-tile-copy">
-                        <h4>{floorplanHeading}</h4>
-                        <p>
-                          {get(
-                            'property',
-                            'info_tiles',
-                            'floorplan_empty',
-                            'Detailed layout available on request from our team.',
-                          )}
-                        </p>
-                      </div>
-                      <span className="property-details__info-tile-hint">
-                        {get('property', 'info_tiles', 'floorplan_hint_request', 'Request')}
-                      </span>
-                    </div>
-                  ) : null}
-                  {!hasMapPin ? (
-                    <div
-                      className="property-details__info-tile"
-                      role="group"
-                      aria-label={`${locationHeading} — available on request`}
-                    >
-                      <span className="property-details__info-tile-icon" aria-hidden="true">
-                        <MapIcon size={22} strokeWidth={2} />
-                      </span>
-                      <div className="property-details__info-tile-copy">
-                        <h4>{locationHeading}</h4>
-                        <p>
-                          {get(
-                            'property',
-                            'info_tiles',
-                            'location_on_request',
-                            'Map and neighbourhood details available on request from our team.',
-                          )}
-                        </p>
-                      </div>
-                      <span className="property-details__info-tile-hint">
-                        {get('property', 'info_tiles', 'location_hint_request', 'Request')}
-                      </span>
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-
-              {floorPlanLightboxOpen && activeFloorPlan ? (
-                <div
-                  className="property-details__floorplan-lightbox"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-label={floorplanHeading}
-                  onClick={() => setFloorPlanLightboxOpen(false)}
-                >
-                  <div
-                    className="property-details__floorplan-lightbox-panel"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="property-details__floorplan-lightbox-toolbar">
-                      <p>
-                        {floorplanHeading}
-                        {floorPlanImages.length > 1
-                          ? ` · ${floorPlanIndex + 1} / ${floorPlanImages.length}`
-                          : ''}
-                      </p>
-                      <button
-                        type="button"
-                        className="property-details__floorplan-lightbox-close"
-                        aria-label="Close floor plan"
-                        onClick={() => setFloorPlanLightboxOpen(false)}
-                      >
-                        <X size={20} strokeWidth={2.2} aria-hidden />
-                      </button>
-                    </div>
-                    <div className="property-details__floorplan-lightbox-stage">
-                      {floorPlanImages.length > 1 ? (
-                        <button
-                          type="button"
-                          className="property-details__floorplan-lightbox-nav property-details__floorplan-lightbox-nav--prev"
-                          aria-label="Previous floor plan"
-                          onClick={() =>
-                            setFloorPlanIndex(
-                              (i) => (i - 1 + floorPlanImages.length) % floorPlanImages.length,
-                            )
-                          }
-                        >
-                          <ChevronLeft size={22} strokeWidth={2.2} aria-hidden />
-                        </button>
-                      ) : null}
-                      <OptimizedImage
-                        src={activeFloorPlan}
-                        alt={`${property.title} — ${floorplanHeading} ${floorPlanIndex + 1}`}
-                        preset="lightbox"
-                        loading="eager"
-                        fetchPriority="high"
-                        sizes="96vw"
-                      />
-                      {floorPlanImages.length > 1 ? (
-                        <button
-                          type="button"
-                          className="property-details__floorplan-lightbox-nav property-details__floorplan-lightbox-nav--next"
-                          aria-label="Next floor plan"
-                          onClick={() =>
-                            setFloorPlanIndex((i) => (i + 1) % floorPlanImages.length)
-                          }
-                        >
-                          <ChevronRight size={22} strokeWidth={2.2} aria-hidden />
-                        </button>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-            </article>
-
-            <aside id="property-enquire" className="property-details__sidebar">
-              {agent && (
-                <article className="card-luxury property-details__agent">
-                  <div className="property-details__agent-head">
-                    <span className="property-details__agent-eyebrow">
-                      <UserRound size={14} aria-hidden />
-                      {get('property', 'agent', 'eyebrow', 'Your property consultant')}
-                    </span>
-                  </div>
-
-                  <div className="property-details__agent-media">
-                    <img src={agent.image} alt={agent.name} loading="lazy" />
-                  </div>
-
-                  <div className="property-details__agent-body">
-                    <h4 className="property-details__agent-name">{agent.name}</h4>
-                    <p className="property-details__agent-role">{agent.role}</p>
-                    {agent.specialization ? (
-                      <p className="property-details__agent-spec">{agent.specialization}</p>
-                    ) : null}
-
-                    <div className="property-details__agent-contacts">
-                      {agent.phone ? (
-                        <a
-                          className="property-details__agent-contact"
-                          href={`tel:${agent.phone.replace(/\s/g, '')}`}
-                        >
-                          <Phone size={16} aria-hidden />
-                          <span>{agent.phone}</span>
-                        </a>
-                      ) : null}
-                      {agent.email ? (
-                        <a
-                          className="property-details__agent-contact"
-                          href={`mailto:${agent.email}?subject=${encodeURIComponent(
-                            `Enquiry: ${property.title}`,
-                          )}`}
-                        >
-                          <Mail size={16} aria-hidden />
-                          <span>{agent.email}</span>
-                        </a>
-                      ) : null}
-                    </div>
-                  </div>
-                </article>
-              )}
-              <InquiryForm
-                revealOnClick
-                propertyId={typeof property.id === 'string' ? property.id : null}
-                propertyInterestDefault={property.title}
-              />
-            </aside>
-          </div>
-        </div>
-      </section>
-
-      <section className="section section--light property-details__similar-section">
-        <div className="container property-details__similar">
-          <div className="property-details__similar-heading">
-            <div className="property-details__similar-heading__main">
-              <div className="property-details__similar-heading__copy">
-                <SectionHeader
-                  className="property-details__similar-header"
-                  eyebrow={get('property', 'similar', 'eyebrow', 'Curated for you')}
-                  title={get('property', 'similar', 'heading', 'Similar Properties')}
-                  description={get(
-                    'property',
-                    'similar',
-                    'description',
-                    'More listings that fit this home—matched by area, status, or price band.',
-                  )}
-                  cmsPage="property"
-                  cmsSection="similar"
+              <aside id="property-enquire" className="pp-enq">
+                <PrivateConsultation
+                  propertyId={typeof property.id === 'string' ? property.id : null}
+                  propertyTitle={property.title}
+                  reference={reference}
                 />
+                <div className="pp-story">
+                  <span className="pp-ceb">UNITED PROPERTIES</span>
+                  <h2>What is your story?</h2>
+                  <span className="sty">A few personal questions help us begin the right way.</span>
+                  <Link className="pp-btn pp-btn--glow" to="/contact">
+                    Answer a few questions
+                  </Link>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        {similarProperties.length > 0 ? (
+          <section className="pp-similar">
+            <div className="pp-wrap">
+              <div className="pp-similar__head">
+                <span className="eb">SIMILAR PROPERTIES</span>
+                <Link className="pp-btn pp-btn--cream" to={isRent ? '/rent' : '/buy'}>
+                  View all in {cityName}
+                </Link>
+              </div>
+              <div className="pp-grid3">
+                {similarProperties.map((item) => (
+                  <PropertyCard
+                    key={item.id}
+                    property={item}
+                    imageSizes="(max-width: 760px) 94vw, (max-width: 1100px) 46vw, 32vw"
+                  />
+                ))}
               </div>
             </div>
-            <Link className="property-details__similar-viewall" to="/buy">
-              {get('property', 'similar', 'view_all', 'View all in Limassol')}
-              <ChevronRight size={17} strokeWidth={2.1} aria-hidden />
-            </Link>
-          </div>
-          <ul className="property-details__similar-match-hints" aria-label="Matching criteria">
-            <li>{get('property', 'similar', 'hint_area', 'Area & district')}</li>
-            <li>{get('property', 'similar', 'hint_status', 'Status')}</li>
-            <li>{get('property', 'similar', 'hint_price', 'Price band')}</li>
-          </ul>
-          {similarProperties.length > 0 ? (
-            <div className="grid-3 property-details__similar-grid">
-              {similarProperties.map((item) => (
-                <PropertyCard key={item.id} property={item} variant="cover" />
-              ))}
+          </section>
+        ) : null}
+
+        {floorPlanLightboxOpen && activeFloorPlan ? (
+          <div
+            className="pp-plview"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Floor plan"
+            onClick={() => setFloorPlanLightboxOpen(false)}
+          >
+            <p className="pp-plview__title">{property.title}</p>
+            <button
+              type="button"
+              className="pp-ring pp-ring--close"
+              aria-label="Close floor plan"
+              onClick={() => setFloorPlanLightboxOpen(false)}
+            >
+              <X size={17} strokeWidth={1.4} aria-hidden />
+            </button>
+            <div className="pp-plview__stage" onClick={(e) => e.stopPropagation()}>
+              {floorPlanImages.length > 1 ? (
+                <button
+                  type="button"
+                  className="pp-ring pp-ring--nav"
+                  aria-label="Previous floor plan"
+                  onClick={() =>
+                    setFloorPlanIndex((i) => (i - 1 + floorPlanImages.length) % floorPlanImages.length)
+                  }
+                >
+                  <ChevronLeft size={17} strokeWidth={1.4} aria-hidden />
+                </button>
+              ) : null}
+              <OptimizedImage
+                src={activeFloorPlan}
+                alt={`${property.title}, plan ${floorPlanIndex + 1}`}
+                preset="lightbox"
+                loading="eager"
+                sizes="92vw"
+              />
+              {floorPlanImages.length > 1 ? (
+                <button
+                  type="button"
+                  className="pp-ring pp-ring--nav"
+                  aria-label="Next floor plan"
+                  onClick={() => setFloorPlanIndex((i) => (i + 1) % floorPlanImages.length)}
+                >
+                  <ChevronRight size={17} strokeWidth={1.4} aria-hidden />
+                </button>
+              ) : null}
             </div>
-          ) : (
-            <p className="property-details__similar-empty">
-              <Link to="/buy">
-                {get('property', 'similar', 'empty_prefix', 'Browse all properties')}
-              </Link>
-              {get('property', 'similar', 'empty_suffix', ' to discover more listings.')}
-            </p>
-          )}
-        </div>
-      </section>
+            {floorPlanImages.length > 1 ? (
+              <p className="pp-plview__count">
+                {floorPlanIndex + 1} / {floorPlanImages.length}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
     </>
   )
 }
