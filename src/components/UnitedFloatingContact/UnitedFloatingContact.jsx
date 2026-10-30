@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import {
   CONTACT_MAILTO_HREF,
   CONTACT_PHONE_TEL,
@@ -96,16 +97,18 @@ const LINKS = [
 export default function UnitedFloatingContact() {
   return (
     <nav className="up-fab" aria-label="Contact channels">
-      {LINKS.map((l) => (
-        <a
-          key={l.key}
-          className={`up-fab__b up-fab__b--${l.badge}`}
-          href={l.href}
-          aria-label={l.label}
-          {...(l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-        >
-          {l.icon}
-        </a>
+      {LINKS.map((l, i) => (
+        <Fragment key={l.key}>
+          {i > 0 ? <span className="up-fab__dv" aria-hidden="true" /> : null}
+          <a
+            className={`up-fab__b up-fab__b--${l.badge}`}
+            href={l.href}
+            aria-label={l.label}
+            {...(l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+          >
+            {l.icon}
+          </a>
+        </Fragment>
       ))}
     </nav>
   )
