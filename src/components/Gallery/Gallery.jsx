@@ -202,6 +202,37 @@ function Gallery({
     resetSwipe()
   }, [resetSwipe])
 
+  // Two-finger swipe on a trackpad (horizontal wheel) moves to the next / previous photo
+  useEffect(() => {
+    if (!lightboxOpen || count <= 1) return undefined
+    let acc = 0
+    let lockUntil = 0
+    let resetTimer = 0
+    function onWheel(e) {
+      if (zoom > 1) return
+      const dx = e.deltaX
+      if (Math.abs(dx) <= Math.abs(e.deltaY)) return
+      e.preventDefault()
+      const now = Date.now()
+      window.clearTimeout(resetTimer)
+      resetTimer = window.setTimeout(() => {
+        acc = 0
+      }, 180)
+      if (now < lockUntil) return
+      acc += dx
+      if (Math.abs(acc) >= 50) {
+        go(acc > 0 ? 1 : -1)
+        acc = 0
+        lockUntil = now + 450
+      }
+    }
+    window.addEventListener('wheel', onWheel, { passive: false })
+    return () => {
+      window.removeEventListener('wheel', onWheel)
+      window.clearTimeout(resetTimer)
+    }
+  }, [lightboxOpen, count, zoom, go])
+
   useEffect(() => {
     function onKey(e) {
       if (!lightboxOpen) return
