@@ -69,14 +69,14 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: clamp(0.45rem, 1.05vw, 1.15rem);
+  gap: 40px;
 }
 
 .navbar__center-link {
   font-family: 'Montserrat', var(--font-sans), system-ui, sans-serif;
-  font-size: clamp(0.8125rem, 0.2rem + 0.55vw, 0.9375rem);
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
   text-decoration: none;
   color: rgba(255, 255, 255, 0.88);
@@ -91,8 +91,9 @@
 }
 
 .navbar__center-link--active {
-  color: var(--color-accent-light, #cda984);
-  font-weight: 700;
+  color: #f4f1ea;
+  font-weight: 500;
+  box-shadow: 0 1px 0 0 #cda984;
 }
 
 .navbar__center-item {

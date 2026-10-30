@@ -1,48 +1,41 @@
-import {useEffect} from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
-import CmsText from '../components/CmsPreview/CmsText'
-import CmsStaggeredHeading from '../components/StaggeredText/CmsStaggeredHeading'
-import { useSiteContent } from '../hooks/useSiteContent'
+import './NotFound.css'
+
+const WORDS = ['We', "can't", 'find', 'that', 'page.']
 
 function NotFound() {
-  const { get } = useSiteContent()
-  const pageTitle = `${get('not-found', 'hero', 'heading', 'Page Not Found') || 'Page Not Found'} | United Properties`
-
-  useEffect(() => {
-    document.title = pageTitle
-  }, [pageTitle])
-
   return (
     <>
       <Helmet>
-        <title>{pageTitle}</title>
+        <title>Page not found | United Properties</title>
+        <meta name="robots" content="noindex" />
       </Helmet>
-      <section className="page-hero page-hero--404" data-cms-page="not-found" data-cms-section="hero">
-        <div className="container" style={{ textAlign: 'center' }}>
-          <CmsText page="not-found" section="hero" field="code" as="p">
-            {get('not-found', 'hero', 'code', '404')}
-          </CmsText>
-          <CmsStaggeredHeading
-            page="not-found"
-            section="hero"
-            field="heading"
-            as="h1"
-            text={get('not-found', 'hero', 'heading', 'Page Not Found')}
-          />
-          <CmsText page="not-found" section="hero" field="description" as="p">
-            {get(
-              'not-found',
-              'hero',
-              'description',
-              'The page you are looking for does not exist or has moved.',
-            )}
-          </CmsText>
-          <Link to="/" className="btn btn-gold">
-            <CmsText page="not-found" section="hero" field="cta" as="span">
-              {get('not-found', 'hero', 'cta', 'Back to Home')}
-            </CmsText>
-          </Link>
+      <section className="up-nf" data-cms-page="not-found">
+        <div className="up-nf__inner">
+          <span className="lbl">PAGE NOT FOUND</span>
+          <h1 aria-label="We can't find that page.">
+            {WORDS.map((w, i) => (
+              <span key={w} className="bw">
+                {w}
+                {i < WORDS.length - 1 ? ' ' : ''}
+              </span>
+            ))}
+          </h1>
+          <p className="up-nf__lead fc">
+            The address may be wrong, or the page may have moved. These may help.
+          </p>
+          <div className="up-nf__acts">
+            <Link className="up-nf__btn" to="/">
+              Back to the home page
+            </Link>
+            <Link className="up-nf__btn" to="/buy">
+              Browse properties
+            </Link>
+            <Link className="up-nf__btn" to="/contact">
+              Contact us
+            </Link>
+          </div>
         </div>
       </section>
     </>
