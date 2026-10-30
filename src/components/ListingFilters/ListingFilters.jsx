@@ -51,6 +51,67 @@ function Select({ label, value, options, onPick, anyLabel }) {
   )
 }
 
+
+function Combo({ label, value, options, onPick, anyLabel }) {
+  const [text, setText] = useState(value)
+  const [open, setOpen] = useState(false)
+  useEffect(() => setText(value), [value])
+  const q = text.trim().toLowerCase()
+  const shown = q && q !== value.toLowerCase() ? options.filter((o) => o.toLowerCase().includes(q)) : options
+  const mark = (o) => {
+    const i = q ? o.toLowerCase().indexOf(q) : -1
+    if (i < 0 || q === value.toLowerCase()) return o
+    return (
+      <>
+        {o.slice(0, i)}
+        <b>{o.slice(i, i + q.length)}</b>
+        {o.slice(i + q.length)}
+      </>
+    )
+  }
+  return (
+    <div className="lf__group">
+      <div className="lf__label">{label}</div>
+      <div className="lf__combo">
+        <input
+          value={text}
+          placeholder={anyLabel}
+          aria-label={label}
+          onFocus={() => setOpen(true)}
+          onChange={(e) => {
+            setText(e.target.value)
+            setOpen(true)
+          }}
+          onBlur={() =>
+            window.setTimeout(() => {
+              setOpen(false)
+              setText(value)
+            }, 150)
+          }
+        />
+        <ChevronDown size={16} aria-hidden />
+        {open ? (
+          <ul className="lf__opts">
+            <li>
+              <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => { onPick(''); setOpen(false) }}>
+                {anyLabel}
+              </button>
+            </li>
+            {shown.map((o) => (
+              <li key={o}>
+                <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => { onPick(o); setOpen(false) }}>
+                  {mark(o)}
+                </button>
+              </li>
+            ))}
+            {!shown.length ? <li className="lf__none">No match</li> : null}
+          </ul>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 function Range({ label, minValue, maxValue, onMin, onMax, minHolder = 'No min', maxHolder = 'No max' }) {
   return (
     <div className="lf__group">
@@ -81,7 +142,7 @@ function Range({ label, minValue, maxValue, onMin, onMax, minHolder = 'No min', 
 }
 
 /** The same questions as the Search page, laid out horizontally (Buy, Rent). */
-function ListingFilters({ filters, onChange, onClear, pool, count, id = 'lf' }) {
+function ListingFilters({ filters, onChange, onClear, pool, count, id = 'lf', variant = 'bar' }) {
   const [sheet, setSheet] = useState(false)
 
   const cities = useMemo(() => uniqueSorted(pool.map(cityOf)), [pool])
@@ -107,6 +168,8 @@ function ListingFilters({ filters, onChange, onClear, pool, count, id = 'lf' }) 
   const conditionList = ['Brand new', 'Resale']
   if (filters.listing !== 'For Rent' && !showLand) conditionList.push('Under construction')
 
+  const box = variant === 'box'
+  const Pick = box ? Combo : Select
   const set = (key) => (value) => onChange({ [key]: value })
 
   const search = (
@@ -128,8 +191,8 @@ function ListingFilters({ filters, onChange, onClear, pool, count, id = 'lf' }) 
   const general = (
     <>
       <Pills label="PROPERTY TYPE" value={type} options={TYPE_OPTIONS} onPick={set('type')} />
-      <Select label="CITY" value={filters.city} options={cities} onPick={(v) => onChange({ city: v, area: '' })} anyLabel="All cities" />
-      <Select label="AREA" value={filters.area} options={areas} onPick={set('area')} anyLabel="All areas" />
+      <Pick label="CITY" value={filters.city} options={cities} onPick={(v) => onChange({ city: v, area: '' })} anyLabel="All cities" />
+      <Pick label="AREA" value={filters.area} options={areas} onPick={set('area')} anyLabel="All areas" />
       <Range
         label="PRICE (EUR)"
         minValue={filters.minPrice}
@@ -176,21 +239,8 @@ function ListingFilters({ filters, onChange, onClear, pool, count, id = 'lf' }) 
 
   const showLabel = `Show ${count} ${count === 1 ? 'property' : 'properties'}`
 
-  return (
-    <div className="lf" id={id}>
-      <div className="lf__r1">
-        {search}
-        <div className="lf__wide">{listing}</div>
-        <button type="button" className="lf__clear lf__wide" onClick={onClear}>
-          Clear all
-        </button>
-        <button type="button" className="lf__open" onClick={() => setSheet(true)}>
-          <SlidersHorizontal size={17} strokeWidth={1.6} aria-hidden /> Filters
-        </button>
-      </div>
-      <div className="lf__r2 lf__wide">{general}</div>
-      {specific.props.children.some(Boolean) ? <div className="lf__r3 lf__wide">{specific}</div> : null}
-
+  const sheetEl = (
+    <>
       {sheet ? (
         <div className="lf__sheet" role="dialog" aria-modal="true" aria-label="Filters">
           <div className="lf__sheet-head">
@@ -212,6 +262,48 @@ function ListingFilters({ filters, onChange, onClear, pool, count, id = 'lf' }) 
           </div>
         </div>
       ) : null}
+    </>
+  )
+
+  if (box) {
+    return (
+      <div className="lf lf--box" id={id}>
+        <div className="lf__r1 lf__only-phone">
+          {search}
+          <button type="button" className="lf__open" onClick={() => setSheet(true)}>
+            <SlidersHorizontal size={17} strokeWidth={1.6} aria-hidden /> Filters
+          </button>
+        </div>
+        <div className="lf__boxbody lf__wide">
+          <div className="lf__boxhead">
+            <span>FILTERS</span>
+            <button type="button" className="lf__clear" onClick={onClear}>Clear all</button>
+          </div>
+          {search}
+          {listing}
+          {general}
+          {specific}
+        </div>
+        {sheetEl}
+      </div>
+    )
+  }
+
+  return (
+    <div className="lf" id={id}>
+      <div className="lf__r1">
+        {search}
+        <div className="lf__wide">{listing}</div>
+        <button type="button" className="lf__clear lf__wide" onClick={onClear}>
+          Clear all
+        </button>
+        <button type="button" className="lf__open" onClick={() => setSheet(true)}>
+          <SlidersHorizontal size={17} strokeWidth={1.6} aria-hidden /> Filters
+        </button>
+      </div>
+      <div className="lf__r2 lf__wide">{general}</div>
+      {specific.props.children.some(Boolean) ? <div className="lf__r3 lf__wide">{specific}</div> : null}
+      {sheetEl}
     </div>
   )
 }

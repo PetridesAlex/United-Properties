@@ -1,340 +1,151 @@
-import {useEffect, useMemo, useRef, useState} from 'react'
-import {Helmet} from 'react-helmet-async'
-import {useNavigate, useSearchParams} from 'react-router-dom'
-import {searchCities as defaultCities} from '../data/searchDiscoveryProperties'
-import {useMergedProperties} from '../hooks/useMergedProperties'
-import {useSiteContent} from '../hooks/useSiteContent'
-import {
-  BEDROOM_OPTIONS,
-  buildSearchPath,
-  normalizeSearchCategory,
-  parsePositiveInt,
-  pricePresetsForCategory,
-} from '../lib/search/searchPath'
-import SearchBar from '../components/SearchPanel/SearchBar'
-import CityFilters from '../components/SearchPanel/CityFilters'
-import CategoryFilters from '../components/SearchPanel/CategoryFilters'
-import BedroomFilters from '../components/SearchPanel/BedroomFilters'
-import PriceFilters from '../components/SearchPanel/PriceFilters'
-import DiscoveryResults from '../components/SearchPanel/DiscoveryResults'
-import '../components/SearchPanel/SearchPanel.css'
+import { useEffect, useMemo, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
+import { Link, useSearchParams } from 'react-router-dom'
+import PropertyCard from '../components/PropertyCard/PropertyCard'
+import ListingFilters from '../components/ListingFilters/ListingFilters'
+import { EMPTY_FILTERS, applyListingFilters, isFiltered } from '../lib/search/listingFilters'
+import { useMergedProperties } from '../hooks/useMergedProperties'
+import './Properties.css'
 import './Search.css'
 
-const LISTING_FILTERS = ['All Listings', 'For Sale', 'For Rent', 'Featured']
-
-function extractCity(location = '') {
-  const parts = String(location)
-    .split(',')
-    .map((part) => part.trim())
-    .filter(Boolean)
-  if (!parts.length) return ''
-  return parts[parts.length - 1]
+const TYPE_ALIASES = {
+  apartments: 'apartments',
+  apartment: 'apartments',
+  houses: 'houses',
+  house: 'houses',
+  villa: 'houses',
+  villas: 'houses',
+  offices: 'offices',
+  office: 'offices',
+  land: 'land',
 }
 
-function readFiltersFromParams(searchParams) {
-  return {
-    query: searchParams.get('q') || '',
-    city: searchParams.get('city') || 'All Cyprus',
-    category: normalizeSearchCategory(searchParams.get('type') || 'All Listings'),
-    bedrooms: parsePositiveInt(searchParams.get('beds')),
-    minPrice: parsePositiveInt(searchParams.get('min')),
-    maxPrice: parsePositiveInt(searchParams.get('max')),
-  }
+function readFilters(params) {
+  const f = { ...EMPTY_FILTERS }
+  f.keyword = params.get('q') || ''
+  const type = (params.get('type') || '').toLowerCase()
+  if (type === 'for sale') f.listing = 'For Sale'
+  else if (type === 'for rent') f.listing = 'For Rent'
+  else if (TYPE_ALIASES[type]) f.type = TYPE_ALIASES[type]
+  const listing = params.get('listing')
+  if (listing === 'sale') f.listing = 'For Sale'
+  if (listing === 'rent') f.listing = 'For Rent'
+  const city = params.get('city') || ''
+  if (city && city !== 'All Cyprus') f.city = city
+  f.minPrice = params.get('min') || ''
+  f.maxPrice = params.get('max') || ''
+  const beds = params.get('beds')
+  if (beds) f.bedrooms = beds
+  return f
 }
 
-function formatEuro(value) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(value)
-}
-
-function useNavbarOffset() {
-  const [top, setTop] = useState(0)
-
-  useEffect(() => {
-    function measure() {
-      const nav = document.querySelector('header.navbar')
-      const next = nav ? Math.round(nav.getBoundingClientRect().height) : 0
-      setTop((prev) => (prev === next ? prev : next))
-    }
-
-    measure()
-    window.addEventListener('resize', measure)
-    window.addEventListener('scroll', measure, {passive: true})
-    return () => {
-      window.removeEventListener('resize', measure)
-      window.removeEventListener('scroll', measure)
-    }
-  }, [])
-
-  return top
+function writeFilters(f) {
+  const p = new URLSearchParams()
+  if (f.keyword) p.set('q', f.keyword)
+  if (f.listing) p.set('listing', f.listing === 'For Sale' ? 'sale' : 'rent')
+  if (f.type) p.set('type', f.type)
+  if (f.city) p.set('city', f.city)
+  if (f.minPrice) p.set('min', f.minPrice)
+  if (f.maxPrice) p.set('max', f.maxPrice)
+  if (f.bedrooms) p.set('beds', f.bedrooms)
+  return p
 }
 
 function Search() {
-  const {get} = useSiteContent()
-  const {list: properties, loading} = useMergedProperties()
-  const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
-  const skipParamSyncRef = useRef(false)
-  const topOffset = useNavbarOffset()
-
-  const initial = readFiltersFromParams(searchParams)
-  const [query, setQuery] = useState(initial.query)
-  const [activeCity, setActiveCity] = useState(initial.city)
-  const [activeCategory, setActiveCategory] = useState(initial.category)
-  const [bedrooms, setBedrooms] = useState(initial.bedrooms)
-  const [minPrice, setMinPrice] = useState(initial.minPrice)
-  const [maxPrice, setMaxPrice] = useState(initial.maxPrice)
+  const { list: properties, loading } = useMergedProperties()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [filters, setFilters] = useState(() => readFilters(searchParams))
 
   useEffect(() => {
-    if (skipParamSyncRef.current) {
-      skipParamSyncRef.current = false
-      return
-    }
-    const next = readFiltersFromParams(searchParams)
-    setQuery(next.query)
-    setActiveCity(next.city)
-    setActiveCategory(next.category)
-    setBedrooms(next.bedrooms)
-    setMinPrice(next.minPrice)
-    setMaxPrice(next.maxPrice)
-  }, [searchParams])
+    const next = writeFilters(filters).toString()
+    if (next !== searchParams.toString()) setSearchParams(next ? `?${next}` : '', { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters])
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const next = buildSearchPath({
-        query,
-        city: activeCity,
-        category: activeCategory,
-        bedrooms,
-        minPrice,
-        maxPrice,
-      })
-      const current = `${window.location.pathname}${window.location.search}`
-      if (next === current) return
-      skipParamSyncRef.current = true
-      navigate(next, {replace: true})
-    }, 160)
-    return () => window.clearTimeout(timer)
-  }, [query, activeCity, activeCategory, bedrooms, minPrice, maxPrice, navigate])
-
-  useEffect(() => {
-    if (minPrice > 0 && maxPrice > 0 && minPrice > maxPrice) {
-      setMaxPrice(0)
-    }
-  }, [minPrice, maxPrice])
-
-  const cities = useMemo(() => {
-    const fromListings = new Set()
-    properties.forEach((property) => {
-      const city = extractCity(property.location) || property.location
-      if (city) fromListings.add(city)
-    })
-    const known = defaultCities.filter((city) => city === 'All Cyprus' || fromListings.has(city))
-    const extras = [...fromListings].filter((city) => !defaultCities.includes(city)).sort()
-    return [...known, ...extras]
-  }, [properties])
-
-  const filtered = useMemo(() => {
-    const normalized = query.trim().toLowerCase()
-    return properties.filter((property) => {
-      const city = extractCity(property.location) || property.location
-      const matchesCity =
-        activeCity === 'All Cyprus' || city === activeCity || property.location?.includes(activeCity)
-
-      const matchesCategory =
-        activeCategory === 'All Listings' ||
-        (activeCategory === 'For Sale' && property.status === 'For Sale') ||
-        (activeCategory === 'For Rent' && property.status === 'For Rent') ||
-        (activeCategory === 'Featured' && (property.featured || property.isSignature))
-
-      const beds = Number(property.bedrooms) || 0
-      const matchesBeds = bedrooms <= 0 || beds >= bedrooms
-
-      const price = Number(property.price) || 0
-      const matchesMin = minPrice <= 0 || price >= minPrice
-      const matchesMax = maxPrice <= 0 || price <= maxPrice
-
-      const matchesQuery =
-        !normalized ||
-        [property.title, property.location, property.type, property.status, property.address]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase()
-          .includes(normalized)
-
-      return (
-        matchesCity &&
-        matchesCategory &&
-        matchesBeds &&
-        matchesMin &&
-        matchesMax &&
-        matchesQuery
-      )
-    })
-  }, [properties, activeCity, activeCategory, bedrooms, minPrice, maxPrice, query])
-
-  function resetFilters() {
-    setQuery('')
-    setActiveCity('All Cyprus')
-    setActiveCategory('All Listings')
-    setBedrooms(0)
-    setMinPrice(0)
-    setMaxPrice(0)
-  }
-
-  function handleCategoryChange(nextCategory) {
-    setActiveCategory(nextCategory)
-    const presets = pricePresetsForCategory(nextCategory)
-    if (!presets.min.some((option) => option.value === minPrice)) setMinPrice(0)
-    if (!presets.max.some((option) => option.value === maxPrice)) setMaxPrice(0)
-  }
-
-  const activeFilterChips = useMemo(() => {
-    const chips = []
-    if (activeCity !== 'All Cyprus') chips.push({key: 'city', label: activeCity})
-    if (activeCategory !== 'All Listings') chips.push({key: 'type', label: activeCategory})
-    if (bedrooms > 0) {
-      const option = BEDROOM_OPTIONS.find((item) => item.value === bedrooms)
-      chips.push({key: 'beds', label: `${option?.label || bedrooms}+ beds`})
-    }
-    if (minPrice > 0) chips.push({key: 'min', label: `From ${formatEuro(minPrice)}`})
-    if (maxPrice > 0) chips.push({key: 'max', label: `Up to ${formatEuro(maxPrice)}`})
-    if (query.trim()) chips.push({key: 'q', label: `“${query.trim()}”`})
-    return chips
-  }, [activeCity, activeCategory, bedrooms, minPrice, maxPrice, query])
-
-  const matchLabel =
-    filtered.length === 1
-      ? get('search', 'stat', 'match_singular', 'home')
-      : get('search', 'stat', 'match_plural', 'homes')
-
-  const heading = get('search', 'head', 'heading', 'Search homes') || 'Search homes'
-  const pageTitle = `${heading} | United Properties`
-  const description = get(
-    'search',
-    'head',
-    'description',
-    'Filter by location, bedrooms, and budget. Results update as you refine.',
-  )
-
-  useEffect(() => {
-    document.title = pageTitle
-  }, [pageTitle])
+  const results = useMemo(() => applyListingFilters(properties, filters), [properties, filters])
+  const clear = () => setFilters({ ...EMPTY_FILTERS })
+  const count = loading ? '…' : results.length
+  const label = results.length === 1 ? 'matching property' : 'matching properties'
 
   return (
     <>
       <Helmet>
-        <title>{pageTitle}</title>
-        <meta name="description" content={description} />
+        <title>Explore properties | United Properties</title>
+        <meta
+          name="description"
+          content="Search apartments, houses, offices and land in Limassol by location, type and price."
+        />
       </Helmet>
 
-      <div
-        className="up-search"
-        style={{'--up-top': `${topOffset}px`}}
-        data-cms-page="search"
-        data-cms-section="head"
-      >
-        <header className="up-search__hero">
-          <div className="up-search__hero-inner">
-            <p className="up-search__lbl">
-              {get('search', 'head', 'eyebrow', 'United Properties · Search')}
-            </p>
-            <h1 className="up-search__title">{heading}</h1>
-            <p className="up-search__lead">{description}</p>
-            <output className="up-search__stat" aria-live="polite">
-              <span className="up-search__stat-value">{loading ? '…' : filtered.length}</span>
-              <span className="up-search__stat-label">{matchLabel}</span>
-            </output>
+      <div className="up-buy up-find">
+        <section className="up-buy__hero">
+          <div className="up-buy__shell up-buy__hero-inner">
+            <span className="lbl">SEARCH</span>
+            <h1 className="intro-title">
+              <span className="bw" style={{ animationDelay: '0.05s' }}>Explore </span>
+              <span className="bw" style={{ animationDelay: '0.15s' }}>properties</span>
+            </h1>
           </div>
-        </header>
+        </section>
 
-        <section className="up-search__body" aria-label="Search listings">
-          <div className="up-search__shell">
-            <div className="up-search__layout">
-              <aside className="up-search__sidebar" aria-label="Search filters">
-                <div className="up-search__sidebar-card search-panel__toolbar">
-                  <div className="up-search__sidebar-top">
-                    <p className="up-search__sidebar-title">Filters</p>
-                    <button type="button" className="search-panel__reset" onClick={resetFilters}>
-                      {get('search', 'filters', 'clear', 'Clear all')}
-                    </button>
-                  </div>
-
-                  <SearchBar
-                    value={query}
-                    onChange={setQuery}
-                    placeholder={get(
-                      'search',
-                      'filters',
-                      'search_placeholder',
-                      'Search by name or area…',
-                    )}
-                  />
-                  <CityFilters
-                    cities={cities}
-                    activeCity={activeCity}
-                    onSelect={setActiveCity}
-                    locationLabel={get('search', 'filters', 'location_label', 'Location')}
-                  />
-                  <CategoryFilters
-                    categories={LISTING_FILTERS}
-                    activeCategory={activeCategory}
-                    onSelect={handleCategoryChange}
-                    onReset={resetFilters}
-                    categoryLabel={get('search', 'filters', 'category_label', 'Type')}
-                    clearLabel={get('search', 'filters', 'clear', 'Clear')}
-                  />
-                  <BedroomFilters
-                    value={bedrooms}
-                    onSelect={setBedrooms}
-                    label={get('search', 'filters', 'bedrooms_label', 'Bedrooms')}
-                  />
-                  <PriceFilters
-                    category={activeCategory}
-                    minPrice={minPrice}
-                    maxPrice={maxPrice}
-                    onMinChange={setMinPrice}
-                    onMaxChange={setMaxPrice}
-                    label={get('search', 'filters', 'price_label', 'Price')}
-                    minLabel={get('search', 'filters', 'price_min', 'Minimum')}
-                    maxLabel={get('search', 'filters', 'price_max', 'Maximum')}
-                  />
+        <section className="lv">
+          <div className="up-find__row">
+            <ListingFilters
+              variant="box"
+              id="search-filters"
+              filters={filters}
+              onChange={(patch) => setFilters((prev) => ({ ...prev, ...patch }))}
+              onClear={clear}
+              pool={properties}
+              count={results.length}
+            />
+            <div className="up-find__col">
+              <p className="lvc">
+                {count} {label}
+              </p>
+              {results.length ? (
+                <div className="grid up-find__grid">
+                  {results.map((property) => (
+                    <PropertyCard
+                      key={property.id}
+                      property={property}
+                      imageSizes="(max-width: 760px) 94vw, (max-width: 1100px) 46vw, 30vw"
+                    />
+                  ))}
                 </div>
-              </aside>
-
-              <div className="up-search__main">
-                <div className="up-search__results-bar">
-                  <p className="up-search__results-count">
-                    {loading ? 'Loading homes…' : `${filtered.length} ${matchLabel}`}
+              ) : loading ? null : (
+                <div className="up-find__empty">
+                  <span className="lbl">NO MATCH</span>
+                  <p className="up-find__none">No properties match these filters.</p>
+                  <p className="up-find__off">
+                    Not every property is listed publicly. Speak with one of our consultants about
+                    off-market opportunities.
                   </p>
-                  {activeFilterChips.length ? (
-                    <div className="up-search__active-filters" aria-label="Active filters">
-                      {activeFilterChips.map((chip) => (
-                        <span key={chip.key} className="up-search__active-chip">
-                          {chip.label}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="up-search__results-hint">Showing all available listings</p>
-                  )}
+                  <div className="up-find__acts">
+                    <Link className="up-find__btn" to="/contact">
+                      Speak with a consultant
+                    </Link>
+                    {isFiltered(filters) ? (
+                      <button type="button" className="up-find__lnk" onClick={clear}>
+                        Clear filters
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
+              )}
+            </div>
+          </div>
+        </section>
 
-                <DiscoveryResults
-                  properties={filtered}
-                  loading={loading}
-                  emptyTitle={get('search', 'empty', 'title', 'No matches')}
-                  emptyHint={get(
-                    'search',
-                    'empty',
-                    'hint',
-                    'Try another location, clear filters, or broaden your search.',
-                  )}
-                />
-              </div>
+        <section className="up-find__ctaband">
+          <div className="up-find__cta">
+            <span className="lbl">UNITED PROPERTIES</span>
+            <h2>What is your story?</h2>
+            <p className="sty">A few personal questions help us begin the right way.</p>
+            <div>
+              <Link className="up-find__btn up-find__btn--lt" to="/contact">
+                Answer a few questions
+              </Link>
             </div>
           </div>
         </section>
