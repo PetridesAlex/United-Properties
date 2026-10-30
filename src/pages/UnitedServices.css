@@ -779,3 +779,33 @@
     padding-bottom: 64px;
   }
 }
+
+/* Jump buttons (approved): Montserrat caps 11px/.3em gold letters, gold outline, hover = halo only */
+.up-services .jump {
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  font-weight: 500;
+  color: #cda984;
+  background: transparent;
+  border: 1px solid rgba(205, 169, 132, 0.7);
+  box-shadow: none;
+  padding: 10px 22px;
+  transition: box-shadow 0.35s ease, border-color 0.35s ease;
+}
+.up-services .jump::after {
+  color: #cda984;
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+}
+.up-services .jump:hover {
+  background: transparent;
+  color: #cda984;
+  border-color: #cda984;
+  box-shadow: 0 0 0 6px rgba(205, 169, 132, 0.12);
+}
+.up-services .jump:hover::after {
+  color: #cda984;
+  transform: none;
+}

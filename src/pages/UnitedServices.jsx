@@ -157,6 +157,16 @@ function UnitedServices() {
         'Houses selected for long-term value, in places people will want to live for years to come. A home to enjoy today. An asset for tomorrow.',
       ),
     },
+    {
+      key: 'offices',
+      title: get('services', 'invest_offer', 'offices_title', 'Offices and commercial property'),
+      body: get(
+        'services',
+        'invest_offer',
+        'offices_body',
+        'Investments chosen for their tenants and income, with the figures laid out clearly.',
+      ),
+    },
   ]
 
   const sellPriceBodyRaw = get(
