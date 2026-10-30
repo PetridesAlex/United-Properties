@@ -79,7 +79,7 @@
   letter-spacing: 0.26em;
   text-transform: uppercase;
   text-decoration: none;
-  color: rgba(244, 241, 234, 0.85);
+  color: #e8e4da;
   white-space: nowrap;
   padding: 6px 0;
   transition: color var(--transition-fast), opacity var(--transition-fast);
@@ -91,7 +91,7 @@
 }
 
 .navbar__center-link--active {
-  color: rgba(244, 241, 234, 0.85);
+  color: #cda984;
   font-weight: 500;
   position: relative;
 }
