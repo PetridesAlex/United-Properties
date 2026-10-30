@@ -99,6 +99,13 @@ function Gallery({
 
   const onPointerDown = useCallback(
     (e) => {
+      if (swipeRef.current.active && swipeRef.current.pointerId !== e.pointerId) {
+        // a second finger (pinch): stop the swipe so nothing jumps
+        swipeRef.current.active = false
+        swipeRef.current.vertical = false
+        setDragX(0)
+        return
+      }
       if (count <= 1 || zoom > 1) return
       if (e.pointerType === 'mouse' && e.button !== 0) return
       if (e.target instanceof Element && e.target.closest('button')) return
@@ -130,12 +137,16 @@ function Gallery({
 
     if (!swipe.locked) {
       if (Math.abs(dx) < SWIPE_LOCK_PX && Math.abs(dy) < SWIPE_LOCK_PX) return
-      if (Math.abs(dx) >= Math.abs(dy)) {
+      if (Math.abs(dx) >= Math.abs(dy) * 0.6) {
         swipe.locked = true
-      } else {
-        // vertical: a swipe down closes the viewer (phones)
+      } else if (dy > 0 && Math.abs(dy) > Math.abs(dx) * 1.5) {
+        // clearly downward: a swipe down closes the viewer (phones)
         swipe.vertical = true
         swipe.locked = true
+      } else {
+        swipe.active = false
+        setDragX(0)
+        return
       }
     }
 
@@ -419,6 +430,8 @@ function Gallery({
 
                   <div className={`gallery-lightbox__frame ${zoom > 1 ? 'is-zoomed' : ''}`}>
                     <OptimizedImage
+                      key={activeSrc}
+                      noSrcSet
                       src={activeSrc}
                       alt={`${title} — photo ${activeIndex + 1} of ${count}`}
                       preset="lightbox"
