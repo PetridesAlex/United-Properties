@@ -79,9 +79,9 @@
   letter-spacing: 0.26em;
   text-transform: uppercase;
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(244, 241, 234, 0.85);
   white-space: nowrap;
-  padding: 0.4rem 0.14rem;
+  padding: 6px 0;
   transition: color var(--transition-fast), opacity var(--transition-fast);
   -webkit-font-smoothing: antialiased;
 }
@@ -91,9 +91,18 @@
 }
 
 .navbar__center-link--active {
-  color: #f4f1ea;
+  color: rgba(244, 241, 234, 0.85);
   font-weight: 500;
-  box-shadow: 0 1px 0 0 #cda984;
+  position: relative;
+}
+.navbar__center-link--active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: -0.26em;
+  bottom: -3px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(205, 169, 132, 0), #cda984, rgba(205, 169, 132, 0));
 }
 
 .navbar__center-item {
