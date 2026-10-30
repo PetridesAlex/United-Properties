@@ -1,30 +1,42 @@
-/* Approved listing card ("crystal"): gold gradient border, frosted tag, specs left, price right. */
+/* Approved listing card ("crystal"): light card, gold gradient border, frosted tag, specs left, price right. */
 .property-card.card-luxury:has(> .upc),
 .property-card--signature:has(> .upc) {
   background: transparent;
   border: 0;
   box-shadow: none;
   padding: 0;
+  display: flex;
+  height: 100%;
+}
+
+.property-card > .upc {
+  flex: 1;
 }
 
 .upc {
   display: flex;
   flex-direction: column;
   height: 100%;
-  color: var(--up-text-soft, #e4dfd3);
+  color: #17263b;
   text-decoration: none;
   border-radius: 14px;
   border: 1px solid transparent;
   background:
-    linear-gradient(#0e1729, #0b1324) padding-box,
-    linear-gradient(160deg, #ddbb99, rgba(205, 169, 132, 0.25) 45%, #cda984) border-box;
+    linear-gradient(165deg, #fff, #f8f3ec 60%, #fff) padding-box,
+    linear-gradient(135deg, rgba(205, 169, 132, 0.95), rgba(205, 169, 132, 0.18) 42%, rgba(205, 169, 132, 0.75)) border-box;
+  box-shadow: inset 0 1px 0 #fff, 0 14px 34px rgba(140, 102, 64, 0.16), 0 2px 6px rgba(140, 102, 64, 0.08);
   overflow: hidden;
+  transition: box-shadow 0.35s ease;
+}
+.upc:hover {
+  box-shadow: inset 0 1px 0 #fff, 0 14px 34px rgba(140, 102, 64, 0.16), 0 0 0 6px rgba(205, 169, 132, 0.14);
 }
 
 .upc__media {
   position: relative;
   height: 260px;
   overflow: hidden;
+  background: #dfe4ea;
 }
 .upc__media img {
   width: 100%;
@@ -32,49 +44,60 @@
   object-fit: cover;
   display: block;
 }
+.upc__media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0) 26%, rgba(255, 255, 255, 0) 64%, rgba(255, 255, 255, 0.12) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.32), inset 0 -40px 50px -30px rgba(11, 19, 36, 0.25);
+}
 
 .upc__tag {
   position: absolute;
-  top: 14px;
-  left: 14px;
-  padding: 7px 12px;
-  border-radius: 999px;
-  font-family: var(--up-label, 'Montserrat', sans-serif);
-  font-size: 10px;
-  letter-spacing: 0.16em;
+  top: 17px;
+  left: 17px;
+  z-index: 2;
+  font: 500 10px/1 'Montserrat', system-ui, sans-serif;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: #f5efe8;
-  background: rgba(11, 19, 36, 0.38);
-  border: 1px solid rgba(205, 169, 132, 0.45);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  color: #fff;
+  padding: 8px 14px 8px 17px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.1) 55%, rgba(255, 255, 255, 0.26));
+  -webkit-backdrop-filter: blur(12px) saturate(170%);
+  backdrop-filter: blur(12px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 0 0 1px rgba(205, 169, 132, 0.55), 0 6px 16px rgba(11, 19, 36, 0.18);
+  text-shadow: 0 1px 6px rgba(11, 19, 36, 0.55);
 }
 
 .upc__signature {
   position: absolute;
-  left: 14px;
+  left: 17px;
   bottom: 12px;
-  font-family: var(--up-label, 'Montserrat', sans-serif);
-  font-size: 9px;
+  z-index: 2;
+  font: 500 9px 'Montserrat', sans-serif;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--up-gold, #cda984);
+  color: #fff;
 }
 
 .upc__body {
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: 20px 22px 18px;
+  padding: 24px;
+  gap: 10px;
 }
 
 .upc .upc__title {
   margin: 0;
-  font-family: var(--up-serif, 'Cormorant Garamond', serif);
-  font-weight: 500;
-  font-size: 26px;
-  line-height: 1.15;
-  color: #f5efe8;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 600;
+  font-size: 25px;
+  line-height: 1.2;
+  color: #17263b;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -84,33 +107,39 @@
 .upc .upc__location {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin: 8px 0 0;
-  font-family: var(--up-serif, 'Cormorant Garamond', serif);
+  gap: 7px;
+  margin: auto 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 19px;
-  color: var(--up-gold, #cda984);
+  font-weight: 500;
+  color: #4a5568;
+}
+.upc .upc__location svg {
+  color: #8c6640;
+  flex: none;
 }
 
 .upc__description {
-  margin: 10px 0 0;
-  font-family: var(--up-serif, 'Cormorant Garamond', serif);
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 18px;
   line-height: 1.4;
+  color: #4a5568;
 }
 
 .upc__rule {
-  margin: 16px 0 14px;
-  border: 0;
-  height: 1px;
-  background: rgba(205, 169, 132, 0.4);
+  display: none;
 }
 
 .upc__foot {
-  margin-top: auto;
+  margin-top: 0;
+  padding-top: 16px;
+  border-top: 1px solid rgba(140, 102, 64, 0.22);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 10px;
+  flex-wrap: nowrap;
 }
 
 .upc__specs {
@@ -119,32 +148,53 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  font-family: var(--up-serif, 'Cormorant Garamond', serif);
-  font-size: 20px;
+  font: 700 16px 'Cormorant Garamond', Georgia, serif;
+  color: #17263b;
 }
 .upc__specs li {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 14px;
-  border-left: 1px solid rgba(205, 169, 132, 0.5);
+  gap: 5px;
+  padding: 2px 13px;
+  white-space: nowrap;
+}
+.upc__specs li + li {
+  border-left: 1px solid rgba(205, 169, 132, 0.75);
 }
 .upc__specs li:first-child {
   padding-left: 0;
-  border-left: 0;
 }
 .upc__specs svg {
-  color: var(--up-gold, #cda984);
+  color: #cda984;
+  width: 16px;
+  height: 16px;
+}
+.upc__specs li span {
+  color: #17263b;
+  white-space: nowrap;
 }
 
-.upc__price {
-  margin: 0;
-  text-align: right;
+.upc .upc__price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0 0 0 auto;
   white-space: nowrap;
-  font-family: var(--up-serif, 'Cormorant Garamond', serif);
-  font-weight: 600;
-  font-size: 22px;
-  color: var(--up-gold, #cda984);
+}
+.upc .upc__price small {
+  font: 500 10px 'Montserrat', sans-serif;
+  letter-spacing: 0.3em;
+  color: #8c6640;
+}
+.upc .upc__price b {
+  font: 500 26px/1 'Cormorant Garamond', Georgia, serif;
+  color: #0b1324;
+}
+.upc .upc__price em {
+  font: 500 12px 'Cormorant Garamond', Georgia, serif;
+  font-style: normal;
+  color: #4a5568;
+  margin-left: -2px;
 }
 
 .upc__sr {
@@ -157,74 +207,7 @@
 }
 
 @media (max-width: 760px) {
-  .upc__foot {
-    flex-wrap: wrap;
-  }
-}
-
-/* keep the card text readable whatever the page sets for headings and links */
-.upc .upc__title {
-  color: #f5efe8;
-}
-.upc .upc__location,
-.upc .upc__price {
-  color: var(--up-gold, #cda984);
-}
-.upc__specs li span {
-  color: #f4f1ea;
-}
-
-/* same height cards in a row; specs never wrap; price = tiny gold EUR + number + small "/ month" */
-.property-card:has(> .upc) {
-  display: flex;
-  height: 100%;
-}
-.property-card > .upc {
-  flex: 1;
-}
-.upc__specs li,
-.upc__specs li span {
-  white-space: nowrap;
-}
-.upc__specs {
-  font-size: 19px;
-}
-.upc__specs li {
-  padding: 0 12px;
-}
-.upc .upc__price {
-  display: flex;
-  align-items: baseline;
-  gap: 7px;
-  font-weight: 500;
-  font-size: 26px;
-  line-height: 1;
-}
-.upc .upc__price small {
-  font: 500 9px 'Montserrat', sans-serif;
-  letter-spacing: 0.28em;
-  color: var(--up-gold, #cda984);
-}
-.upc .upc__price b {
-  font: 500 26px/1 var(--up-serif, 'Cormorant Garamond', serif);
-  color: #f5efe8;
-}
-.upc .upc__price em {
-  font: 500 14px var(--up-serif, 'Cormorant Garamond', serif);
-  font-style: normal;
-  color: #e4dfd3;
-}
-.upc__foot {
-  flex-wrap: nowrap;
-}
-@media (max-width: 760px) {
-  .upc__foot {
-    flex-wrap: nowrap;
-  }
-  .upc__specs {
-    font-size: 17px;
-  }
-  .upc .upc__price b {
-    font-size: 22px;
+  .upc__body {
+    padding: 20px;
   }
 }
