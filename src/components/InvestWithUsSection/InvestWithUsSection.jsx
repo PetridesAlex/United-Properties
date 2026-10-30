@@ -183,7 +183,7 @@ function InvestWithUsSection() {
               'services',
               'invest_offer',
               'close_body',
-              "Potential comes in many forms. A plot with a view. An apartment in the right location. An older house waiting for its next chapter. Whatever you choose, you get real local knowledge. If we believe in an opportunity, you'll hear it from us. If we don't, you'll hear that too.",
+              "Potential comes in many forms. A plot with a view. An apartment in the right location. An older house waiting for its next chapter. Whatever you choose, you get real local knowledge. If we see potential in an opportunity, you'll hear it from us. If we don't, you'll hear that too.",
             )}
           </CmsText>
         </motion.blockquote>
