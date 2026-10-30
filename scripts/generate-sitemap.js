@@ -18,15 +18,11 @@ const STATIC_PATHS = [
   '/buy',
   '/rent',
   '/contact',
-  '/privacy',
   '/properties',
   '/featured-properties',
   '/signature-listings',
   '/about',
   '/services',
-  '/sell-with-us',
-  '/concierge',
-  '/agents',
 ]
 
 function buildUrl(pathname) {

@@ -7,11 +7,7 @@ const Properties = lazy(() => import('../pages/Properties'))
 const PropertyDetails = lazy(() => import('../pages/PropertyDetails'))
 const About = lazy(() => import('../pages/About'))
 const Services = lazy(() => import('../pages/Services'))
-const SellWithUs = lazy(() => import('../pages/SellWithUs'))
-const Concierge = lazy(() => import('../pages/Concierge'))
-const Agents = lazy(() => import('../pages/Agents'))
 const Contact = lazy(() => import('../pages/Contact'))
-const Privacy = lazy(() => import('../pages/Privacy'))
 const HeroVideoWatch = lazy(() => import('../pages/HeroVideoWatch'))
 const NotFound = lazy(() => import('../pages/NotFound'))
 const AdminRoutes = lazy(() => import('../pages/admin/AdminRoutes'))
@@ -36,8 +32,8 @@ function AppRouter() {
         <Route path="/developments" element={<Navigate to="/properties" replace />} />
         <Route path="/buy" element={<Properties />} />
         <Route path="/rent" element={<Properties />} />
-        <Route path="/sold" element={<Properties />} />
-        <Route path="/rented" element={<Properties />} />
+        <Route path="/sold" element={<Navigate to="/" replace />} />
+        <Route path="/rented" element={<Navigate to="/" replace />} />
         <Route path="/featured-properties" element={<Properties />} />
         <Route path="/signature-listings" element={<Properties />} />
         <Route path="/properties" element={<Properties />} />
@@ -51,11 +47,11 @@ function AppRouter() {
         <Route path="/properties/:slug" element={<PropertyDetails />} />
         <Route path="/about" element={<About />} />
         <Route path="/services" element={<Services />} />
-        <Route path="/sell-with-us" element={<SellWithUs />} />
-        <Route path="/concierge" element={<Concierge />} />
-        <Route path="/agents" element={<Agents />} />
+        <Route path="/sell-with-us" element={<Navigate to="/" replace />} />
+        <Route path="/concierge" element={<Navigate to="/" replace />} />
+        <Route path="/agents" element={<Navigate to="/" replace />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/privacy" element={<Navigate to="/" replace />} />
         <Route path="/videos/luxury-real-estate-cyprus" element={<HeroVideoWatch />} />
         <Route
           path="/video/hero-video"

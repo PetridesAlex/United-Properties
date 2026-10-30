@@ -1,0 +1,28 @@
+/*
+ * United Properties: approved design tokens (2026-10).
+ * Two golds only. Straight (lining) numerals everywhere.
+ * Add new UI using these tokens; do not introduce other golds.
+ */
+:root {
+  --up-gold: #cda984; /* gold on navy */
+  --up-gold-deep: #8c6640; /* gold text on cream */
+  --up-gold-tint: #ddbb99; /* only inside button gradients */
+  --up-navy: #0b1324;
+  --up-cream: #f5efe8;
+  --up-text-soft: #e4dfd3; /* text on navy */
+  --up-whatsapp: #25d366;
+  --up-telegram: #2aa3ea;
+
+  --up-serif: 'Cormorant Garamond', Georgia, serif;
+  --up-label: 'Montserrat', system-ui, sans-serif;
+
+  --up-halo: 0 0 0 6px rgba(205, 169, 132, 0.12);
+}
+
+/* Straight numerals sitewide. The font shorthand resets this property, so it must be !important. */
+*,
+*::before,
+*::after {
+  font-variant-numeric: lining-nums !important;
+  font-feature-settings: 'lnum' 1, 'pnum' 0 !important;
+}
