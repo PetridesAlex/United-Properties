@@ -155,7 +155,9 @@ function Footer() {
 
       <div className="cp">
         — © {year} {get('footer', 'legal', 'brand', 'United Properties')} ·{' '}
-        {get('footer', 'legal', 'rights', 'All rights reserved')} ·{' '}
+        {get('footer', 'legal', 'rights', 'All rights reserved')}{' '}
+        <span className="ps">· </span>
+        <br className="pb" />
         <button
           type="button"
           className="up-footer__cookies"
