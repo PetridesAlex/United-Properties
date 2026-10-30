@@ -201,7 +201,7 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  border: 1px solid rgba(154, 123, 74, 0.45);
+  border: 1px solid rgba(140, 102, 64, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -311,13 +311,13 @@
   align-items: center;
   gap: 10px;
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 19px;
+  font-size: 18px;
   letter-spacing: 0.06em;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: none;
-  padding: 10px 28px;
+  padding: 11px 26px;
   border-radius: 999px;
-  border: 1px solid #8c6640;
+  border: 1px solid #cda984;
   color: #f4f1ea;
   background: transparent;
   position: relative;
@@ -350,11 +350,11 @@
 @keyframes up-cbBreath {
   0%,
   100% {
-    border-color: #8c6640;
+    border-color: #cda984;
     box-shadow: 0 0 0 0 rgba(205, 169, 132, 0);
   }
   50% {
-    border-color: #e7d3ae;
+    border-color: #ddbb99;
     box-shadow: 0 0 18px 1px rgba(205, 169, 132, 0.3);
   }
 }
@@ -391,4 +391,13 @@
   .up-contact .cta {
     padding: 32px 24px;
   }
+}
+
+/* Button hover: only the outline reacts (approved button system) */
+.up-contact .cb:hover {
+  background: transparent;
+  color: #f4f1ea;
+  border-color: #cda984;
+  box-shadow: 0 0 0 6px rgba(205, 169, 132, 0.12);
+  animation: none;
 }
