@@ -42,6 +42,7 @@ const CONTACTS = [
   },
   {
     key: 'whatsapp',
+    color: '#25D366',
     title: 'WhatsApp',
     text: '+357 96178188',
     href: WHATSAPP_CHAT_URL,
@@ -55,6 +56,7 @@ const CONTACTS = [
   },
   {
     key: 'telegram',
+    color: '#2AA3EA',
     title: 'Telegram',
     text: '+357 96178188',
     href: TELEGRAM_CHAT_URL,
@@ -81,14 +83,14 @@ const CONTACTS = [
   },
 ]
 
-function Icon({ children }) {
+function Icon({ children, color = '#8C6640' }) {
   return (
     <svg
       width="26"
       height="26"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="#9A7B4A"
+      stroke={color}
       strokeWidth="1.6"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -140,7 +142,7 @@ export default function UnitedContact({ quizHref = '#' }) {
                 {...(c.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
                 <div className="chi">
-                  <Icon>{c.icon}</Icon>
+                  <Icon color={c.color}>{c.icon}</Icon>
                 </div>
                 <h3>{c.title}</h3>
                 <p>{c.text}</p>
