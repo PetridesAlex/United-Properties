@@ -129,11 +129,7 @@ function Footer() {
 
       <div className="cp">
         — © {year} {get('footer', 'legal', 'brand', 'United Properties')} ·{' '}
-        {get('footer', 'legal', 'rights', 'All rights reserved')} ·{' '}
-        <Link to="/privacy" className="up-footer__privacy">
-          {get('footer', 'legal', 'privacy', 'Privacy Policy')}
-        </Link>{' '}
-        —
+        {get('footer', 'legal', 'rights', 'All rights reserved')} —
       </div>
     </footer>
   )

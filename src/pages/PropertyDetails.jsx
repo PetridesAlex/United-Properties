@@ -15,7 +15,6 @@ import {
   Map as MapIcon,
   Mail,
   Phone,
-  ArrowUpRight,
   Sparkles,
   FileDown,
   UserRound,
@@ -1004,11 +1003,6 @@ function PropertyDetails() {
                         </a>
                       ) : null}
                     </div>
-
-                    <Link to="/agents" className="property-details__agent-cta">
-                      {get('property', 'agent', 'profile_cta', 'View agent profile')}
-                      <ArrowUpRight size={17} aria-hidden />
-                    </Link>
                   </div>
                 </article>
               )}
