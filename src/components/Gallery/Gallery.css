@@ -593,3 +593,20 @@ html.gallery-lightbox-open .cookie-preferences__launcher {
     width: 100%;
   }
 }
+/* each new photo fades in softly instead of popping in */
+@keyframes gallery-photo-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.gallery-lightbox__stage:not(.is-dragging) .gallery-lightbox__image {
+  animation: gallery-photo-in 0.22s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery-lightbox__image {
+    animation: none !important;
+  }
+}

@@ -314,6 +314,28 @@ function Gallery({
     return undefined
   }, [count, normalizedImages])
 
+  // When the viewer opens, load every photo in the background (nearest first),
+  // so swiping never waits on a photo that has not arrived yet.
+  useEffect(() => {
+    if (!lightboxOpen || !count) return undefined
+    const order = []
+    for (let step = 0; step < count; step += 1) {
+      order.push(normalizedImages[(activeIndex + step) % count])
+      if (step) order.push(normalizedImages[(activeIndex - step + count) % count])
+    }
+    const imgs = []
+    ;[...new Set(order)].forEach((src) => {
+      if (!src) return
+      const img = new Image()
+      img.decoding = 'async'
+      img.src = optimizeImageUrl(src, 'lightbox') || src
+      imgs.push(img)
+    })
+    return undefined
+    // only once per opening
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lightboxOpen, count, normalizedImages])
+
   useEffect(() => {
     if (!lightboxOpen || !count) return undefined
     const neighbors = [
