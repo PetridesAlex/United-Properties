@@ -713,3 +713,44 @@
   box-shadow: 0 0 0 6px rgba(205, 169, 132, 0.12);
   animation: none;
 }
+
+/* Home cards on phones: specs and price stay on one line, nothing falls out (approved board) */
+.up-home .fc2 .cp,
+.up-home .fc2 .cp * {
+  white-space: nowrap;
+}
+.up-home .fc2 .cp small,
+.up-home .fc2 .cp b,
+.up-home .fc2 .cp em {
+  flex: none;
+}
+@media (max-width: 760px) {
+  .up-home .fc2 .cp {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+  .up-home .fc2 .cp .cs {
+    gap: 0;
+    font-size: 17px;
+  }
+  .up-home .fc2 .cs span {
+    padding: 0 9px;
+  }
+  .up-home .fc2 .cs span:first-child {
+    padding-left: 0;
+  }
+  .up-home .fc2 .cs span + span {
+    border-left: 1px solid rgba(205, 169, 132, 0.75);
+  }
+  .up-home .fc2 .cp small {
+    margin-left: auto;
+    letter-spacing: 0.2em;
+  }
+  .up-home .fc2 .cp b {
+    font-size: 22px;
+  }
+  .up-home .fc2 .cp em {
+    font-size: 11px;
+    margin-left: 0;
+  }
+}

@@ -161,7 +161,7 @@ function PropertyCard({
             <h3 className="upc__title">{property.title}</h3>
             {locationLine ? (
               <p className="upc__location">
-                <MapPin size={14} strokeWidth={1.6} aria-hidden /> {locationLine}
+                <MapPin size={14} strokeWidth={1.6} aria-hidden /> <span>{locationLine}</span>
               </p>
             ) : null}
             {showDescription && <p className="upc__description">{property.description}</p>}
