@@ -74,20 +74,20 @@ function UnitedServices() {
     return () => clearInterval(t)
   }, [reduceMotion])
 
-  const introWords = ['Three', 'clear', 'paths.', 'Move', 'forward', 'with', 'clarity.']
+  const introWords = ['Three', 'clear', 'paths.']
   const headingRaw = get(
     'services',
     'hero_switch',
     'heading',
-    'Three clear paths. Move forward with clarity.',
+    'Three clear paths.',
   )
   const headingTrimmed = String(headingRaw || '').trim()
   const isLegacyHeroHeading = /^united\s+services\.?$/i.test(headingTrimmed)
-  const displayHeading = isLegacyHeroHeading
-    ? 'Three clear paths. Move forward with clarity.'
-    : headingTrimmed
-  const useAnimatedHeading =
-    /^three\s+clear\s+paths\.?\s+move\s+forward\s+with\s+clarity\.?$/i.test(displayHeading)
+  const displayHeading =
+    isLegacyHeroHeading || /move\s+forward\s+with\s+clarity/i.test(headingTrimmed)
+      ? 'Three clear paths.'
+      : headingTrimmed
+  const useAnimatedHeading = /^three\s+clear\s+paths\.?$/i.test(displayHeading)
 
   const supportRaw = get(
     'services',
@@ -330,8 +330,8 @@ function UnitedServices() {
                 Whatever you choose, you get real local knowledge.
               </p>
               <p className="rowp closing">
-                If we believe in an opportunity, you&apos;ll hear it from us. If we don&apos;t, you&apos;ll hear
-                that too.
+                If we see potential in an opportunity, you&apos;ll hear it from us. If we don&apos;t, you&apos;ll
+                hear that too.
               </p>
             </div>
           </div>
