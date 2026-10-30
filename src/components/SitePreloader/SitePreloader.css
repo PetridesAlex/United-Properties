@@ -1,8 +1,8 @@
 /* Editorial luxury preload — responsive, respects reduced motion */
 
 .site-preloader {
-  --sp-gold: var(--color-accent, #bf9875);
-  --sp-gold-soft: var(--color-accent-light, #d5b59a);
+  --sp-gold: var(--color-accent, #cda984);
+  --sp-gold-soft: var(--color-accent-light, #cda984);
   --sp-ink: rgba(248, 246, 241, 0.96);
   --sp-duration-in: 0.9s;
   --sp-duration-bar: 1.6s;

@@ -10,7 +10,7 @@ import { useSiteContent } from '../hooks/useSiteContent'
 import { matchesListingLocation } from '../lib/matchesListingLocation'
 import './Properties.css'
 
-const BUY_HEADING_WORDS = ['Find', 'the', 'place', 'that', 'becomes', 'your', 'future.']
+const BUY_HEADING_WORDS = ['Find', 'a', 'place', 'that', 'becomes', 'your', 'future.']
 const RENT_HEADING_WORDS = ['Find', 'a', 'place', 'to', 'call', 'home.']
 
 const initialFilters = {
@@ -295,10 +295,10 @@ function getHeroContent(mode, status, get) {
     'properties',
     'hero_buy',
     'title',
-    'Find the place that becomes your future.',
+    'Find a place that becomes your future.',
   )
-  const title = /your new home awaits/i.test(String(titleRaw || ''))
-    ? 'Find the place that becomes your future.'
+  const title = /your new home awaits|find\s+the\s+place\s+that\s+becomes/i.test(String(titleRaw || ''))
+    ? 'Find a place that becomes your future.'
     : titleRaw
 
   const descriptionRaw = get(
@@ -316,7 +316,7 @@ function getHeroContent(mode, status, get) {
   const eyebrowRaw = get('properties', 'hero_buy', 'eyebrow', 'Buy')
   const eyebrow = /buy in limassol/i.test(String(eyebrowRaw || '')) ? 'Buy' : eyebrowRaw
 
-  const animated = /^find\s+the\s+place\s+that\s+becomes\s+your\s+future\.?$/i.test(
+  const animated = /^find\s+a\s+place\s+that\s+becomes\s+your\s+future\.?$/i.test(
     String(title || ''),
   )
 

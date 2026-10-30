@@ -244,7 +244,7 @@
 }
 
 .gallery-lightbox__close:focus-visible {
-  outline: 2px solid #bf9875;
+  outline: 2px solid #cda984;
   outline-offset: 2px;
 }
 
@@ -390,7 +390,7 @@ html.gallery-lightbox-open .cookie-preferences__launcher {
 }
 
 .gallery-lightbox__thumb.is-active {
-  border-color: var(--color-accent, #bf9875);
+  border-color: var(--color-accent, #cda984);
 }
 
 @media (max-width: 680px) {

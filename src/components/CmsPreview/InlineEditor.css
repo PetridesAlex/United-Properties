@@ -18,7 +18,7 @@
   place-items: center;
   border: 0;
   border-radius: 999px;
-  background: linear-gradient(145deg, #e8d2ba, #bf9875);
+  background: linear-gradient(145deg, #e8d2ba, #cda984);
   color: #1a120c;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
@@ -165,7 +165,7 @@
 
 .cms-inline-btn--gold {
   border-color: transparent;
-  background: linear-gradient(145deg, #e8d2ba, #bf9875);
+  background: linear-gradient(145deg, #e8d2ba, #cda984);
   color: #1a120c;
 }
 

@@ -14,7 +14,7 @@
   width: 100%;
   box-sizing: border-box;
   background:
-    radial-gradient(60% 28% at 85% 6%, rgba(217, 190, 143, 0.1), transparent 70%),
+    radial-gradient(60% 28% at 85% 6%, rgba(205, 169, 132, 0.1), transparent 70%),
     radial-gradient(50% 24% at 8% 60%, rgba(120, 150, 220, 0.08), transparent 70%),
     linear-gradient(180deg, var(--up-navy) 0%, var(--up-navy-mid) 50%, var(--up-navy) 100%);
   color: var(--up-cream);
