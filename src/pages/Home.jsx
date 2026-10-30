@@ -267,9 +267,6 @@ function Home() {
                       ) : null}
                     </div>
                   </div>
-                  <div className="plus" aria-hidden>
-                    +
-                  </div>
                 </Link>
               ))}
             </div>
