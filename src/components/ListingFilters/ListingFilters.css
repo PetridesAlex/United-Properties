@@ -283,3 +283,47 @@
     display: flex;
   }
 }
+
+/* Box variant (Search page, left column) */
+.lf--box {
+  width: 290px;
+  flex: none;
+  padding: 24px 22px 26px;
+  margin: 0;
+  gap: 0;
+}
+.lf--box .lf__only-phone { display: none; }
+.lf--box .lf__boxbody { display: flex; flex-direction: column; gap: 20px; }
+.lf--box .lf__boxhead { display: flex; align-items: baseline; justify-content: space-between; font: 500 11px 'Montserrat', sans-serif; letter-spacing: 0.3em; color: #8c6640; }
+.lf--box .lf__pill { padding: 8px 11px; font-size: 15.5px; }
+.lf--box .lf__pills { gap: 6px; }
+.lf__combo { position: relative; }
+.lf__combo input {
+  width: 100%; box-sizing: border-box; padding: 10px 38px 10px 14px;
+  border: 1px solid rgba(140, 102, 64, 0.35); border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7); outline: 0;
+  font: 500 17px 'Cormorant Garamond', Georgia, serif;
+}
+.lf__combo > svg { position: absolute; right: 13px; top: 18px; color: #8c6640; pointer-events: none; }
+.lf__opts {
+  position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 6px; list-style: none;
+  max-height: 240px; overflow-y: auto; background: #fff; border: 1px solid rgba(140, 102, 64, 0.4);
+  border-radius: 10px; box-shadow: 0 14px 30px rgba(140, 102, 64, 0.2);
+}
+.lf__opts button {
+  width: 100%; text-align: left; border: 0; background: none; cursor: pointer; padding: 8px 10px; border-radius: 8px;
+  font: 500 17px 'Cormorant Garamond', Georgia, serif;
+}
+.lf__opts button:hover { background: rgba(205, 169, 132, 0.18); }
+.lf__opts b { color: #8c6640; font-weight: 700; }
+.lf__none { padding: 8px 10px; color: #8a8f9c; font: 500 16px 'Cormorant Garamond', Georgia, serif; }
+
+@media (max-width: 1100px) {
+  .lf--box { width: 100%; box-sizing: border-box; }
+  .lf--box .lf__boxbody { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px; }
+  .lf--box .lf__boxhead, .lf--box .lf__search { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  .lf--box { border: 0; background: transparent; box-shadow: none; padding: 0; }
+  .lf--box .lf__only-phone { display: flex; }
+}
