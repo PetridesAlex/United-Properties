@@ -9,7 +9,7 @@ import { useMergedProperties } from '../hooks/useMergedProperties'
 import { useSiteContent } from '../hooks/useSiteContent'
 import './Home.css'
 
-const FEATURED_COUNT = 6
+const FEATURED_COUNT = 5
 
 const DEFAULT_SERVICES = [
   {
@@ -115,7 +115,11 @@ function Home() {
   const topOffset = useNavbarOffset()
 
   const featured = useMemo(
-    () => takeFeaturedMix(listingProperties, FEATURED_COUNT),
+    () => {
+      // Three featured: the 1st, then the 5th, then the 4th of the current mix
+      const mix = takeFeaturedMix(listingProperties, FEATURED_COUNT)
+      return [mix[0], mix[4], mix[3]].filter(Boolean)
+    },
     [listingProperties],
   )
 
