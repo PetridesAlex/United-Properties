@@ -1,23 +1,3 @@
-              <div className="properties__empty">
-                <span className="eb">NO MATCH</span>
-                <p className="properties__empty-title">No properties match these filters.</p>
-                <p className="properties__empty-off">
-                  Not every property is listed publicly. Speak with one of our consultants about off-market{' '}
-                  {mode === 'rent' ? 'options' : 'opportunities'}.
-                </p>
-                <div className="properties__empty-acts">
-                  <Link className="properties__btn" to="/contact">
-                    Speak with a consultant
-                  </Link>
-                  <button
-                    type="button"
-                    className="properties__lnk"
-                    onClick={() => setUi({ ...EMPTY_FILTERS, listing: baseListing })}
-                  >
-                    Clear filters
-                  </button>
-                </div>
-              </div>
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLocation } from 'react-router-dom'
@@ -642,17 +622,24 @@ function Properties() {
               </>
             ) : (
               <div className="properties__empty">
-                <h3>
-                  {get('properties', 'results', 'empty_heading', 'No properties match your filters')}
-                </h3>
-                <p>
-                  {get(
-                    'properties',
-                    'results',
-                    'empty_body',
-                    'Adjust your criteria to discover more listings.',
-                  )}
+                <span className="eb">NO MATCH</span>
+                <p className="properties__empty-title">No properties match these filters.</p>
+                <p className="properties__empty-off">
+                  Not every property is listed publicly. Speak with one of our consultants about off-market{' '}
+                  {mode === 'rent' ? 'options' : 'opportunities'}.
                 </p>
+                <div className="properties__empty-acts">
+                  <Link className="properties__btn" to="/contact">
+                    Speak with a consultant
+                  </Link>
+                  <button
+                    type="button"
+                    className="properties__lnk"
+                    onClick={() => setUi({ ...EMPTY_FILTERS, listing: baseListing })}
+                  >
+                    Clear filters
+                  </button>
+                </div>
               </div>
             )}
           </div>
