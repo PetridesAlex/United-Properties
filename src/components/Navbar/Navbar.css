@@ -1291,3 +1291,16 @@ header.navbar.navbar--scrolled .navbar__inner {
   color: #cda984 !important;
   border-color: rgba(205, 169, 132, 0.7) !important;
 }
+
+/* Over the Home video: the same discreet soft shade as the hero text, so the menu words,
+   the logo and the two icons stay readable on any frame of the video */
+.navbar--transparent .navbar__center-link {
+  text-shadow: 0 1px 14px rgba(11, 19, 36, 0.55), 0 0 2px rgba(11, 19, 36, 0.35);
+}
+.navbar--transparent .navbar__logo img {
+  filter: drop-shadow(0 1px 12px rgba(11, 19, 36, 0.5)) drop-shadow(0 0 2px rgba(11, 19, 36, 0.3));
+}
+.navbar--transparent .navbar__search-pill svg,
+.navbar--transparent .up-menu-btn span {
+  filter: drop-shadow(0 1px 8px rgba(11, 19, 36, 0.55));
+}
