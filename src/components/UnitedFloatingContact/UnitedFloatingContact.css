@@ -140,3 +140,35 @@
     height: 29px;
   }
 }
+
+/* Final approved size (Floating board): slimmer pill, 28px between icons with the gold line centred */
+.up-fab {
+  gap: 13px;
+  padding: 13px 18px 13px 24px;
+  bottom: 20px;
+  border-color: rgba(205, 169, 132, 0.85);
+}
+.up-fab__dv {
+  margin: 0;
+}
+/* Phone: compact pill on the right edge */
+@media (max-width: 760px) {
+  .up-fab {
+    gap: 9px;
+    padding: 7px 10px 7px 14px;
+    bottom: 18px;
+  }
+  .up-fab__dv {
+    height: 24px;
+    margin: 0;
+  }
+  .up-fab__b {
+    width: 29px;
+    height: 29px;
+  }
+  .up-fab__b svg {
+    width: auto;
+    height: auto;
+    transform: scale(0.88);
+  }
+}
