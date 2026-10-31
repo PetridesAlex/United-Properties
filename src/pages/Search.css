@@ -46,3 +46,67 @@
   .up-find__cta { padding: 32px 24px; }
   .up-find__cta h2 { font-size: 36px; }
 }
+
+/* Cohesion: story box heading and button exactly like Home and Contact */
+.up-find__cta h2 {
+  font: 500 clamp(32px, 3.34vw, 48px) / 1.08 'Cormorant Garamond', Georgia, serif;
+}
+.up-find__btn {
+  font: 500 18px 'Cormorant Garamond', Georgia, serif;
+  letter-spacing: 0.06em;
+  padding: 11px 26px;
+}
+.up-find__btn--lt {
+  position: relative;
+  overflow: hidden;
+  animation: up-find-breath 2s ease-in-out infinite;
+}
+.up-find__btn--lt::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -70%;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(205, 169, 132, 0.3), transparent);
+  transform: skewX(-20deg);
+  animation: up-find-sheen 3.2s ease-in-out infinite;
+}
+.up-find__btn--lt:hover {
+  animation: none;
+}
+.up-find__btn--lt:hover::after {
+  animation: none;
+  opacity: 0;
+}
+@keyframes up-find-sheen {
+  0%,
+  20% {
+    left: -70%;
+  }
+  100% {
+    left: 130%;
+  }
+}
+@keyframes up-find-breath {
+  0%,
+  100% {
+    border-color: #cda984;
+    box-shadow: 0 0 0 0 rgba(205, 169, 132, 0);
+  }
+  50% {
+    border-color: #ddbb99;
+    box-shadow: 0 0 18px 1px rgba(205, 169, 132, 0.3);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .up-find__btn--lt,
+  .up-find__btn--lt::after {
+    animation: none;
+  }
+}
+@media (max-width: 760px) {
+  .up-find__cta h2 {
+    font-size: 32px;
+  }
+}

@@ -520,3 +520,23 @@
   font: 500 18px 'Cormorant Garamond', Georgia, serif;
   border-bottom: 1px solid rgba(140, 102, 64, 0.5);
 }
+
+/* Cohesion: the small gold label above "Explore listings / rentals" uses the same label
+   as every other cream section (Montserrat 11px, .3em, #8C6640, fading hairline under) */
+.up-buy .lvl {
+  position: relative;
+  align-self: flex-start;
+  padding-bottom: 12px;
+  font: 500 11px 'Montserrat', sans-serif;
+  letter-spacing: 0.3em;
+  color: #8c6640;
+}
+.up-buy .lvl::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 26px;
+  height: 1px;
+  background: linear-gradient(90deg, currentColor, transparent);
+}
