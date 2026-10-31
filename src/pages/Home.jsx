@@ -204,12 +204,6 @@ function Home() {
             <CmsText page="home" section="featured" field="eyebrow" as="span" className="eb">
               {get('home', 'featured', 'eyebrow', 'Featured Properties')}
             </CmsText>
-            <CmsText page="home" section="featured" field="heading" as="h2" className="tt">
-              {get('home', 'featured', 'heading', 'Featured Properties')}
-            </CmsText>
-            <CmsText page="home" section="featured" field="description" as="p" className="tp">
-              {featuredDescription}
-            </CmsText>
             <div className="lv-rule" aria-hidden />
 
             <div className="fg">
