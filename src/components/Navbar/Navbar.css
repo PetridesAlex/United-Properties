@@ -1304,3 +1304,19 @@ header.navbar.navbar--scrolled .navbar__inner {
 .navbar--transparent .up-menu-btn span {
   filter: drop-shadow(0 1px 8px rgba(11, 19, 36, 0.55));
 }
+
+/* Soft fade behind the header over the Home video (top darker, fading to clear) */
+.navbar--transparent::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 190px;
+  pointer-events: none;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(11, 19, 36, 0.5) 0%, rgba(11, 19, 36, 0.28) 45%, rgba(11, 19, 36, 0) 100%);
+}
+.navbar--transparent .navbar__center-link {
+  text-shadow: 0 1px 12px rgba(11, 19, 36, 0.7), 0 0 3px rgba(11, 19, 36, 0.45);
+}
