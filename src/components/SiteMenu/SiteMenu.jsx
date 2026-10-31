@@ -48,7 +48,8 @@ export default function SiteMenu({ items, socials }) {
       </button>
       {typeof document !== 'undefined'
         ? createPortal(
-            <div className={`up-menu${open ? ' is-open' : ''}`} role="dialog" aria-modal="true" aria-label="Menu" aria-hidden={!open}>
+            <div className={`up-menu${open ? ' is-open' : ''}`} role="dialog" aria-modal="true" aria-label="Menu" aria-hidden={!open} onClick={(e) => { if (e.target === e.currentTarget) setOpen(false) }}>
+              <div className="up-menu__card">
               <div className="up-menu__top">
                 <Link to="/" className="up-menu__logo" aria-label="United Properties, home" tabIndex={open ? 0 : -1}>
                   <img src="/images/logo/United_Properties_v2.1.svg" alt="" />
@@ -90,6 +91,7 @@ export default function SiteMenu({ items, socials }) {
                     ) : null}
                   </a>
                 ))}
+              </div>
               </div>
             </div>,
             document.body,
