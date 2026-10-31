@@ -1920,7 +1920,7 @@ export default function AdminPropertyEditPage() {
                     />
                   </div>
                   <div className="admin-field">
-                    <label>Property area (m²)</label>
+                    <label>Property area (sqm)</label>
                     <input
                       type="number"
                       value={form.internal_area}
@@ -1928,7 +1928,7 @@ export default function AdminPropertyEditPage() {
                     />
                   </div>
                   <div className="admin-field">
-                    <label>Covered area (m²)</label>
+                    <label>Covered area (sqm)</label>
                     <input
                       type="number"
                       value={form.covered_area}
@@ -1936,7 +1936,7 @@ export default function AdminPropertyEditPage() {
                     />
                   </div>
                   <div className="admin-field">
-                    <label>Plot area (m²)</label>
+                    <label>Plot area (sqm)</label>
                     <input
                       type="number"
                       value={form.plot_size}
