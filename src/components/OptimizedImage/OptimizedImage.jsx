@@ -18,6 +18,8 @@ function OptimizedImage({
   onLoad,
   onError,
   noSrcSet = false,
+  /** Show the whole photo (never cropped); the empty space is filled with a soft blur of the same photo. */
+  blurFill = false,
   ...rest
 }) {
   const imgRef = useRef(null)
@@ -35,7 +37,7 @@ function OptimizedImage({
 
   const showSrcSet = !noSrcSet && !failedOptimized && srcSet && currentSrc === optimized && optimized !== src
 
-  return (
+  const img = (
     <img
       {...rest}
       ref={imgRef}
@@ -60,6 +62,18 @@ function OptimizedImage({
         onError?.(event)
       }}
     />
+  )
+
+  if (!blurFill) return img
+  return (
+    <>
+      <span
+        className="up-photo-fill"
+        aria-hidden="true"
+        style={{ backgroundImage: `url("${currentSrc || src}")` }}
+      />
+      {img}
+    </>
   )
 }
 

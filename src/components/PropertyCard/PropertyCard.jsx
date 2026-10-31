@@ -150,6 +150,7 @@ function PropertyCard({
               src={property.image}
               alt={`${property.title} in ${property.location}`}
               preset="card"
+              blurFill
               sizes="(max-width: 640px) 96vw, (max-width: 1100px) 46vw, 380px"
             />
             <span className="upc__tag" data-listing={badgeVariant}>

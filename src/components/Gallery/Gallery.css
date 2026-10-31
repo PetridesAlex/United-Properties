@@ -610,3 +610,42 @@ html.gallery-lightbox-open .cookie-preferences__launcher {
     animation: none !important;
   }
 }
+/* crossfade between photos (phones and desktop) */
+.gallery-lightbox__frame {
+  position: relative;
+}
+.gallery-lightbox__prev {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  animation: gallery-photo-out 0.34s ease both;
+}
+@keyframes gallery-photo-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+.gallery-lightbox__frame .gallery-lightbox__image {
+  position: relative;
+  z-index: 1;
+}
+.gallery-lightbox__stage:not(.is-dragging) .gallery-lightbox__image {
+  animation: gallery-photo-in 0.34s ease both;
+}
+/* the fade is only a change of opacity, so it stays on for everyone */
+@media (prefers-reduced-motion: reduce) {
+  .gallery-lightbox__stage:not(.is-dragging) .gallery-lightbox__image {
+    animation: gallery-photo-in 0.34s ease both !important;
+  }
+}
+/* thumbnails: whole photo too */
+.gallery-lightbox__thumb img {
+  object-fit: contain;
+  background: #0e182d;
+}

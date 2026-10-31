@@ -73,3 +73,19 @@ h1,
 h2 {
   text-wrap: balance;
 }
+
+/* Photos are never cropped: the whole photo is shown, and any empty space around it
+   is filled with a soft blur of the same photo (approved rule). */
+.up-photo-fill {
+  position: absolute;
+  inset: -24px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(22px) saturate(1.1) brightness(0.92);
+  pointer-events: none;
+}
+.up-photo-fill + img {
+  position: relative;
+  object-fit: contain !important;
+  transform: none !important;
+}
