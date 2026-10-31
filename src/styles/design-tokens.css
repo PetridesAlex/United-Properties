@@ -89,3 +89,24 @@ h2 {
   object-fit: contain !important;
   transform: none !important;
 }
+
+/* Phones (iOS Safari): photos must never spill over the rounded corners of cards.
+   Round the photo layers themselves, not just the card, and give the card its own layer. */
+.up-home .fc2,
+.upc__media {
+  isolation: isolate;
+  transform: translateZ(0);
+}
+.upc__media {
+  border-radius: 13px 13px 0 0;
+  -webkit-mask-image: -webkit-radial-gradient(#fff, #000);
+}
+.up-home .fc2 img,
+.up-home .fc2::before,
+.up-home .fc2::after {
+  border-radius: 14px;
+}
+.upc__media img,
+.upc__media .up-photo-fill {
+  border-radius: inherit;
+}
