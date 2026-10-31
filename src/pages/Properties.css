@@ -444,3 +444,79 @@
   font-style: italic;
   font-weight: 500;
 }
+
+/* Load more: approved button system, sentence case */
+.up-buy .properties__loadmore .btn {
+  font: 500 18px/1 'Cormorant Garamond', Georgia, serif;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 11px 26px;
+  border: 1px solid #8c6640;
+  color: #17263b;
+  background: transparent;
+  transition: box-shadow 0.35s ease;
+}
+.up-buy .properties__loadmore .btn:hover {
+  background: transparent;
+  color: #17263b;
+  border-color: #8c6640;
+  box-shadow: 0 0 0 6px rgba(205, 169, 132, 0.12);
+}
+
+/* Empty state (approved) */
+.up-buy .properties__empty {
+  margin-top: 12px;
+  padding: 44px 0 20px;
+  border: 0;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 600px;
+}
+.up-buy .properties__empty .eb {
+  position: relative;
+  align-self: flex-start;
+  padding-bottom: 12px;
+  font: 500 11px 'Montserrat', sans-serif;
+  letter-spacing: 0.3em;
+  color: #8c6640;
+}
+.up-buy .properties__empty-title {
+  margin: 0;
+  font: 500 30px/1.2 'Cormorant Garamond', Georgia, serif;
+  color: #17263b;
+}
+.up-buy .properties__empty-off {
+  margin: 0;
+  font: 500 21px/1.45 'Cormorant Garamond', Georgia, serif;
+  color: #4a5568;
+}
+.up-buy .properties__empty-acts {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.up-buy .properties__btn {
+  display: inline-flex;
+  padding: 11px 26px;
+  border-radius: 999px;
+  border: 1px solid #8c6640;
+  color: #17263b;
+  font: 500 18px 'Cormorant Garamond', Georgia, serif;
+  transition: box-shadow 0.35s ease;
+}
+.up-buy .properties__btn:hover {
+  box-shadow: 0 0 0 6px rgba(205, 169, 132, 0.12);
+}
+.up-buy .properties__lnk {
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: #8c6640;
+  font: 500 18px 'Cormorant Garamond', Georgia, serif;
+  border-bottom: 1px solid rgba(140, 102, 64, 0.5);
+}

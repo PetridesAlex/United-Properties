@@ -59,7 +59,7 @@ export function buildPublicPropertyAttributes(property: PublicPropertyCard): {
   }
 
   if (property.sqm != null && property.sqm > 0) {
-    facts.push({label: 'Area', value: `${property.sqm} m²`})
+    facts.push({label: 'Area', value: `${property.sqm} sqm`})
   }
 
   if (property.floor != null) {

@@ -237,7 +237,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
           f(
             'selection',
             'Selection line',
-            'Every property we present is chosen because we believe in its potential, never to add one more listing to the window.',
+            'Every property we present is chosen for its potential, never to add one more listing to the window.',
             'textarea',
             3,
           ),
@@ -485,7 +485,7 @@ export const CONTENT_PAGES: ContentPageDef[] = [
           f(
             'close_body',
             'Closing text',
-            "Potential comes in many forms. A plot with a view. An apartment in the right location. An older house waiting for its next chapter. Whatever you choose, you get real local knowledge. If we believe in an opportunity, you'll hear it from us. If we don't, you'll hear that too.",
+            "Potential comes in many forms. A plot with a view. An apartment in the right location. An older house waiting for its next chapter. Whatever you choose, you get real local knowledge. If we see potential in an opportunity, you'll hear it from us. If we don't, you'll hear that too.",
             'textarea',
             5,
           ),

@@ -237,6 +237,11 @@ function ListingFilters({ filters, onChange, onClear, pool, count, id = 'lf', va
     </>
   )
 
+  const activeCount = Object.entries(filters).filter(
+    ([k, v]) => k !== 'keyword' && Boolean(v) && !(box ? false : k === 'listing'),
+  ).length
+  const badge = activeCount ? <b className="lf__count">{activeCount}</b> : null
+
   const showLabel = `Show ${count} ${count === 1 ? 'property' : 'properties'}`
 
   const sheetEl = (
@@ -271,7 +276,7 @@ function ListingFilters({ filters, onChange, onClear, pool, count, id = 'lf', va
         <div className="lf__r1 lf__only-phone">
           {search}
           <button type="button" className="lf__open" onClick={() => setSheet(true)}>
-            <SlidersHorizontal size={17} strokeWidth={1.6} aria-hidden /> Filters
+            <SlidersHorizontal size={17} strokeWidth={1.6} aria-hidden /> Filters {badge}
           </button>
         </div>
         <div className="lf__boxbody lf__wide">
@@ -298,7 +303,7 @@ function ListingFilters({ filters, onChange, onClear, pool, count, id = 'lf', va
           Clear all
         </button>
         <button type="button" className="lf__open" onClick={() => setSheet(true)}>
-          <SlidersHorizontal size={17} strokeWidth={1.6} aria-hidden /> Filters
+          <SlidersHorizontal size={17} strokeWidth={1.6} aria-hidden /> Filters {badge}
         </button>
       </div>
       <div className="lf__r2 lf__wide">{general}</div>

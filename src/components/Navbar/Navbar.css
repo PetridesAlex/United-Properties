@@ -1285,3 +1285,9 @@ header.navbar.navbar--scrolled > .navbar__inner,
 header.navbar.navbar--scrolled .navbar__inner {
   backdrop-filter: blur(18px) saturate(150%) !important;
 }
+
+/* Search icon turns gold on the Search page */
+.navbar .navbar__search-pill.is-active {
+  color: #cda984 !important;
+  border-color: rgba(205, 169, 132, 0.7) !important;
+}

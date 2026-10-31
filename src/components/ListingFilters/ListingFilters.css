@@ -327,3 +327,17 @@
   .lf--box { border: 0; background: transparent; box-shadow: none; padding: 0; }
   .lf--box .lf__only-phone { display: flex; }
 }
+
+/* number of filters in use, on the phone "Filters" button */
+.lf__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(205, 169, 132, 0.25);
+  color: #8c6640;
+  font: 700 15px/1 'Cormorant Garamond', Georgia, serif;
+}

@@ -1,6 +1,26 @@
+              <div className="properties__empty">
+                <span className="eb">NO MATCH</span>
+                <p className="properties__empty-title">No properties match these filters.</p>
+                <p className="properties__empty-off">
+                  Not every property is listed publicly. Speak with one of our consultants about off-market{' '}
+                  {mode === 'rent' ? 'options' : 'opportunities'}.
+                </p>
+                <div className="properties__empty-acts">
+                  <Link className="properties__btn" to="/contact">
+                    Speak with a consultant
+                  </Link>
+                  <button
+                    type="button"
+                    className="properties__lnk"
+                    onClick={() => setUi({ ...EMPTY_FILTERS, listing: baseListing })}
+                  >
+                    Clear filters
+                  </button>
+                </div>
+              </div>
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import PropertyCard from '../components/PropertyCard/PropertyCard'
 import ListingFilters from '../components/ListingFilters/ListingFilters'
 import { EMPTY_FILTERS, applyListingFilters } from '../lib/search/listingFilters'
@@ -371,8 +391,8 @@ function Properties() {
   const topOffset = useNavbarOffset()
   const filters = useMemo(() => getFiltersFromLocation(routeLocation), [routeLocation])
   const locationKey = `${normalizePathname(routeLocation.pathname)}${routeLocation.search}`
-  const [loadState, setLoadState] = useState({ key: locationKey, count: 6 })
-  const visibleCount = loadState.key === locationKey ? loadState.count : 6
+  const [loadState, setLoadState] = useState({ key: locationKey, count: 9 })
+  const visibleCount = loadState.key === locationKey ? loadState.count : 9
   const mode = useMemo(() => getModeFromRoute(routeLocation), [routeLocation])
   const heroContent = useMemo(
     () => getHeroContent(mode, filters.status, get),
@@ -612,10 +632,10 @@ function Properties() {
                       type="button"
                       className="btn btn-outline-dark"
                       onClick={() =>
-                        setLoadState({ key: locationKey, count: visibleCount + 3 })
+                        setLoadState({ key: locationKey, count: visibleCount + 9 })
                       }
                     >
-                      {get('properties', 'results', 'load_more', 'Load More')}
+                      Load more
                     </button>
                   </div>
                 )}
