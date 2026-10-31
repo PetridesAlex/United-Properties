@@ -279,6 +279,18 @@ function Gallery({
 
   const activeSrc = count ? normalizedImages[Math.min(activeIndex, count - 1)] : ''
 
+  // Soft crossfade: the previous photo stays under the new one while it fades in
+  const lastSrcRef = useRef('')
+  const [prevSrc, setPrevSrc] = useState('')
+  useEffect(() => {
+    const last = lastSrcRef.current
+    lastSrcRef.current = activeSrc
+    if (!lightboxOpen || !last || last === activeSrc) return undefined
+    setPrevSrc(last)
+    const t = window.setTimeout(() => setPrevSrc(''), 360)
+    return () => window.clearTimeout(t)
+  }, [activeSrc, lightboxOpen])
+
   useEffect(() => {
     if (!activeSrc) return undefined
     let cancelled = false
@@ -385,6 +397,7 @@ function Gallery({
             src={normalizedImages[0]}
             alt={`${title} — photo 1 of ${count}`}
             preset="mosaicHero"
+            blurFill
             className="gallery__mosaic-img"
             loading="eager"
             fetchPriority="high"
@@ -419,6 +432,7 @@ function Gallery({
                 src={src}
                 alt=""
                 preset="mosaicTile"
+                blurFill
                 className="gallery__mosaic-img"
                 loading="lazy"
                 fetchPriority="low"
@@ -482,6 +496,16 @@ function Gallery({
                   ) : null}
 
                   <div className={`gallery-lightbox__frame ${zoom > 1 ? 'is-zoomed' : ''}`}>
+                    {prevSrc && !dragX ? (
+                      <img
+                        key={`prev-${prevSrc}`}
+                        className="gallery-lightbox__prev"
+                        src={optimizeImageUrl(prevSrc, 'lightbox') || prevSrc}
+                        alt=""
+                        aria-hidden="true"
+                        draggable={false}
+                      />
+                    ) : null}
                     <OptimizedImage
                       key={activeSrc}
                       noSrcSet

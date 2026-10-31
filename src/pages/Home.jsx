@@ -224,6 +224,7 @@ function Home() {
                     src={propertyCoverImage(property)}
                     alt=""
                     preset="card"
+                    blurFill
                     sizes="(max-width: 760px) 94vw, (max-width: 1000px) 46vw, 32vw"
                   />
                   <span className="ftag">{listingTag(property.status)}</span>
