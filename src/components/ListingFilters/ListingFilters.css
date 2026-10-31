@@ -110,7 +110,8 @@
 }
 
 .lf__open {
-  display: none;
+  display: flex;
+  flex: none;
   align-items: center;
   justify-content: center;
   gap: 10px;
@@ -122,6 +123,35 @@
   cursor: pointer;
 }
 
+.lf__open--phone {
+  display: none;
+}
+.lf__chev {
+  transition: transform 0.35s ease;
+}
+.lf.is-expanded .lf__chev {
+  transform: rotate(180deg);
+}
+.lf__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(140, 102, 64, 0.2);
+}
+.lf__r1b {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.lf__r1b .lf__group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.lf__r1b .lf__label {
+  margin: 0;
+}
 .lf__r2 {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr);
@@ -272,15 +302,18 @@
     gap: 12px;
   }
   .lf__r1 {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+    gap: 10px;
   }
-  .lf__wide {
+  .lf__wide,
+  .lf__open--desk {
     display: none !important;
   }
-  .lf__open {
+  .lf__open--phone {
     display: flex;
+    padding: 12px 18px;
+  }
+  .lf__search input::placeholder {
+    font-size: 16px;
   }
 }
 
