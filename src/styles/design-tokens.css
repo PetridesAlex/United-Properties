@@ -96,10 +96,10 @@ h2 {
 .upc__media {
   isolation: isolate;
   transform: translateZ(0);
-  -webkit-mask-image: -webkit-radial-gradient(#fff, #000);
 }
 .upc__media {
   border-radius: 13px 13px 0 0;
+  -webkit-mask-image: -webkit-radial-gradient(#fff, #000);
 }
 .up-home .fc2 img,
 .up-home .fc2::before,
