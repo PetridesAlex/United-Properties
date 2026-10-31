@@ -8,6 +8,28 @@ import { useMergedProperties } from '../hooks/useMergedProperties'
 import './Properties.css'
 import './Search.css'
 
+function useNavbarOffset() {
+  const [top, setTop] = useState(0)
+
+  useEffect(() => {
+    function measure() {
+      const nav = document.querySelector('header.navbar')
+      const next = nav ? Math.round(nav.getBoundingClientRect().height) : 0
+      setTop((prev) => (prev === next ? prev : next))
+    }
+
+    measure()
+    window.addEventListener('resize', measure)
+    window.addEventListener('scroll', measure, { passive: true })
+    return () => {
+      window.removeEventListener('resize', measure)
+      window.removeEventListener('scroll', measure)
+    }
+  }, [])
+
+  return top
+}
+
 const TYPE_ALIASES = {
   apartments: 'apartments',
   apartment: 'apartments',
@@ -52,6 +74,7 @@ function writeFilters(f) {
 }
 
 function Search() {
+  const topOffset = useNavbarOffset()
   const { list: properties, loading } = useMergedProperties()
   const [searchParams, setSearchParams] = useSearchParams()
   const [filters, setFilters] = useState(() => readFilters(searchParams))
@@ -77,7 +100,7 @@ function Search() {
         />
       </Helmet>
 
-      <div className="up-buy up-find">
+      <div className="up-buy up-find" style={{ '--up-top': `${topOffset}px` }}>
         <section className="up-buy__hero">
           <div className="up-buy__shell up-buy__hero-inner">
             <span className="lbl">SEARCH</span>
