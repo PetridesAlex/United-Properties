@@ -669,3 +669,24 @@ html.gallery-lightbox-open .cookie-preferences__launcher {
 .gallery-lightbox__stage.is-swipeable {
   cursor: grab;
 }
+
+/* The whole photo always fits inside the frame (laptops, phones, any shape of photo) */
+.gallery-lightbox__frame {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+.gallery-lightbox__frame .gallery-lightbox__image {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+}
+.gallery-lightbox__frame.is-zoomed {
+  overflow: hidden;
+}
+.gallery-lightbox__prev {
+  object-fit: contain;
+}
