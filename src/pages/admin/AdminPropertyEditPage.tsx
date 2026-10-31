@@ -1616,7 +1616,7 @@ export default function AdminPropertyEditPage() {
                         value={form.internal_area}
                         onChange={(e) => setField('internal_area', e.target.value)}
                       />
-                      <span>m²</span>
+                      <span>sqm</span>
                     </div>
                   </div>
 
