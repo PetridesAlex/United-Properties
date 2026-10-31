@@ -284,6 +284,8 @@ function Gallery({
     let acc = 0
     let locked = false
     let quietTimer = 0
+    let lastAbs = 0
+    let jumpAt = 0
     function onWheel(e) {
       if (e.ctrlKey) {
         // trackpad pinch: never zoom the page behind the viewer
@@ -298,13 +300,26 @@ function Gallery({
       quietTimer = window.setTimeout(() => {
         locked = false
         acc = 0
-      }, 260)
-      if (locked) return
+        lastAbs = 0
+      }, 220)
+      const abs = Math.abs(dx)
+      const now = Date.now()
+      if (locked) {
+        // the glide after a swipe only slows down; if the movement suddenly speeds up
+        // again, it is a new swipe, so it counts straight away
+        const newSwipe = now - jumpAt > 160 && abs > 8 && abs > lastAbs * 1.6
+        lastAbs = abs
+        if (!newSwipe) return
+        locked = false
+        acc = 0
+      }
+      lastAbs = abs
       acc += dx
       if (Math.abs(acc) >= 50) {
         go(acc > 0 ? 1 : -1)
         acc = 0
         locked = true
+        jumpAt = now
       }
     }
     window.addEventListener('wheel', onWheel, { passive: false })
