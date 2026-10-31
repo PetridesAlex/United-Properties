@@ -144,6 +144,7 @@ function Range({ label, minValue, maxValue, onMin, onMax, minHolder = 'No min', 
 /** The same questions as the Search page, laid out horizontally (Buy, Rent). */
 function ListingFilters({ filters, onChange, onClear, pool, count, id = 'lf', variant = 'bar' }) {
   const [sheet, setSheet] = useState(false)
+  const [expanded, setExpanded] = useState(false)
 
   const cities = useMemo(() => uniqueSorted(pool.map(cityOf)), [pool])
   const areas = useMemo(
@@ -295,19 +296,35 @@ function ListingFilters({ filters, onChange, onClear, pool, count, id = 'lf', va
   }
 
   return (
-    <div className="lf" id={id}>
+    <div className={`lf${expanded ? ' is-expanded' : ''}`} id={id}>
       <div className="lf__r1">
         {search}
-        <div className="lf__wide">{listing}</div>
-        <button type="button" className="lf__clear lf__wide" onClick={onClear}>
-          Clear all
+        <button
+          type="button"
+          className="lf__open lf__open--desk"
+          aria-expanded={expanded}
+          aria-controls={`${id}-panel`}
+          onClick={() => setExpanded((v) => !v)}
+        >
+          <SlidersHorizontal size={17} strokeWidth={1.6} aria-hidden /> Filters {badge}
+          <ChevronDown size={16} aria-hidden className="lf__chev" />
         </button>
-        <button type="button" className="lf__open" onClick={() => setSheet(true)}>
+        <button type="button" className="lf__open lf__open--phone" onClick={() => setSheet(true)}>
           <SlidersHorizontal size={17} strokeWidth={1.6} aria-hidden /> Filters {badge}
         </button>
       </div>
-      <div className="lf__r2 lf__wide">{general}</div>
-      {specific.props.children.some(Boolean) ? <div className="lf__r3 lf__wide">{specific}</div> : null}
+      {expanded ? (
+        <div className="lf__panel lf__wide" id={`${id}-panel`}>
+          <div className="lf__r1b">
+            {listing}
+            <button type="button" className="lf__clear" onClick={onClear}>
+              Clear all
+            </button>
+          </div>
+          <div className="lf__r2">{general}</div>
+          {specific.props.children.some(Boolean) ? <div className="lf__r3">{specific}</div> : null}
+        </div>
+      ) : null}
       {sheetEl}
     </div>
   )
