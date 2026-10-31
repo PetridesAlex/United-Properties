@@ -166,9 +166,10 @@ export default function UnitedContact({ quizHref = '#' }) {
       <section className="ct-close">
         <div className="cta">
           <span className="lbl">UNITED PROPERTIES</span>
-          <h2 className="tt">Tell us what you&apos;re looking for.</h2>
+          <h2 className="tt">What is your story?</h2>
+          <p className="sty">A few personal questions help us begin the right way.</p>
           <div className="bt">
-            <a className="cb" href={quizHref}>
+            <a className="cb" href={quizHref === '#' ? '/contact' : quizHref}>
               Answer a few questions
             </a>
           </div>

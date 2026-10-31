@@ -401,3 +401,13 @@
   box-shadow: 0 0 0 6px rgba(205, 169, 132, 0.12);
   animation: none;
 }
+
+/* "What is your story?" box: one soft line under the heading (same as Home) */
+.up-contact .cta .sty {
+  margin: 6px 0 0;
+  font: 500 21px/1.45 'Cormorant Garamond', Georgia, serif;
+  color: #e4dfd3;
+  padding-top: 20px;
+  border-top: 1px solid rgba(205, 169, 132, 0.35);
+  max-width: 620px;
+}

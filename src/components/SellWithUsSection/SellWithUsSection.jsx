@@ -21,7 +21,7 @@ const POINT_DEFAULTS = [
     key: 'price',
     title: 'A fair price',
     body:
-      "A fair price does two things. It honors the true value of your property, and it gives the buyer the confidence to say yes. That's the price we believe in, built on comparable sales and real local knowledge.",
+      "A fair price does two things. It honors the true value of your property, and it gives the buyer the confidence to say yes. Built on comparable sales and real local knowledge.",
   },
   {
     key: 'presented',

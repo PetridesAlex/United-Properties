@@ -97,7 +97,7 @@ function Navbar() {
         <div className="navbar__actions">
           <button
             type="button"
-            className="navbar__search-pill"
+            className={`navbar__search-pill${location.pathname === '/search' ? ' is-active' : ''}`}
             aria-label={get('navbar', 'nav', 'search_aria', 'Search homes and agents')}
             onClick={openGlobalSearch}
           >
