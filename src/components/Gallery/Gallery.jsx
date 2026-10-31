@@ -278,9 +278,12 @@ function Gallery({
   // Two-finger swipe on a trackpad (horizontal wheel) moves to the next / previous photo
   useEffect(() => {
     if (!lightboxOpen || count <= 1) return undefined
+    // One swipe = one photo, however long or hard the swipe is: after a jump the viewer
+    // ignores the rest of that gesture (including the trackpad's momentum) until the
+    // fingers have been still for a moment.
     let acc = 0
-    let lockUntil = 0
-    let resetTimer = 0
+    let locked = false
+    let quietTimer = 0
     function onWheel(e) {
       if (e.ctrlKey) {
         // trackpad pinch: never zoom the page behind the viewer
@@ -289,25 +292,25 @@ function Gallery({
       }
       if (zoom > 1) return
       const dx = e.deltaX
-      if (Math.abs(dx) <= Math.abs(e.deltaY)) return
+      if (Math.abs(dx) <= Math.abs(e.deltaY) && !locked) return
       e.preventDefault()
-      const now = Date.now()
-      window.clearTimeout(resetTimer)
-      resetTimer = window.setTimeout(() => {
+      window.clearTimeout(quietTimer)
+      quietTimer = window.setTimeout(() => {
+        locked = false
         acc = 0
-      }, 180)
-      if (now < lockUntil) return
+      }, 260)
+      if (locked) return
       acc += dx
       if (Math.abs(acc) >= 50) {
         go(acc > 0 ? 1 : -1)
         acc = 0
-        lockUntil = now + 450
+        locked = true
       }
     }
     window.addEventListener('wheel', onWheel, { passive: false })
     return () => {
       window.removeEventListener('wheel', onWheel)
-      window.clearTimeout(resetTimer)
+      window.clearTimeout(quietTimer)
     }
   }, [lightboxOpen, count, zoom, go])
 
