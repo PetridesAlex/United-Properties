@@ -649,3 +649,23 @@ html.gallery-lightbox-open .cookie-preferences__launcher {
   object-fit: contain;
   background: #0e182d;
 }
+
+/* Smooth on phones: the fade-in runs once when a new photo appears (not again after a small touch),
+   the photo follows the finger without delay, and the old photo fades out from where it was let go */
+.gallery-lightbox__stage .gallery-lightbox__image,
+.gallery-lightbox__stage:not(.is-dragging) .gallery-lightbox__image,
+.gallery-lightbox__stage.is-dragging .gallery-lightbox__image {
+  animation: gallery-photo-in 0.34s ease both !important;
+  transition: none !important;
+  cursor: default;
+  will-change: transform, opacity;
+}
+.gallery-lightbox__frame.is-zoomed .gallery-lightbox__image {
+  cursor: grab;
+}
+.gallery-lightbox__prev {
+  transform: translate3d(var(--from, 0px), 0, 0);
+}
+.gallery-lightbox__stage.is-swipeable {
+  cursor: grab;
+}

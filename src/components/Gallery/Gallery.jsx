@@ -23,6 +23,12 @@ function Gallery({
   const [frameRatio, setFrameRatio] = useState(4 / 3)
   const [dragX, setDragX] = useState(0)
   const lightboxRef = useRef(null)
+  const frameRef = useRef(null)
+  const releaseOffsetRef = useRef(0)
+  const pointersRef = useRef(new Map())
+  const pinchRef = useRef(null)
+  const panRef = useRef(null)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
   const swipeRef = useRef({
     pointerId: null,
     x: 0,
@@ -42,6 +48,7 @@ function Gallery({
       if (!count) return
       setActiveIndex((i) => (i + delta + count) % count)
       setZoom(1)
+      setPan({ x: 0, y: 0 })
       setDragX(0)
     },
     [count],
@@ -52,6 +59,7 @@ function Gallery({
       if (index >= 0 && index < count) {
         setActiveIndex(index)
         setZoom(1)
+      setPan({ x: 0, y: 0 })
         setDragX(0)
       }
     },
@@ -63,6 +71,7 @@ function Gallery({
       if (index >= 0 && index < count) {
         setActiveIndex(index)
         setZoom(1)
+      setPan({ x: 0, y: 0 })
         setDragX(0)
         setLightboxOpen(true)
       }
@@ -73,15 +82,8 @@ function Gallery({
   const closeLightbox = useCallback(() => {
     setLightboxOpen(false)
     setZoom(1)
+      setPan({ x: 0, y: 0 })
     setDragX(0)
-  }, [])
-
-  const zoomIn = useCallback(() => {
-    setZoom((z) => Math.min(3, Math.round((z + 0.25) * 100) / 100))
-  }, [])
-
-  const zoomOut = useCallback(() => {
-    setZoom((z) => Math.max(1, Math.round((z - 0.25) * 100) / 100))
   }, [])
 
   const resetSwipe = useCallback(() => {
@@ -94,21 +96,43 @@ function Gallery({
       locked: false,
       swiped: swipeRef.current.swiped,
     }
+    frameRef.current?.style.setProperty('--drag', '0px')
     setDragX(0)
   }, [])
 
   const onPointerDown = useCallback(
     (e) => {
-      if (swipeRef.current.active && swipeRef.current.pointerId !== e.pointerId) {
-        // a second finger (pinch): stop the swipe so nothing jumps
+      if (e.target instanceof Element && e.target.closest('button')) return
+      pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (pointersRef.current.size === 2 && e.pointerType === 'touch') {
+        // two fingers: pinch to zoom (phones). Stop any swipe so nothing jumps.
         swipeRef.current.active = false
         swipeRef.current.vertical = false
         setDragX(0)
+        const [a, b] = [...pointersRef.current.values()]
+        pinchRef.current = { d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, z0: zoom }
+        try {
+          e.currentTarget.setPointerCapture?.(e.pointerId)
+        } catch {
+          // ignore
+        }
         return
       }
-      if (count <= 1 || zoom > 1) return
+      if (pointersRef.current.size > 1) return
+
+      if (zoom > 1) {
+        // zoomed in: one finger moves the photo around
+        panRef.current = { id: e.pointerId, x: e.clientX, y: e.clientY, px: pan.x, py: pan.y }
+        try {
+          e.currentTarget.setPointerCapture?.(e.pointerId)
+        } catch {
+          // ignore
+        }
+        return
+      }
+      if (count <= 1) return
       if (e.pointerType === 'mouse' && e.button !== 0) return
-      if (e.target instanceof Element && e.target.closest('button')) return
 
       swipeRef.current = {
         pointerId: e.pointerId,
@@ -125,10 +149,28 @@ function Gallery({
         // ignore capture failures
       }
     },
-    [count, zoom],
+    [count, zoom, pan],
   )
 
   const onPointerMove = useCallback((e) => {
+    if (pointersRef.current.has(e.pointerId)) {
+      pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    }
+    if (pinchRef.current && pointersRef.current.size >= 2) {
+      const [a, b] = [...pointersRef.current.values()]
+      const d = Math.hypot(a.x - b.x, a.y - b.y)
+      const next = Math.min(3, Math.max(1, pinchRef.current.z0 * (d / pinchRef.current.d0)))
+      setZoom(next)
+      if (next === 1) setPan({ x: 0, y: 0 })
+      if (e.cancelable) e.preventDefault()
+      return
+    }
+    if (panRef.current && panRef.current.id === e.pointerId) {
+      const p = panRef.current
+      setPan({ x: p.px + (e.clientX - p.x), y: p.py + (e.clientY - p.y) })
+      if (e.cancelable) e.preventDefault()
+      return
+    }
     const swipe = swipeRef.current
     if (!swipe.active || swipe.pointerId !== e.pointerId) return
 
@@ -157,7 +199,12 @@ function Gallery({
     }
 
     swipe.dx = dx
-    setDragX(dx)
+    // move the photo directly (no re-render on every finger move: smooth on phones)
+    frameRef.current?.style.setProperty('--drag', `${dx}px`)
+    if (!swipe.dragging) {
+      swipe.dragging = true
+      setDragX(1)
+    }
     if (e.cancelable) e.preventDefault()
   }, [])
 
@@ -180,8 +227,13 @@ function Gallery({
         return
       }
 
+      swipe.dragging = false
+      frameRef.current?.style.setProperty('--drag', '0px')
+
       if (swipe.locked && Math.abs(dx) >= SWIPE_MIN_PX) {
         swipe.swiped = true
+        // the old photo leaves from where the finger let go
+        releaseOffsetRef.current = dx
         go(dx < 0 ? 1 : -1)
         return
       }
@@ -191,16 +243,37 @@ function Gallery({
     [go, closeLightbox],
   )
 
+  const endPointer = useCallback((e) => {
+    pointersRef.current.delete(e.pointerId)
+    if (pointersRef.current.size < 2 && pinchRef.current) {
+      pinchRef.current = null
+      // a tiny zoom snaps back to the whole photo
+      setZoom((z) => {
+        if (z < 1.08) {
+          setPan({ x: 0, y: 0 })
+          return 1
+        }
+        return z
+      })
+    }
+    if (panRef.current && panRef.current.id === e.pointerId) panRef.current = null
+  }, [])
+
   const onPointerUp = useCallback(
     (e) => {
+      endPointer(e)
       finishSwipe(e)
     },
-    [finishSwipe],
+    [finishSwipe, endPointer],
   )
 
-  const onPointerCancel = useCallback(() => {
-    resetSwipe()
-  }, [resetSwipe])
+  const onPointerCancel = useCallback(
+    (e) => {
+      endPointer(e)
+      resetSwipe()
+    },
+    [resetSwipe, endPointer],
+  )
 
   // Two-finger swipe on a trackpad (horizontal wheel) moves to the next / previous photo
   useEffect(() => {
@@ -209,6 +282,11 @@ function Gallery({
     let lockUntil = 0
     let resetTimer = 0
     function onWheel(e) {
+      if (e.ctrlKey) {
+        // trackpad pinch: never zoom the page behind the viewer
+        e.preventDefault()
+        return
+      }
       if (zoom > 1) return
       const dx = e.deltaX
       if (Math.abs(dx) <= Math.abs(e.deltaY)) return
@@ -251,19 +329,10 @@ function Gallery({
         go(1)
         return
       }
-      if (e.key === '+' || e.key === '=') {
-        e.preventDefault()
-        zoomIn()
-        return
-      }
-      if (e.key === '-' || e.key === '_') {
-        e.preventDefault()
-        zoomOut()
-      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [go, lightboxOpen, closeLightbox, zoomIn, zoomOut])
+  }, [go, lightboxOpen, closeLightbox])
 
   useEffect(() => {
     if (!lightboxOpen) return undefined
@@ -282,10 +351,14 @@ function Gallery({
   // Soft crossfade: the previous photo stays under the new one while it fades in
   const lastSrcRef = useRef('')
   const [prevSrc, setPrevSrc] = useState('')
+  const [prevOffset, setPrevOffset] = useState(0)
   useEffect(() => {
     const last = lastSrcRef.current
     lastSrcRef.current = activeSrc
+    const offset = releaseOffsetRef.current
+    releaseOffsetRef.current = 0
     if (!lightboxOpen || !last || last === activeSrc) return undefined
+    setPrevOffset(offset)
     setPrevSrc(last)
     const t = window.setTimeout(() => setPrevSrc(''), 360)
     return () => window.clearTimeout(t)
@@ -373,10 +446,10 @@ function Gallery({
   const mosaicCount = Math.min(count, 1 + MOSAIC_SIDE)
   const imageTransform =
     zoom > 1
-      ? `scale(${zoom})`
+      ? `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom})`
       : dragX
-        ? `translate3d(${dragX}px, 0, 0) scale(1)`
-        : 'scale(1)'
+        ? 'translate3d(var(--drag, 0px), 0, 0)'
+        : 'none'
 
   if (!count) return null
 
@@ -495,11 +568,12 @@ function Gallery({
                     </button>
                   ) : null}
 
-                  <div className={`gallery-lightbox__frame ${zoom > 1 ? 'is-zoomed' : ''}`}>
+                  <div ref={frameRef} className={`gallery-lightbox__frame ${zoom > 1 ? 'is-zoomed' : ''}`}>
                     {prevSrc && !dragX ? (
                       <img
                         key={`prev-${prevSrc}`}
                         className="gallery-lightbox__prev"
+                        style={{ '--from': `${prevOffset}px` }}
                         src={optimizeImageUrl(prevSrc, 'lightbox') || prevSrc}
                         alt=""
                         aria-hidden="true"
@@ -519,13 +593,8 @@ function Gallery({
                       sizes="(max-width: 900px) 96vw, min(1280px, 92vw)"
                       draggable={false}
                       onClick={() => {
-                        if (swipeRef.current.swiped) {
-                          swipeRef.current.swiped = false
-                          return
-                        }
-                        if (Math.abs(swipeRef.current.dx) > 8) return
-                        if (zoom > 1) zoomOut()
-                        else zoomIn()
+                        // clicking never zooms: the photo is always shown whole
+                        swipeRef.current.swiped = false
                       }}
                     />
                   </div>
